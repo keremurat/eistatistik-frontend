@@ -91,7 +91,9 @@ export default function OrdersPage() {
           <a href="#"><Icon name="spark" size={17} />Hizmetler</a>
         </nav>
         <div className="top-actions">
-          <button className="icon-button search-button" aria-label="Ara"><Icon name="search" /></button>
+          <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç">
+            <Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} />
+          </a>
           <button className="icon-button" aria-label="Bildirimler"><Icon name="bell" /><span className="notification-dot">2</span></button>
           <button className="profile-button" aria-label="Profil menüsünü aç"><span className="avatar">KM</span><span className="profile-copy"><strong>Kerem Murat</strong><small>Müşteri hesabı</small></span><span>⌄</span></button>
         </div>

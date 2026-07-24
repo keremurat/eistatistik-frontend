@@ -49,7 +49,9 @@ export function EducationShell({ children }: { children: React.ReactNode }) {
         <Link href="/yeni-analiz-talebi"><EducationIcon name="spark" size={17} />Hizmetler</Link>
       </nav>
       <div className="top-actions">
-        <button className="icon-button search-button" aria-label="Ara"><EducationIcon name="search" /></button>
+        <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç">
+          <Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} />
+        </a>
         <button className="icon-button" aria-label="Bildirimler"><EducationIcon name="bell" /><span className="notification-dot">2</span></button>
         <button className="profile-button"><span className="avatar">KM</span><span className="profile-copy"><strong>Kerem Murat</strong><small>Müşteri hesabı</small></span><span>⌄</span></button>
       </div>
