@@ -123,13 +123,29 @@ function Files() {
 }
 
 function Payment({ method, onMethod }: { method: "transfer" | "card"; onMethod: (value: "transfer" | "card") => void }) {
+  const [discountOpen, setDiscountOpen] = useState(false);
+  const [discountCode, setDiscountCode] = useState("");
+  const [discountState, setDiscountState] = useState<"idle" | "success" | "error">("idle");
+  const applyDiscount = () => setDiscountState(discountCode.trim().toLocaleUpperCase("tr") === "EISTATISTIK10" ? "success" : "error");
+
   return <div className="payment-layout"><section className="detail-panel payment-main"><PanelHeading eyebrow="GÜVENLİ ÖDEME" title="Ödeme yönteminizi seçin" />
+    <div className={`discount-entry ${discountOpen ? "open" : ""}`}>
+      <button className="discount-trigger" onClick={() => setDiscountOpen(value => !value)} aria-expanded={discountOpen}>
+        <span>%</span><strong>İndirim kodu gir</strong><i>{discountOpen ? "−" : "+"}</i>
+      </button>
+      {discountOpen && <div className="discount-form">
+        <label><span>İndirim kodu</span><input value={discountCode} onChange={event => { setDiscountCode(event.target.value); setDiscountState("idle"); }} placeholder="Kodunuzu yazın" /></label>
+        <button onClick={applyDiscount} disabled={!discountCode.trim()}>Uygula</button>
+        {discountState === "success" && <p className="success">Kod uygulandı. Ödeme özetiniz güncellendi.</p>}
+        {discountState === "error" && <p className="error">Bu kod geçerli değil. Kodu kontrol edip tekrar deneyin.</p>}
+      </div>}
+    </div>
     <div className="payment-tabs"><button className={method === "transfer" ? "active" : ""} onClick={() => onMethod("transfer")}><Icon name="invoice" size={18} />Havale / EFT</button><button className={method === "card" ? "active" : ""} onClick={() => onMethod("card")}><Icon name="card" size={18} />Kredi kartı</button></div>
     {method === "transfer" ? <div className="bank-box"><h3>Banka bilgileri</h3><dl><div><dt>Alıcı</dt><dd>Eİstatistik Akademi Ltd. Şti.</dd></div><div><dt>Banka</dt><dd>Akbank · 19 Mayıs Üniversitesi Şubesi</dd></div><div><dt>IBAN</dt><dd><code>TR64 0004 6013 8988 8000 0143 16</code><button><Icon name="copy" size={15} />Kopyala</button></dd></div><div><dt>Açıklama</dt><dd><code>DS260723008</code><button><Icon name="copy" size={15} />Kopyala</button></dd></div></dl><div className="receipt-upload"><Icon name="upload" size={22} /><div><strong>Dekont yükle</strong><span>PDF, JPG veya PNG · En fazla 10 MB</span></div><button>Dosya seç</button></div></div>
     : <div className="card-form"><label>Kart üzerindeki isim<input placeholder="Ad Soyad" /></label><label>Kart numarası<input placeholder="0000 0000 0000 0000" /></label><div><label>Son kullanma<input placeholder="AA / YY" /></label><label>CVV<input placeholder="•••" /></label></div><p>Ödemeniz 3D Secure ile güvenli şekilde tamamlanır.</p></div>}
     <label className="agreement"><input type="checkbox" />Ön bilgilendirme formunu ve mesafeli satış sözleşmesini okudum, kabul ediyorum.</label>
-    <button className="pay-button">{method === "transfer" ? "Ödeme bildirimini gönder" : "5.000 TL öde"} <Icon name="arrow" size={16} /></button>
-  </section><aside className="payment-summary"><p className="eyebrow">ÖDEME ÖZETİ</p><h2>Güç analizi danışmanlığı</h2><dl><div><dt>Hizmet bedeli</dt><dd>5.000 TL</dd></div><div><dt>İndirim</dt><dd>0 TL</dd></div><div className="total"><dt>Toplam</dt><dd>5.000 TL</dd></div></dl><button>İndirim kodu ekle</button><p>Fatura bilgilerinizi ödeme öncesinde Fatura bölümünden düzenleyebilirsiniz.</p></aside></div>;
+    <button className="pay-button">{method === "transfer" ? "Ödeme bildirimini gönder" : `${discountState === "success" ? "4.500" : "5.000"} TL öde`} <Icon name="arrow" size={16} /></button>
+  </section><aside className="payment-summary"><p className="eyebrow">ÖDEME ÖZETİ</p><h2>Güç analizi danışmanlığı</h2><dl><div><dt>Hizmet bedeli</dt><dd>5.000 TL</dd></div><div><dt>İndirim</dt><dd>{discountState === "success" ? "−500 TL" : "0 TL"}</dd></div><div className="total"><dt>Toplam</dt><dd>{discountState === "success" ? "4.500 TL" : "5.000 TL"}</dd></div></dl><p>Fatura bilgilerinizi ödeme öncesinde Fatura bölümünden düzenleyebilirsiniz.</p></aside></div>;
 }
 
 function Messages() {

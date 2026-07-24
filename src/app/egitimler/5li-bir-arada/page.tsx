@@ -60,15 +60,31 @@ function Curriculum() {
 }
 
 function EducationPayment({ method, onMethod }: { method: "transfer" | "card"; onMethod: (value: "transfer" | "card") => void }) {
+  const [discountOpen, setDiscountOpen] = useState(false);
+  const [discountCode, setDiscountCode] = useState("");
+  const [discountState, setDiscountState] = useState<"idle" | "success" | "error">("idle");
+  const applyDiscount = () => setDiscountState(discountCode.trim().toLocaleUpperCase("tr") === "EISTATISTIK10" ? "success" : "error");
+
   return <div className="payment-layout education-payment"><section className="detail-panel payment-main">
     <header className="detail-panel-heading"><div><p className="eyebrow">GÜVENLİ ÖDEME</p><h2>Ödeme yönteminizi seçin</h2><span>Analiz siparişlerinizde kullandığınız güvenli ödeme adımları.</span></div></header>
+    <div className={`discount-entry ${discountOpen ? "open" : ""}`}>
+      <button className="discount-trigger" onClick={() => setDiscountOpen(value => !value)} aria-expanded={discountOpen}>
+        <span>%</span><strong>İndirim kodu gir</strong><i>{discountOpen ? "−" : "+"}</i>
+      </button>
+      {discountOpen && <div className="discount-form">
+        <label><span>İndirim kodu</span><input value={discountCode} onChange={event => { setDiscountCode(event.target.value); setDiscountState("idle"); }} placeholder="Kodunuzu yazın" /></label>
+        <button onClick={applyDiscount} disabled={!discountCode.trim()}>Uygula</button>
+        {discountState === "success" && <p className="success">Kod uygulandı. Ödeme özetiniz güncellendi.</p>}
+        {discountState === "error" && <p className="error">Bu kod geçerli değil. Kodu kontrol edip tekrar deneyin.</p>}
+      </div>}
+    </div>
     <div className="payment-tabs"><button className={method === "transfer" ? "active" : ""} onClick={() => onMethod("transfer")}><EducationIcon name="file" size={18} />Havale / EFT</button><button className={method === "card" ? "active" : ""} onClick={() => onMethod("card")}><EducationIcon name="card" size={18} />Kredi kartı</button></div>
     {method === "transfer" ? <div className="bank-box"><h3>Banka bilgileri</h3><dl><div><dt>Alıcı</dt><dd>Eİstatistik Akademi Ltd. Şti.</dd></div><div><dt>Banka</dt><dd>Akbank · 19 Mayıs Üniversitesi Şubesi</dd></div><div><dt>IBAN</dt><dd><code>TR64 0004 6013 8988 8000 0143 16</code><button>Kopyala</button></dd></div><div><dt>Açıklama</dt><dd><code>TR260723010</code><button>Kopyala</button></dd></div></dl><div className="receipt-upload"><EducationIcon name="file" size={22} /><div><strong>Dekont yükle</strong><span>PDF, JPG veya PNG · En fazla 10 MB</span></div><button>Dosya seç</button></div></div>
     : <div className="card-form"><label>Kart üzerindeki isim<input placeholder="Ad Soyad" /></label><label>Kart numarası<input placeholder="0000 0000 0000 0000" /></label><div><label>Son kullanma<input placeholder="AA / YY" /></label><label>CVV<input placeholder="•••" /></label></div><p>Ödemeniz 3D Secure ile güvenli şekilde tamamlanır.</p></div>}
     <label className="agreement"><input type="checkbox" />Ön bilgilendirme formunu ve mesafeli satış sözleşmesini okudum, kabul ediyorum.</label>
-    <button className="pay-button">{method === "transfer" ? "Ödeme bildirimini gönder" : "9.000 TL öde"} <EducationIcon name="arrow" size={16} /></button>
+    <button className="pay-button">{method === "transfer" ? "Ödeme bildirimini gönder" : `${discountState === "success" ? "8.100" : "9.000"} TL öde`} <EducationIcon name="arrow" size={16} /></button>
   </section>
-  <aside className="payment-summary"><p className="eyebrow">ÖDEME ÖZETİ</p><h2>5’i Bir Arada</h2><div className="education-summary-facts"><span>5 modül · 45 ders</span><span>41 saat video</span><span>12 ay erişim</span><span>Katılım sertifikası</span></div><dl><div><dt>Eğitim bedeli</dt><dd>9.000 TL</dd></div><div><dt>İndirim</dt><dd>0 TL</dd></div><div className="total"><dt>Toplam</dt><dd>9.000 TL</dd></div></dl><button>İndirim kodu ekle</button><p>Fatura bilgilerinizi ödeme tamamlanmadan önce düzenleyebilirsiniz.</p></aside></div>;
+  <aside className="payment-summary"><p className="eyebrow">ÖDEME ÖZETİ</p><h2>5’i Bir Arada</h2><div className="education-summary-facts"><span>5 modül · 45 ders</span><span>41 saat video</span><span>12 ay erişim</span><span>Katılım sertifikası</span></div><dl><div><dt>Eğitim bedeli</dt><dd>9.000 TL</dd></div><div><dt>İndirim</dt><dd>{discountState === "success" ? "−900 TL" : "0 TL"}</dd></div><div className="total"><dt>Toplam</dt><dd>{discountState === "success" ? "8.100 TL" : "9.000 TL"}</dd></div></dl><p>Fatura bilgilerinizi ödeme tamamlanmadan önce düzenleyebilirsiniz.</p></aside></div>;
 }
 
 function EducationMessages() {
@@ -78,4 +94,3 @@ function EducationMessages() {
 function LockedContent({ kind, onPayment }: { kind: "content" | "invoice"; onPayment: () => void }) {
   return <section className="education-locked"><span><EducationIcon name={kind === "content" ? "play" : "file"} size={25} /></span><h2>{kind === "content" ? "Eğitim içerikleri ödeme sonrasında açılacak" : "Faturanız ödeme sonrasında hazırlanacak"}</h2><p>{kind === "content" ? "Ödemeniz onaylandığında dersler ve dokümanlar otomatik olarak erişiminize açılır." : "Ödeme tamamlandığında PDF faturanız bu bölümde yer alır."}</p><button onClick={onPayment}>Ödemeye git <EducationIcon name="arrow" size={16} /></button></section>;
 }
-
