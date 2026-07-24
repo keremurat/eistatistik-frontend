@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 type IconName = "arrow" | "bell" | "book" | "calendar" | "check" | "chevron" | "clock" | "file" | "home" | "message" | "plus" | "search" | "spark";
 
@@ -46,7 +47,7 @@ export default function Home() {
       <a className="skip-link" href="#main-content">İçeriğe geç</a>
       <header className="topbar">
         <Link className="brand" href="/" aria-label="Eİstatistik ana sayfa">
-          <span className="brand-mark"><span /></span><span>e<span>i</span>statistik</span>
+          <Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority />
         </Link>
         <nav className="main-nav" aria-label="Ana navigasyon">
           <a className="active" href="#"><Icon name="home" size={17} />Genel bakış</a>

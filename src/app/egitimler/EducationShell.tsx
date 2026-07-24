@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 
 export type EducationIconName =
@@ -32,7 +33,7 @@ export function EducationShell({ children }: { children: React.ReactNode }) {
   return <div className="app-shell">
     <a className="skip-link" href="#main-content">İçeriğe geç</a>
     <header className="topbar">
-      <Link className="brand" href="/" aria-label="Eİstatistik ana sayfa"><span className="brand-mark"><span /></span><span>e<span>i</span>statistik</span></Link>
+      <Link className="brand" href="/" aria-label="Eİstatistik ana sayfa"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority /></Link>
       <nav className="main-nav" aria-label="Ana navigasyon">
         <Link href="/"><EducationIcon name="home" size={17} />Genel bakış</Link>
         <Link href="/siparislerim"><EducationIcon name="file" size={17} />Siparişlerim</Link>
@@ -57,4 +58,3 @@ export function EducationShell({ children }: { children: React.ReactNode }) {
     <button className="support-button" aria-label="Destek"><EducationIcon name="message" /><span>Destek</span></button>
   </div>;
 }
-

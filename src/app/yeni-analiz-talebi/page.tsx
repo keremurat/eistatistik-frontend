@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useMemo, useState } from "react";
 
 type Category = "all" | "analysis" | "consulting" | "presentation" | "other";
@@ -139,7 +140,7 @@ export default function NewRequestPage() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <Link className="brand" href="/"><span className="brand-mark"><span /></span><span>e<span>i</span>statistik</span></Link>
+        <Link className="brand" href="/" aria-label="Eİstatistik ana sayfa"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority /></Link>
         <nav className="main-nav">
           <Link href="/"><Icon name="home" size={17} />Genel bakış</Link>
           <Link href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
