@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { ProfileMenu } from "../components/ProfileMenu";
 
 type Category = "all" | "analysis" | "consulting" | "presentation" | "other";
 type IconName = "arrow" | "back" | "bell" | "book" | "chart" | "check" | "clock" | "file" | "home" | "invoice" | "message" | "people" | "phone" | "plus" | "search" | "spark" | "target";
@@ -35,6 +36,7 @@ const services = [
     id: "statistical-analysis",
     category: "analysis" as const,
     icon: "chart" as IconName,
+    illustration: "/service-illustrations/statistical-analysis-v2.png",
     eyebrow: "ANALİZ VE ARAŞTIRMA",
     title: "İstatistiksel veri analizi",
     description: "Tez, makale veya araştırmanızdaki veriler analiz edilir; sonuçlar akademik standartlara uygun şekilde raporlanır.",
@@ -45,6 +47,7 @@ const services = [
     id: "power-analysis",
     category: "analysis" as const,
     icon: "target" as IconName,
+    illustration: "/service-illustrations/power-analysis-v2.png",
     eyebrow: "ANALİZ VE ARAŞTIRMA",
     title: "Power ve örneklem analizi",
     description: "Araştırmanız için gerekli örneklem büyüklüğü veya mevcut çalışmanızın istatistiksel gücü hesaplanır.",
@@ -55,6 +58,7 @@ const services = [
     id: "mentoring",
     category: "consulting" as const,
     icon: "people" as IconName,
+    illustration: "/service-illustrations/mentoring-v2.png",
     eyebrow: "DANIŞMANLIK",
     title: "Online mentörlük",
     description: "Analiz yöntemi, bulguların yorumlanması veya akademik süreçle ilgili uzmanla birebir çevrim içi çalışın.",
@@ -65,6 +69,7 @@ const services = [
     id: "graphical-abstract",
     category: "presentation" as const,
     icon: "spark" as IconName,
+    illustration: "/service-illustrations/graphical-abstract-v2.png",
     eyebrow: "AKADEMİK SUNUM",
     title: "Graphical abstract",
     description: "Çalışmanızın yöntemini ve temel bulgularını dergi standartlarına uygun tek bir görsel anlatıma dönüştürün.",
@@ -75,6 +80,7 @@ const services = [
     id: "proforma-invoice",
     category: "other" as const,
     icon: "invoice" as IconName,
+    illustration: "/service-illustrations/proforma-invoice-v2.png",
     eyebrow: "FİNANSAL BELGE",
     title: "Proforma fatura",
     description: "Kurum, proje veya bütçe onayı süreçleriniz için hizmet kapsamını ve ücret bilgisini içeren proforma fatura talep edin.",
@@ -85,6 +91,7 @@ const services = [
     id: "academic-mobile-app",
     category: "other" as const,
     icon: "phone" as IconName,
+    illustration: "/service-illustrations/academic-mobile-app-v2.png",
     eyebrow: "DİJİTAL ÜRÜN",
     title: "Akademik mobil uygulama",
     description: "Akademik çalışmalarınıza yönelik mobil uygulama ihtiyacınızı paylaşın; kapsam ve geliştirme planı birlikte oluşturulsun.",
@@ -122,6 +129,14 @@ export default function NewRequestPage() {
   const [purpose, setPurpose] = useState("");
   const [dataStatus, setDataStatus] = useState("");
   const [notes, setNotes] = useState("");
+
+  useEffect(() => {
+    const requestedService = new URLSearchParams(window.location.search).get("service");
+    if (requestedService && services.some((service) => service.id === requestedService)) {
+      const selectionTask = window.setTimeout(() => setSelected(requestedService), 0);
+      return () => window.clearTimeout(selectionTask);
+    }
+  }, []);
   const [files, setFiles] = useState<string[]>([]);
   const [reporting, setReporting] = useState("");
   const [delivery, setDelivery] = useState("");
@@ -140,14 +155,14 @@ export default function NewRequestPage() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <Link className="brand" href="/" aria-label="Eİstatistik ana sayfa"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority /></Link>
+        <Link className="brand" href="/dashboard" aria-label="Eİstatistik ana sayfa"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority /></Link>
         <nav className="main-nav">
-          <Link href="/"><Icon name="home" size={17} />Genel bakış</Link>
+          <Link href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
           <Link href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
           <Link href="/egitimler"><Icon name="book" size={17} />Eğitimlerim</Link>
           <a className="active" href="#"><Icon name="spark" size={17} />Hizmetler</a>
         </nav>
-        <div className="top-actions"><a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a><button className="icon-button" aria-label="Bildirimler"><Icon name="bell" /><span className="notification-dot">2</span></button><button className="profile-button"><span className="avatar">KM</span><span className="profile-copy"><strong>Kerem Murat</strong><small>Müşteri hesabı</small></span><span>⌄</span></button></div>
+        <div className="top-actions"><a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a><button className="icon-button" aria-label="Bildirimler"><Icon name="bell" /><span className="notification-dot">2</span></button><ProfileMenu /></div>
       </header>
 
       <main className="request-page">
@@ -158,7 +173,7 @@ export default function NewRequestPage() {
 
         {step === 1 && <><RequestHero step={1} title="Nasıl yardımcı olabiliriz?" description="İhtiyacınıza en uygun hizmeti seçin. Sonraki adımda çalışmanızın ayrıntılarını birlikte netleştireceğiz." />
           <nav className="service-categories" aria-label="Hizmet kategorileri">{categories.map(item => <button key={item.key} className={category === item.key ? "active" : ""} onClick={() => setCategory(item.key)}>{item.label}</button>)}</nav>
-          <section className="service-grid">{visibleServices.map(service => <article key={service.id} className={`service-card ${selected === service.id ? "selected" : ""}`}><button className="service-select-overlay" onClick={() => setSelected(service.id)} aria-label={`${service.title} hizmetini seç`} /><div className="service-card-top"><span className="service-icon"><Icon name={service.icon} size={24} /></span><span className="selection-mark">{selected === service.id ? <Icon name="check" size={15} /> : ""}</span></div><p className="eyebrow">{service.eyebrow}</p><h2>{service.title}</h2><p className="service-description">{service.description}</p><div className="service-fit">{service.fit}</div><ul>{service.outputs.map(output => <li key={output}><Icon name="check" size={13} />{output}</li>)}</ul><div className="service-card-action"><span>{selected === service.id ? "Seçildi" : "Bu hizmeti seç"}</span><Icon name="arrow" size={16} /></div></article>)}</section>
+          <section className="service-grid">{visibleServices.map(service => <article key={service.id} className={`service-card ${selected === service.id ? "selected" : ""}`}><button className="service-select-overlay" onClick={() => setSelected(service.id)} aria-label={`${service.title} hizmetini seç`} /><div className="service-illustration"><Image src={service.illustration} alt="" fill sizes="(max-width: 760px) 100vw, 50vw" /><span className="selection-mark">{selected === service.id ? <Icon name="check" size={15} /> : ""}</span></div><p className="eyebrow">{service.eyebrow}</p><h2>{service.title}</h2><p className="service-description">{service.description}</p><div className="service-fit">{service.fit}</div><ul>{service.outputs.map(output => <li key={output}><Icon name="check" size={13} />{output}</li>)}</ul><div className="service-card-action"><span>{selected === service.id ? "Seçildi" : "Bu hizmeti seç"}</span><Icon name="arrow" size={16} /></div></article>)}</section>
           <section className="guidance-panel"><span className="guidance-icon"><Icon name="message" size={23} /></span><div><p className="eyebrow light">KARAR VEREMEDİNİZ Mİ?</p><h2>Çalışmanızı kısaca anlatın, doğru hizmeti birlikte belirleyelim.</h2><p>Uzman ekibimiz talebinizi inceleyip sizi uygun hizmete yönlendirsin.</p></div><button>Yönlendirme iste <Icon name="arrow" size={16} /></button></section>
           <ActionBar service={selectedService} label="Çalışma bilgilerine devam et" disabled={!selectedService} onNext={() => goTo(2)} /></>}
 

@@ -1,196 +1,211 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
-type IconName = "arrow" | "bell" | "book" | "calendar" | "check" | "chevron" | "clock" | "file" | "home" | "message" | "plus" | "search" | "spark";
+type IconName = "arrow" | "eye" | "eyeOff" | "lock" | "mail" | "shield" | "user";
+type LegalDocument = "membership" | "kvkk";
 
-function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
+function AuthIcon({ name, size = 18 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, React.ReactNode> = {
     arrow: <><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>,
-    bell: <><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" /><path d="M10 21h4" /></>,
-    book: <><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v16H6.5A2.5 2.5 0 0 0 4 21.5z" /><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v16h4.5a2.5 2.5 0 0 1 2.5 2.5z" /></>,
-    calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>,
-    check: <path d="m5 12 4 4L19 6" />,
-    chevron: <path d="m9 18 6-6-6-6" />,
-    clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
-    file: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M8 13h8M8 17h5" /></>,
-    home: <><path d="m3 11 9-8 9 8" /><path d="M5 10v11h14V10M9 21v-7h6v7" /></>,
-    message: <path d="M21 12a8 8 0 0 1-9 8 9 9 0 0 1-4-.9L3 21l1.9-5A9 9 0 1 1 21 12Z" />,
-    plus: <path d="M12 5v14M5 12h14" />,
-    search: <><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></>,
-    spark: <><path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4z" /><path d="m19 15 .7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7z" /></>,
+    eye: <><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" /></>,
+    eyeOff: <><path d="m3 3 18 18" /><path d="M10.6 6.2A10.7 10.7 0 0 1 12 6c6.5 0 10 6 10 6a15 15 0 0 1-2.2 2.8M6.2 6.2C3.4 8 2 12 2 12s3.5 6 10 6a10 10 0 0 0 4.1-.8" /></>,
+    lock: <><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
+    mail: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></>,
+    shield: <><path d="M12 22s8-3 8-10V5l-8-3-8 3v7c0 7 8 10 8 10Z" /><path d="m9 12 2 2 4-4" /></>,
+    user: <><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
 
-const calendarDays = [
-  { day: 29, muted: true }, { day: 30, muted: true }, { day: 1 }, { day: 2 }, { day: 3 }, { day: 4 }, { day: 5 },
-  { day: 6 }, { day: 7 }, { day: 8 }, { day: 9 }, { day: 10 }, { day: 11 }, { day: 12 }, { day: 13 }, { day: 14 },
-  { day: 15 }, { day: 16 }, { day: 17 }, { day: 18 }, { day: 19 }, { day: 20 }, { day: 21 }, { day: 22 },
-  { day: 23, event: "message" }, { day: 24, event: "meeting" }, { day: 25 }, { day: 26 }, { day: 27 }, { day: 28 },
-  { day: 29 }, { day: 30, event: "meeting" }, { day: 31 }, { day: 1, muted: true }, { day: 2, muted: true },
-];
+export default function AuthPage() {
+  const router = useRouter();
+  const [mode, setMode] = useState<"login" | "register">("login");
+  const [hasNavigated, setHasNavigated] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [login, setLogin] = useState({ email: "", password: "" });
+  const [register, setRegister] = useState({ firstName: "", lastName: "", email: "", password: "", confirm: "" });
+  const [membershipAccepted, setMembershipAccepted] = useState(false);
+  const [kvkkAccepted, setKvkkAccepted] = useState(false);
+  const [legalDocument, setLegalDocument] = useState<LegalDocument | null>(null);
+  const logoClickCount = useRef(0);
+  const logoClickTimer = useRef<number | null>(null);
+  const isRegister = mode === "register";
 
-const analyses = [
-  { code: "SA260723002", name: "Yüksek lisans tezi veri analizi", status: "Görüşme bugün", next: "14:30 · Google Meet", progress: 82, action: "Görüşmeye katıl" },
-  { code: "SA260721001", name: "Regresyon analizi ve raporlama", status: "Analiz hazırlanıyor", next: "Tahmini teslim · 29 Temmuz", progress: 58, action: "Süreci görüntüle" },
-  { code: "DS260723008", name: "Güç analizi danışmanlığı", status: "Onayınız bekleniyor", next: "Ücret teklifini inceleyin", progress: 24, action: "Teklifi incele" },
-];
+  function handleLogoClick() {
+    logoClickCount.current += 1;
+    if (logoClickTimer.current) window.clearTimeout(logoClickTimer.current);
 
-export default function Home() {
-  const [selectedDay, setSelectedDay] = useState(24);
+    if (logoClickCount.current >= 5) {
+      logoClickCount.current = 0;
+      router.push("/dashboard");
+      return;
+    }
 
-  return (
-    <div className="app-shell">
-      <a className="skip-link" href="#main-content">İçeriğe geç</a>
-      <header className="topbar">
-        <Link className="brand" href="/" aria-label="Eİstatistik ana sayfa">
-          <Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority />
-        </Link>
-        <nav className="main-nav" aria-label="Ana navigasyon">
-          <a className="active" href="#"><Icon name="home" size={17} />Genel bakış</a>
-          <Link href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
-          <Link href="/egitimler"><Icon name="book" size={17} />Eğitimlerim</Link>
-          <a href="#"><Icon name="spark" size={17} />Hizmetler</a>
-        </nav>
-        <div className="top-actions">
-          <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç">
-            <Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} />
-          </a>
-          <button className="icon-button" aria-label="Bildirimler"><Icon name="bell" /><span className="notification-dot">2</span></button>
-          <button className="profile-button" aria-label="Profil menüsünü aç">
-            <span className="avatar">KM</span><span className="profile-copy"><strong>Kerem Murat</strong><small>Müşteri hesabı</small></span><span>⌄</span>
-          </button>
+    logoClickTimer.current = window.setTimeout(() => {
+      logoClickCount.current = 0;
+    }, 2500);
+  }
+
+  function changeMode(next: "login" | "register") {
+    if (next === mode) return;
+    setHasNavigated(true);
+    setMode(next);
+    setSubmitted(false);
+    setShowPassword(false);
+  }
+
+  function handleLogin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitted(true);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email) || login.password.length < 6) return;
+    setLoading(true);
+    window.setTimeout(() => router.push("/dashboard"), 650);
+  }
+
+  function handleRegister(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitted(true);
+    const valid = register.firstName.trim() && register.lastName.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(register.email) && register.password.length >= 6 && register.password === register.confirm && membershipAccepted && kvkkAccepted;
+    if (!valid) return;
+    setLoading(true);
+    window.setTimeout(() => router.push("/dashboard"), 650);
+  }
+
+  return <main className="auth-page">
+    <section className="auth-card">
+      <aside className={`auth-brand-panel ${hasNavigated ? (isRegister ? "move-right" : "move-left") : isRegister ? "at-right" : ""}`}>
+        <span className="auth-brand-art" aria-hidden="true" />
+        <button className="auth-logo-shortcut" type="button" onClick={handleLogoClick} aria-label="Eİstatistik">
+          <Image className="auth-logo-white" src="/Beyaz e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority />
+        </button>
+        <div className="auth-brand-copy">
+          <p>ANALİZ · EĞİTİM · DANIŞMANLIK</p>
+          <h1>{isRegister ? <>Çalışma alanınızı<br /><em>bugün oluşturun.</em></> : <>Akademik sürecinize<br /><em>hoş geldiniz.</em></>}</h1>
+          <span>{isRegister ? "Analizlerinizi, görüşmelerinizi ve eğitimlerinizi tek hesap üzerinden yönetin." : "Siparişlerinizi takip edin, uzmanınızla görüşün ve eğitimlerinize devam edin."}</span>
         </div>
-      </header>
+        <div className="auth-security"><span><AuthIcon name="shield" size={21} /></span><div><strong>Güvenli müşteri alanı</strong><small>Verileriniz şifreli bağlantıyla korunur.</small></div></div>
+      </aside>
 
-      <main id="main-content" className="dashboard">
-        <section className="daily-brief">
-          <div className="brief-copy">
-            <p className="eyebrow light">CUMA · 24 TEMMUZ 2026</p>
-            <h1>Günaydın, Kerem.</h1>
-            <p>Bugün <strong>14:30’da bir görüşmeniz</strong> var. Bir teklif de onayınızı bekliyor.</p>
-          </div>
-          <div className="brief-stats" aria-label="Günlük hesap özeti">
-            <div><strong>3</strong><span>aktif analiz</span></div>
-            <div><strong>1</strong><span>bekleyen işlem</span></div>
-            <div><strong>2</strong><span>yaklaşan görüşme</span></div>
-          </div>
-          <Link className="primary-button" href="/yeni-analiz-talebi"><Icon name="plus" size={18} />Yeni analiz talebi</Link>
-        </section>
+      <section className={`auth-form-area ${isRegister ? "show-register" : ""}`}>
+        <div className="auth-form-inner">
+          {!isRegister ? <>
+            <header className="auth-login-header"><h2>Tekrar<br /><span>hoş geldiniz.</span></h2><p>Hesabınıza giriş yapın ve çalışmalarınıza devam edin.</p></header>
+            <form className="auth-login-form" onSubmit={handleLogin} noValidate>
+              <AuthField icon="mail" type="email" placeholder="E-posta adresi" value={login.email} onChange={value => setLogin(current => ({ ...current, email: value }))} invalid={submitted && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email)} error="Geçerli bir e-posta adresi girin." />
+              <AuthField icon="lock" type={showPassword ? "text" : "password"} placeholder="Şifre" value={login.password} onChange={value => setLogin(current => ({ ...current, password: value }))} invalid={submitted && login.password.length < 6} error="Şifreniz en az 6 karakter olmalı." action={<button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}><AuthIcon name={showPassword ? "eyeOff" : "eye"} size={16} /></button>} />
+              <div className="auth-form-options"><label><input type="checkbox" defaultChecked />Beni hatırla</label><a href="mailto:destek@eistatistik.com?subject=Şifre yenileme">Şifremi unuttum</a></div>
+              <button className="auth-primary-button" disabled={loading}>{loading ? <span className="login-loader" /> : <>Giriş yap <AuthIcon name="arrow" size={16} /></>}</button>
+            </form>
+            <div className="auth-form-footer">
+              <div className="auth-divider"><span>veya</span></div>
+              <button className="auth-google" type="button"><GoogleIcon />Google ile devam et</button>
+              <p className="auth-switch-copy">Hesabınız yok mu? <button onClick={() => changeMode("register")}>Hemen kaydolun</button></p>
+            </div>
+          </> : <>
+            <header className="auth-register-header"><h2>Hesap<br /><span>oluşturun.</span></h2><p>Birkaç adımda Eİstatistik çalışma alanınıza katılın.</p></header>
+            <form className="auth-register-form" onSubmit={handleRegister} noValidate>
+              <div className="auth-field-row">
+                <AuthField icon="user" placeholder="Ad" value={register.firstName} onChange={value => setRegister(current => ({ ...current, firstName: value }))} invalid={submitted && !register.firstName.trim()} />
+                <AuthField icon="user" placeholder="Soyad" value={register.lastName} onChange={value => setRegister(current => ({ ...current, lastName: value }))} invalid={submitted && !register.lastName.trim()} />
+              </div>
+              <AuthField icon="mail" type="email" placeholder="E-posta adresi" value={register.email} onChange={value => setRegister(current => ({ ...current, email: value }))} invalid={submitted && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(register.email)} />
+              <div className="auth-field-row">
+                <AuthField icon="lock" type="password" placeholder="Şifre" value={register.password} onChange={value => setRegister(current => ({ ...current, password: value }))} invalid={submitted && register.password.length < 6} />
+                <AuthField icon="lock" type="password" placeholder="Şifre tekrar" value={register.confirm} onChange={value => setRegister(current => ({ ...current, confirm: value }))} invalid={submitted && register.password !== register.confirm} />
+              </div>
+              <div className="auth-legal-consents">
+                <button type="button" className={submitted && !membershipAccepted ? "invalid" : ""} onClick={() => setLegalDocument("membership")}><span className={membershipAccepted ? "accepted" : ""}>{membershipAccepted ? "✓" : ""}</span><strong><u>Üyelik Sözleşmesi</u> şartlarını okudum ve kabul ediyorum.</strong></button>
+                <button type="button" className={submitted && !kvkkAccepted ? "invalid" : ""} onClick={() => setLegalDocument("kvkk")}><span className={kvkkAccepted ? "accepted" : ""}>{kvkkAccepted ? "✓" : ""}</span><strong><u>KVKK Aydınlatma Metni</u>’ni okudum ve kabul ediyorum.</strong></button>
+              </div>
+              <button className="auth-primary-button" disabled={loading}>{loading ? <span className="login-loader" /> : <>Kayıt ol <AuthIcon name="arrow" size={16} /></>}</button>
+            </form>
+            <div className="auth-form-footer">
+              <div className="auth-divider"><span>veya</span></div>
+              <button className="auth-google" type="button"><GoogleIcon />Google ile kayıt ol</button>
+              <p className="auth-switch-copy register">Zaten hesabınız var mı? <button onClick={() => changeMode("login")}>Giriş yapın</button></p>
+            </div>
+          </>}
+        </div>
+      </section>
+    </section>
+    <p className="auth-page-note">© 2026 Eİstatistik · Güvenli müşteri platformu</p>
+    {legalDocument && <LegalModal key={legalDocument} document={legalDocument} onClose={() => setLegalDocument(null)} onAccept={() => {
+      if (legalDocument === "membership") {
+        setMembershipAccepted(true);
+        setLegalDocument("kvkk");
+      } else {
+        setKvkkAccepted(true);
+        setLegalDocument(null);
+      }
+    }} />}
+  </main>;
+}
 
-        <section className="focus-grid">
-          <section className="today-panel">
-            <div className="section-title">
-              <div><p className="eyebrow">GÜNLÜK AKIŞ</p><h2>Bugün</h2></div>
-              <span className="date-chip">24 Tem</span>
-            </div>
-            <div className="agenda">
-              <article className="agenda-item featured">
-                <div className="agenda-time"><strong>14:30</strong><span>45 dk.</span></div>
-                <span className="agenda-line" />
-                <div className="agenda-copy">
-                  <span className="type-label">GÖRÜŞME</span>
-                  <h3>Ek analiz değerlendirmesi</h3>
-                  <p>Yüksek lisans tezi veri analizi</p>
-                  <div className="agenda-meta"><span>Google Meet</span><span>Dr. Naci Yılmaz</span></div>
-                </div>
-                <button>Görüşmeye katıl <Icon name="arrow" size={16} /></button>
-              </article>
-              <article className="agenda-item">
-                <div className="agenda-time"><strong>Bugün</strong><span>23:59</span></div>
-                <span className="agenda-line amber" />
-                <div className="agenda-copy">
-                  <span className="type-label amber-text">ONAY BEKLİYOR</span>
-                  <h3>Ücret teklifini inceleyin</h3>
-                  <p>Güç analizi danışmanlığı · DS260723008</p>
-                </div>
-                <button className="quiet-button">Teklifi incele <Icon name="arrow" size={16} /></button>
-              </article>
-              <article className="agenda-item subtle">
-                <div className="agenda-time"><strong>Yeni</strong><span>09:18</span></div>
-                <span className="agenda-line neutral" />
-                <div className="agenda-copy">
-                  <span className="type-label neutral-text">UZMAN MESAJI</span>
-                  <h3>Veri dosyanız incelendi</h3>
-                  <p>Uzmanınız kısa bir açıklama ekledi.</p>
-                </div>
-                <button className="quiet-button">Mesajı aç <Icon name="arrow" size={16} /></button>
-              </article>
-            </div>
-          </section>
+function AuthField({ icon, type = "text", placeholder, value, onChange, invalid = false, error, action }: { icon: IconName; type?: string; placeholder: string; value: string; onChange: (value: string) => void; invalid?: boolean; error?: string; action?: React.ReactNode }) {
+  return <label className={`auth-field ${invalid ? "invalid" : ""}`}><div><AuthIcon name={icon} size={16} /><input type={type} placeholder={placeholder} value={value} onChange={event => onChange(event.target.value)} autoComplete={type === "email" ? "email" : type === "password" ? "current-password" : "off"} aria-invalid={invalid} />{action}</div>{invalid && error && <small>{error}</small>}</label>;
+}
 
-          <section id="calendar" className="calendar-panel">
-            <div className="section-title">
-              <div><p className="eyebrow">PROGRAMINIZ</p><h2>Temmuz 2026</h2></div>
-              <div className="calendar-nav"><button aria-label="Önceki ay">‹</button><button aria-label="Sonraki ay">›</button></div>
-            </div>
-            <div className="weekdays">{["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"].map(day => <span key={day}>{day}</span>)}</div>
-            <div className="calendar-grid">
-              {calendarDays.map((item, index) => (
-                <button
-                  key={`${item.day}-${index}`}
-                  className={`${item.muted ? "muted" : ""} ${selectedDay === item.day && !item.muted ? "selected" : ""} ${item.event ? `has-event ${item.event}` : ""}`}
-                  onClick={() => !item.muted && setSelectedDay(item.day)}
-                  aria-label={`${item.day} Temmuz${item.event ? ", etkinlik var" : ""}`}
-                >{item.day}</button>
-              ))}
-            </div>
-            <div className="calendar-detail">
-              <div><span className="detail-date">24</span><span><strong>Cuma</strong><small>Temmuz 2026</small></span></div>
-              <div className="detail-event"><span /><div><strong>14:30 · Ek analiz görüşmesi</strong><small>Google Meet · 45 dakika</small></div></div>
-            </div>
-            <a className="text-link" href="#">Tüm takvimi görüntüle <Icon name="arrow" size={16} /></a>
-          </section>
-        </section>
+function GoogleIcon() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.6 12.2c0-.8-.1-1.5-.2-2.2H12v4.3h5.9a5 5 0 0 1-2.2 3.3v2.8h3.6c2.1-2 3.3-4.8 3.3-8.2Z" /><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.8c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.2V17A11 11 0 0 0 12 23Z" /><path fill="#FBBC05" d="M5.8 14.1a6.6 6.6 0 0 1 0-4.2V7.1H2.2A11 11 0 0 0 1 12c0 1.8.4 3.5 1.2 4.9l3.6-2.8Z" /><path fill="#EA4335" d="M12 5.4c1.6 0 3.1.5 4.2 1.6l3.2-3.1A10.6 10.6 0 0 0 12 1a11 11 0 0 0-9.8 6.1l3.6 2.8c.9-2.6 3.3-4.5 6.2-4.5Z" /></svg>;
+}
 
-        <section id="analyses" className="analyses-section">
-          <div className="section-title wide-title">
-            <div><p className="eyebrow">ÇALIŞMA ALANI</p><h2>Aktif analizler</h2></div>
-            <Link className="text-link" href="/siparislerim">Tüm siparişler <Icon name="arrow" size={16} /></Link>
-          </div>
-          <div className="analysis-table">
-            <div className="table-head"><span>Analiz</span><span>Mevcut durum</span><span>İlerleme</span><span>Sonraki adım</span></div>
-            {analyses.map((item) => (
-              <article className="analysis-row" key={item.code}>
-                <div className="analysis-name"><span className="file-icon"><Icon name="file" size={18} /></span><span><strong>{item.name}</strong><small>{item.code}</small></span></div>
-                <div className="status-cell"><span className={item.progress < 30 ? "status-mark amber" : "status-mark"} /><span><strong>{item.status}</strong><small>{item.next}</small></span></div>
-                <div className="progress-cell"><div><span style={{ width: `${item.progress}%` }} /></div><small>{item.progress}%</small></div>
-                <button className="row-action">{item.action}<Icon name="chevron" size={16} /></button>
-              </article>
-            ))}
-          </div>
-        </section>
+function LegalModal({ document, onClose, onAccept }: { document: LegalDocument; onClose: () => void; onAccept: () => void }) {
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [reachedEnd, setReachedEnd] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const title = document === "membership" ? "Üyelik Sözleşmesi" : "KVKK Aydınlatma Metni";
 
-        <section className="lower-grid">
-          <section id="learning" className="learning-panel">
-            <div className="learning-visual"><span className="ring ring-one" /><span className="ring ring-two" /><span className="play">▶</span></div>
-            <div className="learning-copy">
-              <p className="eyebrow light">EĞİTİMİM</p>
-              <h2>SPSS ile uygulamalı veri analizi</h2>
-              <p>Sonraki ders · Çoklu regresyon ve model kontrolü</p>
-              <div className="learning-progress"><span /></div>
-              <small>8 / 12 ders tamamlandı · %64</small>
-            </div>
-            <button>Eğitime devam et <Icon name="arrow" size={16} /></button>
-          </section>
+  useEffect(() => {
+    let active = true;
+    fetch(document === "membership" ? "/legal/uyelik-sozlesmesi.txt" : "/legal/kvkk-aydinlatma-metni.txt")
+      .then(response => response.text())
+      .then(text => { if (active) { setContent(text); setLoading(false); } });
+    return () => { active = false; };
+  }, [document]);
 
-          <section className="updates-panel">
-            <div className="section-title">
-              <div><p className="eyebrow">HESABINIZ</p><h2>Son güncellemeler</h2></div>
-              <button className="mark-read">Tümünü okundu işaretle</button>
-            </div>
-            <div className="updates-list">
-              <a href="#"><span className="update-icon"><Icon name="file" size={17} /></span><span><strong>Raporunuza yeni dosya eklendi</strong><small>Regresyon analizi · 18 dakika önce</small></span><Icon name="chevron" size={16} /></a>
-              <a href="#"><span className="update-icon"><Icon name="calendar" size={17} /></span><span><strong>Görüşmeniz planlandı</strong><small>24 Temmuz, 14:30 · Dün</small></span><Icon name="chevron" size={16} /></a>
-              <a href="#"><span className="update-icon"><Icon name="message" size={17} /></span><span><strong>Uzmanınız mesaj gönderdi</strong><small>Yüksek lisans tezi analizi · Dün</small></span><Icon name="chevron" size={16} /></a>
-            </div>
-          </section>
-        </section>
-      </main>
-      <button className="support-button" aria-label="Destek"><Icon name="message" /><span>Destek</span></button>
-    </div>
-  );
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) { if (event.key === "Escape") onClose(); }
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [onClose]);
+
+  function handleScroll() {
+    const element = contentRef.current;
+    if (!element) return;
+
+    const scrollableDistance = element.scrollHeight - element.clientHeight;
+    const progress = scrollableDistance <= 0
+      ? 100
+      : Math.min(100, Math.max(0, (element.scrollTop / scrollableDistance) * 100));
+
+    setScrollProgress(progress);
+    if (progress >= 99 || scrollableDistance <= 0) setReachedEnd(true);
+  }
+
+  return <div className="legal-modal-backdrop" role="presentation">
+    <section className="legal-modal" role="dialog" aria-modal="true" aria-labelledby="legal-modal-title">
+      <header><div><p>ONAYLANMASI GEREKEN BELGE</p><h2 id="legal-modal-title">{title}</h2></div><button onClick={onClose} aria-label="Pencereyi kapat">×</button></header>
+      <div
+        className="legal-scroll-progress"
+        role="progressbar"
+        aria-label={`${title} okuma ilerlemesi`}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(scrollProgress)}
+      >
+        <span style={{ width: `${scrollProgress}%` }} />
+      </div>
+      <div className="legal-document-content" ref={contentRef} onScroll={handleScroll} tabIndex={0}>
+        {loading ? <div className="legal-loading"><span className="login-loader" />Belge yükleniyor…</div> : <pre>{content}</pre>}
+      </div>
+      <footer><div><AuthIcon name="shield" size={18} /><span>{reachedEnd ? "Belgenin sonuna ulaştınız." : "Kabul edebilmek için belgenin sonuna kadar ilerleyin."}</span></div><div><button className="legal-cancel" onClick={onClose}>Vazgeç</button><button className="legal-accept" onClick={onAccept} disabled={!reachedEnd}>Okudum ve kabul ediyorum</button></div></footer>
+    </section>
+  </div>;
 }

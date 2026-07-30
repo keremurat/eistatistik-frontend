@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { ProfileMenu } from "../components/ProfileMenu";
 
 type IconName = "arrow" | "bell" | "book" | "calendar" | "chevron" | "clock" | "file" | "home" | "message" | "more" | "plus" | "search" | "spark";
 type OrderStatus = "action" | "active" | "completed" | "cancelled";
@@ -83,9 +84,9 @@ export default function OrdersPage() {
     <div className="app-shell">
       <a className="skip-link" href="#orders-content">İçeriğe geç</a>
       <header className="topbar">
-        <Link className="brand" href="/" aria-label="Eİstatistik ana sayfa"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority /></Link>
+        <Link className="brand" href="/dashboard" aria-label="Eİstatistik ana sayfa"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority /></Link>
         <nav className="main-nav" aria-label="Ana navigasyon">
-          <Link href="/"><Icon name="home" size={17} />Genel bakış</Link>
+          <Link href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
           <Link className="active" href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
           <Link href="/egitimler"><Icon name="book" size={17} />Eğitimlerim</Link>
           <a href="#"><Icon name="spark" size={17} />Hizmetler</a>
@@ -95,7 +96,7 @@ export default function OrdersPage() {
             <Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} />
           </a>
           <button className="icon-button" aria-label="Bildirimler"><Icon name="bell" /><span className="notification-dot">2</span></button>
-          <button className="profile-button" aria-label="Profil menüsünü aç"><span className="avatar">KM</span><span className="profile-copy"><strong>Kerem Murat</strong><small>Müşteri hesabı</small></span><span>⌄</span></button>
+          <ProfileMenu />
         </div>
       </header>
 

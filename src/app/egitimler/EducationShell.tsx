@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { ProfileMenu } from "../components/ProfileMenu";
 
 export type EducationIconName =
   | "arrow" | "bell" | "book" | "card" | "check" | "clock" | "file"
@@ -33,9 +34,9 @@ export function EducationShell({ children }: { children: React.ReactNode }) {
   return <div className="app-shell">
     <a className="skip-link" href="#main-content">İçeriğe geç</a>
     <header className="topbar">
-      <Link className="brand" href="/" aria-label="Eİstatistik ana sayfa"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority /></Link>
+      <Link className="brand" href="/dashboard" aria-label="Eİstatistik ana sayfa"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority /></Link>
       <nav className="main-nav" aria-label="Ana navigasyon">
-        <Link href="/"><EducationIcon name="home" size={17} />Genel bakış</Link>
+        <Link href="/dashboard"><EducationIcon name="home" size={17} />Genel bakış</Link>
         <Link href="/siparislerim"><EducationIcon name="file" size={17} />Siparişlerim</Link>
         <div className="education-nav-wrap">
           <button className="active education-nav-trigger" onClick={() => setMenuOpen(value => !value)} aria-expanded={menuOpen}>
@@ -53,7 +54,7 @@ export function EducationShell({ children }: { children: React.ReactNode }) {
           <Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} />
         </a>
         <button className="icon-button" aria-label="Bildirimler"><EducationIcon name="bell" /><span className="notification-dot">2</span></button>
-        <button className="profile-button"><span className="avatar">KM</span><span className="profile-copy"><strong>Kerem Murat</strong><small>Müşteri hesabı</small></span><span>⌄</span></button>
+        <ProfileMenu />
       </div>
     </header>
     <main id="main-content" className="education-page">{children}</main>
