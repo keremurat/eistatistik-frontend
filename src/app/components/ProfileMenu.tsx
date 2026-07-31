@@ -57,7 +57,7 @@ export function ProfileMenu() {
             <span><strong>Kerem Murat</strong><small>kerem@example.com</small></span>
           </div>
           <nav aria-label="Profil işlemleri">
-            <Link href="/dashboard#ayarlar" role="menuitem" onClick={() => setOpen(false)}><ProfileMenuIcon name="settings" /><span>Ayarlar</span></Link>
+            <Link href="/ayarlar" role="menuitem" onClick={() => setOpen(false)}><ProfileMenuIcon name="settings" /><span>Ayarlar</span></Link>
             <Link href="/siparislerim" role="menuitem" onClick={() => setOpen(false)}><ProfileMenuIcon name="orders" /><span>Siparişler</span></Link>
             <Link className="logout" href="/" role="menuitem" onClick={() => setOpen(false)}><ProfileMenuIcon name="logout" /><span>Çıkış yap</span></Link>
           </nav>

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { findDemoAccount } from "./lib/demoAccounts";
 
 type IconName = "arrow" | "eye" | "eyeOff" | "lock" | "mail" | "shield" | "user";
 type LegalDocument = "membership" | "kvkk";
@@ -28,6 +29,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [login, setLogin] = useState({ email: "", password: "" });
+  const [authError, setAuthError] = useState("");
   const [register, setRegister] = useState({ firstName: "", lastName: "", email: "", password: "", confirm: "" });
   const [membershipAccepted, setMembershipAccepted] = useState(false);
   const [kvkkAccepted, setKvkkAccepted] = useState(false);
@@ -57,14 +59,21 @@ export default function AuthPage() {
     setMode(next);
     setSubmitted(false);
     setShowPassword(false);
+    setAuthError("");
   }
 
   function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitted(true);
+    setAuthError("");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email) || login.password.length < 6) return;
+    const account = findDemoAccount(login.email, login.password);
+    if (!account) {
+      setAuthError("E-posta veya şifre hatalı. Demo: musteri@eistatistik.com · admin@eistatistik.com · şifre: password123");
+      return;
+    }
     setLoading(true);
-    window.setTimeout(() => router.push("/dashboard"), 650);
+    window.setTimeout(() => router.push(account.landing), 650);
   }
 
   function handleRegister(event: FormEvent<HTMLFormElement>) {
@@ -96,8 +105,9 @@ export default function AuthPage() {
           {!isRegister ? <>
             <header className="auth-login-header"><h2>Tekrar<br /><span>hoş geldiniz.</span></h2><p>Hesabınıza giriş yapın ve çalışmalarınıza devam edin.</p></header>
             <form className="auth-login-form" onSubmit={handleLogin} noValidate>
-              <AuthField icon="mail" type="email" placeholder="E-posta adresi" value={login.email} onChange={value => setLogin(current => ({ ...current, email: value }))} invalid={submitted && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email)} error="Geçerli bir e-posta adresi girin." />
-              <AuthField icon="lock" type={showPassword ? "text" : "password"} placeholder="Şifre" value={login.password} onChange={value => setLogin(current => ({ ...current, password: value }))} invalid={submitted && login.password.length < 6} error="Şifreniz en az 6 karakter olmalı." action={<button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}><AuthIcon name={showPassword ? "eyeOff" : "eye"} size={16} /></button>} />
+              <AuthField icon="mail" type="email" placeholder="E-posta adresi" value={login.email} onChange={value => { setLogin(current => ({ ...current, email: value })); setAuthError(""); }} invalid={submitted && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email)} error="Geçerli bir e-posta adresi girin." />
+              <AuthField icon="lock" type={showPassword ? "text" : "password"} placeholder="Şifre" value={login.password} onChange={value => { setLogin(current => ({ ...current, password: value })); setAuthError(""); }} invalid={submitted && login.password.length < 6} error="Şifreniz en az 6 karakter olmalı." action={<button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}><AuthIcon name={showPassword ? "eyeOff" : "eye"} size={16} /></button>} />
+              {authError && <p className="auth-error" role="alert">{authError}</p>}
               <div className="auth-form-options"><label><input type="checkbox" defaultChecked />Beni hatırla</label><a href="mailto:destek@eistatistik.com?subject=Şifre yenileme">Şifremi unuttum</a></div>
               <button className="auth-primary-button" disabled={loading}>{loading ? <span className="login-loader" /> : <>Giriş yap <AuthIcon name="arrow" size={16} /></>}</button>
             </form>

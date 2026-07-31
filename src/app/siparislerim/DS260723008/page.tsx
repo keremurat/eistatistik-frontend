@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ProfileMenu } from "../../components/ProfileMenu";
+import { NotificationMenu } from "../../components/NotificationMenu";
 import { useEffect, useRef, useState } from "react";
 
 type Section = "overview" | "files" | "payment" | "messages" | "deliveries" | "appointments" | "invoice" | "extra";
@@ -116,7 +117,7 @@ export default function OrderDetailPage() {
           <Link className="active" href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
           <Link href="/egitimler"><Icon name="book" size={17} />Eğitimlerim</Link><Link href="/yeni-analiz-talebi"><Icon name="spark" size={17} />Hizmetler</Link>
         </nav>
-        <div className="top-actions"><a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a><button className="icon-button" aria-label="Bildirimler"><Icon name="bell" /><span className="notification-dot">2</span></button><ProfileMenu /></div>
+        <div className="top-actions"><a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a><NotificationMenu /><ProfileMenu /></div>
       </header>
 
       <main className="detail-page">

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ProfileMenu } from "../components/ProfileMenu";
+import { NotificationMenu } from "../components/NotificationMenu";
 
 type IconName = "arrow" | "bell" | "book" | "calendar" | "chevron" | "clock" | "file" | "home" | "message" | "more" | "plus" | "search" | "spark";
 type OrderStatus = "action" | "active" | "completed" | "cancelled";
@@ -95,7 +96,7 @@ export default function OrdersPage() {
           <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç">
             <Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} />
           </a>
-          <button className="icon-button" aria-label="Bildirimler"><Icon name="bell" /><span className="notification-dot">2</span></button>
+          <NotificationMenu />
           <ProfileMenu />
         </div>
       </header>

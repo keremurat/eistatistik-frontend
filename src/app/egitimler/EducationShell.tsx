@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { ProfileMenu } from "../components/ProfileMenu";
+import { NotificationMenu } from "../components/NotificationMenu";
 
 export type EducationIconName =
   | "arrow" | "bell" | "book" | "card" | "check" | "clock" | "file"
@@ -53,7 +54,7 @@ export function EducationShell({ children }: { children: React.ReactNode }) {
         <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç">
           <Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} />
         </a>
-        <button className="icon-button" aria-label="Bildirimler"><EducationIcon name="bell" /><span className="notification-dot">2</span></button>
+        <NotificationMenu />
         <ProfileMenu />
       </div>
     </header>

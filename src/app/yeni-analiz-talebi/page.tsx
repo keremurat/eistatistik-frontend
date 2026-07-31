@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { ProfileMenu } from "../components/ProfileMenu";
+import { NotificationMenu } from "../components/NotificationMenu";
 
 type Category = "all" | "analysis" | "consulting" | "presentation" | "other";
 type IconName = "arrow" | "back" | "bell" | "book" | "chart" | "check" | "clock" | "file" | "home" | "invoice" | "message" | "people" | "phone" | "plus" | "search" | "spark" | "target";
@@ -206,7 +207,7 @@ export default function NewRequestPage() {
           <Link href="/egitimler"><Icon name="book" size={17} />Eğitimlerim</Link>
           <a className="active" href="#"><Icon name="spark" size={17} />Hizmetler</a>
         </nav>
-        <div className="top-actions"><a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a><button className="icon-button" aria-label="Bildirimler"><Icon name="bell" /><span className="notification-dot">2</span></button><ProfileMenu /></div>
+        <div className="top-actions"><a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a><NotificationMenu /><ProfileMenu /></div>
       </header>
 
       <main className="request-page">
