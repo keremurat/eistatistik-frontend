@@ -7,6 +7,8 @@ import { ProfileMenu } from "../components/ProfileMenu";
 
 type Category = "all" | "analysis" | "consulting" | "presentation" | "other";
 type IconName = "arrow" | "back" | "bell" | "book" | "chart" | "check" | "clock" | "file" | "home" | "invoice" | "message" | "people" | "phone" | "plus" | "search" | "spark" | "target";
+type RequestFile = { id: string; name: string; size: number };
+type RequestFileKind = "excel" | "word" | "powerpoint" | "spss" | "pdf" | "image" | "video" | "archive" | "generic";
 
 function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, React.ReactNode> = {
@@ -29,6 +31,38 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
     target: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1" fill="currentColor" /></>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+}
+
+function RequestFileIcon({ filename }: { filename: string }) {
+  const extension = filename.split(".").pop()?.toLocaleLowerCase("tr") ?? "";
+  const kind: RequestFileKind =
+    ["xls", "xlsx", "csv"].includes(extension) ? "excel" :
+    ["doc", "docx", "rtf"].includes(extension) ? "word" :
+    ["ppt", "pptx", "pps", "ppsx"].includes(extension) ? "powerpoint" :
+    ["sav", "zsav", "sps", "spv", "spo"].includes(extension) ? "spss" :
+    extension === "pdf" ? "pdf" :
+    ["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(extension) ? "image" :
+    ["mp4", "mov", "avi", "webm"].includes(extension) ? "video" :
+    ["zip", "rar", "7z", "tar", "gz"].includes(extension) ? "archive" :
+    "generic";
+  const paths: Partial<Record<RequestFileKind, string>> = {
+    excel: "/icons/icons8-microsoft-excel-2019-48.png",
+    word: "/icons/icons8-microsoft-word-2025-48.png",
+    powerpoint: "/icons/icons8-microsoft-powerpoint-2025-48.png",
+    spss: "/icons/icons8-spss-50.png",
+    pdf: "/icons/icons8-pdf-48.png",
+    image: "/icons/icons8-image-file-50.png",
+    video: "/icons/icons8-video-48.png",
+    archive: "/icons/icons8-winrar-48.png",
+  };
+  const path = paths[kind];
+  if (path) return <span className="request-file-icon"><Image src={path} alt="" width={48} height={48} /></span>;
+  return <span className="request-file-icon generic"><Icon name="file" size={23} /></span>;
+}
+
+function formatRequestFileSize(bytes: number) {
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toLocaleString("tr-TR", { maximumFractionDigits: 1 })} MB`;
 }
 
 const services = [
@@ -127,7 +161,6 @@ export default function NewRequestPage() {
   const [studyType, setStudyType] = useState("");
   const [academicLevel, setAcademicLevel] = useState("");
   const [purpose, setPurpose] = useState("");
-  const [dataStatus, setDataStatus] = useState("");
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
@@ -137,19 +170,30 @@ export default function NewRequestPage() {
       return () => window.clearTimeout(selectionTask);
     }
   }, []);
-  const [files, setFiles] = useState<string[]>([]);
+  const [files, setFiles] = useState<RequestFile[]>([]);
   const [reporting, setReporting] = useState("");
   const [delivery, setDelivery] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const visibleServices = useMemo(() => services.filter(service => category === "all" || service.category === category), [category]);
   const selectedService = services.find(service => service.id === selected);
-  const workInfoValid = title.trim() && studyType && academicLevel && purpose.trim() && dataStatus;
+  const workInfoValid = title.trim() && studyType && academicLevel && purpose.trim();
   const deliveryValid = reporting && delivery;
   const stepLabels = ["Hizmet", "Çalışma bilgileri", "Dosyalar", "Teslimat", "Onay"];
 
   function goTo(nextStep: number) {
     setStep(nextStep);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function addFiles(selectedFiles: File[]) {
+    const validFiles = selectedFiles.filter((file) => file.size <= 25 * 1024 * 1024);
+    setFiles((current) => {
+      const currentIds = new Set(current.map((file) => file.id));
+      const additions = validFiles
+        .map((file) => ({ id: `${file.name}-${file.size}-${file.lastModified}`, name: file.name, size: file.size }))
+        .filter((file) => !currentIds.has(file.id));
+      return [...current, ...additions];
+    });
   }
 
   return (
@@ -183,14 +227,13 @@ export default function NewRequestPage() {
             <ChoiceField label="Çalışma türü *" options={["Tez", "Makale", "Araştırma projesi", "Diğer"]} value={studyType} onChange={setStudyType} />
             <ChoiceField label="Akademik seviye *" options={["Lisans", "Yüksek lisans", "Doktora", "Akademik yayın"]} value={academicLevel} onChange={setAcademicLevel} />
             <div className="form-field"><label>Çalışmanızın konusu ve amacı *</label><textarea value={purpose} onChange={e => setPurpose(e.target.value)} placeholder="Araştırma sorunuzu, amacınızı ve analizden beklentinizi kısaca açıklayın." /></div>
-            <ChoiceField label="Verileriniz hangi aşamada? *" options={["Hazır", "Toplanıyor", "Henüz toplanmadı"]} value={dataStatus} onChange={setDataStatus} />
             <div className="form-field"><label>Eklemek istediğiniz notlar</label><textarea className="small" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Uzmanımızın bilmesi gereken ek bir detay varsa yazabilirsiniz." /></div>
-          </section><RequestSummary service={selectedService} items={[["Çalışma türü", studyType], ["Akademik seviye", academicLevel], ["Veri durumu", dataStatus]]} /></div>
+          </section><RequestSummary service={selectedService} items={[["Çalışma türü", studyType], ["Akademik seviye", academicLevel]]} /></div>
           <StepActions back={() => goTo(1)} next={() => goTo(3)} disabled={!workInfoValid} label="Dosyalara devam et" /></>}
 
         {step === 3 && <><RequestHero step={3} title="Dosyalarınızı ekleyin" description="Analizde kullanılacak veri ve dokümanları yükleyin. Daha sonra Sipariş Kalemleri bölümünden yeni dosya ekleyebilirsiniz." />
-          <div className="request-form-layout"><section className="request-form-panel file-step"><div className="request-upload"><Icon name="file" size={26} /><h2>Dosyalarınızı buraya bırakın</h2><p>Excel, Word, PDF, SPSS veya ZIP · Dosya başına en fazla 25 MB</p><label><input type="file" multiple onChange={e => setFiles(Array.from(e.target.files ?? []).map(file => file.name))} />Dosya seç</label></div>
-            {files.length > 0 && <div className="request-file-list">{files.map(file => <div key={file}><span className="doc-badge">DOSYA</span><strong>{file}</strong><button onClick={() => setFiles(files.filter(item => item !== file))}>Kaldır</button></div>)}</div>}
+          <div className="request-form-layout"><section className="request-form-panel file-step"><div className="request-upload" onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); addFiles(Array.from(event.dataTransfer.files)); }}><Icon name="file" size={26} /><h2>Dosyalarınızı buraya bırakın</h2><p>Office, SPSS, PDF, görsel, video veya arşiv · Dosya başına en fazla 25 MB</p><label><input type="file" multiple accept=".doc,.docx,.rtf,.xls,.xlsx,.csv,.ppt,.pptx,.pps,.ppsx,.sav,.zsav,.sps,.spv,.spo,.pdf,.jpg,.jpeg,.png,.gif,.webp,.svg,.mp4,.mov,.avi,.webm,.zip,.rar,.7z,.tar,.gz" onChange={(event) => { addFiles(Array.from(event.target.files ?? [])); event.target.value = ""; }} />{files.length ? "Başka dosya ekle" : "Dosya seç"}</label></div>
+            {files.length > 0 && <div className="request-file-list">{files.map(file => <div key={file.id}><RequestFileIcon filename={file.name} /><span><strong>{file.name}</strong><small>{formatRequestFileSize(file.size)}</small></span><button type="button" onClick={() => setFiles((current) => current.filter((item) => item.id !== file.id))}>Kaldır</button></div>)}</div>}
             <p className="privacy-note">Kişisel veya hassas veri içeren dosyaları yüklemeden önce anonimleştirmenizi öneririz.</p>
           </section><RequestSummary service={selectedService} items={[["Çalışma", title], ["Yüklenen dosya", `${files.length} dosya`]]} /></div>
           <StepActions back={() => goTo(2)} next={() => goTo(4)} disabled={false} label={files.length ? "Teslimata devam et" : "Dosya eklemeden devam et"} /></>}
@@ -202,7 +245,7 @@ export default function NewRequestPage() {
           <StepActions back={() => goTo(3)} next={() => goTo(5)} disabled={!deliveryValid} label="Talebi gözden geçir" /></>}
 
         {step === 5 && !submitted && <><RequestHero step={5} title="Talebinizi gözden geçirin" description="Göndermeden önce hizmet, çalışma ve teslimat bilgilerinizi son kez kontrol edin." />
-          <section className="review-panel"><ReviewSection title="Hizmet" edit={() => goTo(1)} rows={[["Seçilen hizmet", selectedService?.title ?? ""]]}/><ReviewSection title="Çalışma bilgileri" edit={() => goTo(2)} rows={[["Çalışmanın kısa adı",title],["Çalışma türü",studyType],["Akademik seviye",academicLevel],["Veri durumu",dataStatus],["Çalışmanın amacı",purpose]]}/><ReviewSection title="Dosyalar" edit={() => goTo(3)} rows={[["Yüklenen dosya",files.length ? `${files.length} dosya` : "Dosya yüklenmedi"]]}/><ReviewSection title="Teslimat" edit={() => goTo(4)} rows={[["Raporlama kapsamı",reportingLabels[reporting]],["Teslimat süresi",deliveryLabels[delivery]],["Ücretlendirme","Uzman değerlendirmesi sonrasında bildirilecek"]]}/></section>
+          <section className="review-panel"><ReviewSection title="Hizmet" edit={() => goTo(1)} rows={[["Seçilen hizmet", selectedService?.title ?? ""]]}/><ReviewSection title="Çalışma bilgileri" edit={() => goTo(2)} rows={[["Çalışmanın kısa adı",title],["Çalışma türü",studyType],["Akademik seviye",academicLevel],["Çalışmanın amacı",purpose]]}/><ReviewFilesSection files={files} edit={() => goTo(3)} /><ReviewSection title="Teslimat" edit={() => goTo(4)} rows={[["Raporlama kapsamı",reportingLabels[reporting]],["Teslimat süresi",deliveryLabels[delivery]],["Ücretlendirme","Uzman değerlendirmesi sonrasında bildirilecek"]]}/></section>
           <StepActions back={() => goTo(4)} next={() => setSubmitted(true)} disabled={false} label="Analiz talebini gönder" /></>}
 
         {step === 5 && submitted && <section className="request-success"><span><Icon name="check" size={28} /></span><p className="eyebrow">TALEBİNİZ ALINDI</p><h1>Uzman değerlendirmesi başladı</h1><p>Talebiniz incelendikten sonra kapsam, ücret ve teslim tarihi hesabınıza bildirilecek.</p><div><strong>Geçici talep numarası</strong><code>TA260724018</code></div><Link href="/siparislerim">Siparişlerime git <Icon name="arrow" size={16} /></Link></section>}
@@ -238,4 +281,11 @@ function SelectionCards({ title, options, value, onChange }: { title: string; op
 
 function ReviewSection({ title, rows, edit }: { title:string; rows:string[][]; edit:()=>void }) {
   return <article><header><h2>{title}</h2><button onClick={edit}>Düzenle</button></header><dl>{rows.map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl></article>;
+}
+
+function ReviewFilesSection({ files, edit }: { files: RequestFile[]; edit: () => void }) {
+  return <article className="review-files-section">
+    <header><div><h2>Dosyalar</h2><span>{files.length} dosya</span></div><button onClick={edit}>Düzenle</button></header>
+    {files.length ? <div className="review-file-list">{files.map((file) => <div key={file.id}><RequestFileIcon filename={file.name} /><span><strong>{file.name}</strong><small>{formatRequestFileSize(file.size)}</small></span></div>)}</div> : <p className="review-file-empty">Bu talebe dosya eklenmedi.</p>}
+  </article>;
 }

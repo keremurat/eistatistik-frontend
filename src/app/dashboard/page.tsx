@@ -80,22 +80,32 @@ const analyses = [
 export default function DashboardPage() {
   const [activeService, setActiveService] = useState(0);
   const [showcasePaused, setShowcasePaused] = useState(false);
+  const [slideDirection, setSlideDirection] = useState<"next" | "previous">("next");
   const service = showcasedServices[activeService];
 
   useEffect(() => {
     if (showcasePaused) return;
     const rotation = window.setInterval(() => {
+      setSlideDirection("next");
       setActiveService((current) => (current + 1) % showcasedServices.length);
     }, 5500);
     return () => window.clearInterval(rotation);
   }, [showcasePaused]);
 
   const showPreviousService = () => {
+    setSlideDirection("previous");
     setActiveService((current) => (current - 1 + showcasedServices.length) % showcasedServices.length);
   };
 
   const showNextService = () => {
+    setSlideDirection("next");
     setActiveService((current) => (current + 1) % showcasedServices.length);
+  };
+
+  const selectShowcaseService = (index: number) => {
+    if (index === activeService) return;
+    setSlideDirection(index > activeService ? "next" : "previous");
+    setActiveService(index);
   };
 
   return (
@@ -120,7 +130,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main id="main-content" className="dashboard">
+      <main id="main-content" className="dashboard dashboard-home">
         <section className="daily-brief">
           <div className="brief-copy">
             <p className="eyebrow light">CUMA · 24 TEMMUZ 2026</p>
@@ -194,7 +204,7 @@ export default function DashboardPage() {
                 <button onClick={showNextService} aria-label="Sonraki hizmet">›</button>
               </div>
             </div>
-            <article className="showcase-card" key={service.id} aria-live="polite">
+            <article className={`showcase-card slide-${slideDirection}`} key={service.id} aria-live="polite">
               <div className="showcase-visual">
                 <Image src={service.image} alt="" fill sizes="(max-width: 1080px) 80vw, 34vw" />
               </div>
@@ -213,7 +223,7 @@ export default function DashboardPage() {
                   <button
                     key={item.id}
                     className={index === activeService ? "active" : ""}
-                    onClick={() => setActiveService(index)}
+                    onClick={() => selectShowcaseService(index)}
                     aria-label={`${index + 1}. hizmet: ${item.title}`}
                     aria-current={index === activeService ? "true" : undefined}
                   />

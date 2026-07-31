@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EducationIcon, EducationShell } from "../EducationShell";
 
 type Tab = "overview" | "curriculum" | "payment" | "messages" | "content" | "invoice";
@@ -12,6 +12,15 @@ const modules = [
   ["03", "Ölçek geliştirme ve yapısal eşitlik modellemesi", "9 ders · 8 saat"],
   ["04", "G*Power ile güç analizi", "6 ders · 5 saat"],
   ["05", "Meta analiz eğitimi", "12 ders · 12 saat"],
+];
+
+const educationSections: { key: Tab; label: string; icon: "book" | "file" | "card" | "message" | "play"; badge?: string; locked?: boolean }[] = [
+  { key: "overview", label: "Genel bakış", icon: "book" },
+  { key: "curriculum", label: "Müfredat", icon: "file", badge: "5" },
+  { key: "payment", label: "Ödeme", icon: "card", badge: "1" },
+  { key: "messages", label: "Yazışmalar", icon: "message" },
+  { key: "content", label: "Eğitim içerikleri", icon: "play", locked: true },
+  { key: "invoice", label: "Fatura", icon: "file", locked: true },
 ];
 
 export default function EducationDetailPage() {
@@ -26,14 +35,21 @@ export default function EducationDetailPage() {
       <aside><span>PAKET FİYATI</span><strong>9.000 TL</strong><small>Ödeme bekleniyor</small><button onClick={() => setTab("payment")}>Ödemeyi tamamla <EducationIcon name="arrow" size={16} /></button></aside>
     </section>
     <section className="course-workspace">
-      <nav className="course-tabs" aria-label="Eğitim bölümleri">
-        <button className={tab === "overview" ? "active" : ""} onClick={() => setTab("overview")}>Eğitim detayları</button>
-        <button className={tab === "curriculum" ? "active" : ""} onClick={() => setTab("curriculum")}>Müfredat <span>5</span></button>
-        <button className={tab === "payment" ? "active" : ""} onClick={() => setTab("payment")}>Ödeme</button>
-        <button className={tab === "messages" ? "active" : ""} onClick={() => setTab("messages")}>Yazışma</button>
-        <button className={tab === "content" ? "active" : ""} onClick={() => setTab("content")}>Eğitim içerikleri <i>⌁</i></button>
-        <button className={tab === "invoice" ? "active" : ""} onClick={() => setTab("invoice")}>Fatura <i>⌁</i></button>
-      </nav>
+      <aside className="course-sidebar">
+        <p>EĞİTİM MENÜSÜ</p>
+        <nav aria-label="Eğitim bölümleri">
+          {educationSections.map((item) => <button key={item.key} className={tab === item.key ? "active" : ""} onClick={() => setTab(item.key)}>
+            <EducationIcon name={item.icon} size={17} />
+            <span>{item.label}</span>
+            {item.badge && <i>{item.badge}</i>}
+            {item.locked && <small aria-label="Ödeme sonrasında açılır">Kilitli</small>}
+          </button>)}
+        </nav>
+        <div className="course-access-note">
+          <EducationIcon name="clock" size={18} />
+          <div><strong>12 ay erişim</strong><span>Ödeme onayından sonra başlar</span></div>
+        </div>
+      </aside>
       <div className="course-tab-content">
         {tab === "overview" && <Overview onCurriculum={() => setTab("curriculum")} />}
         {tab === "curriculum" && <Curriculum />}
@@ -63,32 +79,99 @@ function EducationPayment({ method, onMethod }: { method: "transfer" | "card"; o
   const [discountOpen, setDiscountOpen] = useState(false);
   const [discountCode, setDiscountCode] = useState("");
   const [discountState, setDiscountState] = useState<"idle" | "success" | "error">("idle");
+  const [agreementOpen, setAgreementOpen] = useState(false);
+  const [transferAccepted, setTransferAccepted] = useState(false);
+  const [cardAccepted, setCardAccepted] = useState(false);
+  const agreementAccepted = method === "transfer" ? transferAccepted : cardAccepted;
   const applyDiscount = () => setDiscountState(discountCode.trim().toLocaleUpperCase("tr") === "EISTATISTIK10" ? "success" : "error");
 
   return <div className="payment-layout education-payment"><section className="detail-panel payment-main">
-    <header className="detail-panel-heading"><div><p className="eyebrow">GÜVENLİ ÖDEME</p><h2>Ödeme yönteminizi seçin</h2><span>Analiz siparişlerinizde kullandığınız güvenli ödeme adımları.</span></div></header>
-    <div className={`discount-entry ${discountOpen ? "open" : ""}`}>
-      <button className="discount-trigger" onClick={() => setDiscountOpen(value => !value)} aria-expanded={discountOpen}>
-        <span>%</span><strong>İndirim kodu gir</strong><i>{discountOpen ? "−" : "+"}</i>
-      </button>
-      {discountOpen && <div className="discount-form">
-        <label><span>İndirim kodu</span><input value={discountCode} onChange={event => { setDiscountCode(event.target.value); setDiscountState("idle"); }} placeholder="Kodunuzu yazın" /></label>
-        <button onClick={applyDiscount} disabled={!discountCode.trim()}>Uygula</button>
-        {discountState === "success" && <p className="success">Kod uygulandı. Ödeme özetiniz güncellendi.</p>}
-        {discountState === "error" && <p className="error">Bu kod geçerli değil. Kodu kontrol edip tekrar deneyin.</p>}
-      </div>}
-    </div>
-    <div className="payment-tabs"><button className={method === "transfer" ? "active" : ""} onClick={() => onMethod("transfer")}><EducationIcon name="file" size={18} />Havale / EFT</button><button className={method === "card" ? "active" : ""} onClick={() => onMethod("card")}><EducationIcon name="card" size={18} />Kredi kartı</button></div>
-    {method === "transfer" ? <div className="bank-box"><h3>Banka bilgileri</h3><dl><div><dt>Alıcı</dt><dd>Eİstatistik Akademi Ltd. Şti.</dd></div><div><dt>Banka</dt><dd>Akbank · 19 Mayıs Üniversitesi Şubesi</dd></div><div><dt>IBAN</dt><dd><code>TR64 0004 6013 8988 8000 0143 16</code><button>Kopyala</button></dd></div><div><dt>Açıklama</dt><dd><code>TR260723010</code><button>Kopyala</button></dd></div></dl><div className="receipt-upload"><EducationIcon name="file" size={22} /><div><strong>Dekont yükle</strong><span>PDF, JPG veya PNG · En fazla 10 MB</span></div><button>Dosya seç</button></div></div>
-    : <div className="card-form"><label>Kart üzerindeki isim<input placeholder="Ad Soyad" /></label><label>Kart numarası<input placeholder="0000 0000 0000 0000" /></label><div><label>Son kullanma<input placeholder="AA / YY" /></label><label>CVV<input placeholder="•••" /></label></div><p>Ödemeniz 3D Secure ile güvenli şekilde tamamlanır.</p></div>}
-    <label className="agreement"><input type="checkbox" />Ön bilgilendirme formunu ve mesafeli satış sözleşmesini okudum, kabul ediyorum.</label>
-    <button className="pay-button">{method === "transfer" ? "Ödeme bildirimini gönder" : `${discountState === "success" ? "8.100" : "9.000"} TL öde`} <EducationIcon name="arrow" size={16} /></button>
+    <header className="detail-panel-heading"><div><p className="eyebrow">GÜVENLİ ÖDEME</p><h2>{method === "transfer" ? "Havale / EFT ile ödeme" : "Kredi kartı ile ödeme"}</h2><span>{method === "transfer" ? "Ödemenizi tamamlayın, ardından dekontunuzu yükleyin." : "Akbank 3D Secure ödeme sayfasına güvenle yönlendirileceksiniz."}</span></div></header>
+    {method === "transfer" ? <div className="bank-box"><h3>Banka bilgileri</h3><dl><div><dt>Adı Soyadı</dt><dd>Naci MURAT</dd></div><div><dt>Banka</dt><dd>Akbank (0046) — 19 Mayıs Üniversitesi Şubesi (01389)</dd></div><div><dt>Hesap No</dt><dd><code>0014316</code></dd></div><div><dt>IBAN</dt><dd><code>TR64 0004 6013 8988 8000 0143 16</code><button>Kopyala</button></dd></div><div><dt>Açıklama</dt><dd><code>TR260723010</code><button>Kopyala</button></dd></div></dl><div className="receipt-upload"><EducationIcon name="file" size={22} /><div><strong>Dekont yükle</strong><span>PDF, JPG veya PNG · En fazla 10 MB</span></div><button>Dosya seç</button></div></div>
+    : <div className="secure-card-redirect"><span><EducationIcon name="card" size={25} /></span><div><p className="eyebrow">AKBANK 3D SECURE</p><h3>Ödemeniz Akbank güvencesiyle tamamlanacak</h3><p>Sonraki ekranda Akbank Ortak Ödeme sayfasına yönlendirileceksiniz. Kart bilgileriniz EİSTATİSTİK tarafından alınmaz veya kaydedilmez.</p></div></div>}
+    <button className={`payment-contract-consent ${agreementAccepted ? "accepted" : ""}`} type="button" onClick={() => setAgreementOpen(true)}>
+      <span>{agreementAccepted ? <EducationIcon name="check" size={15} /> : ""}</span>
+      <strong><u>Sözleşmeyi</u> okudum ve kabul ediyorum.</strong>
+      <i>{agreementAccepted ? "Onaylandı" : "İncele"}</i>
+    </button>
+    <button className="pay-button" disabled={!agreementAccepted}>{method === "transfer" ? "Ödeme bildirimini gönder" : "Kredi Kartı ile Ödeme Yap"} <EducationIcon name="arrow" size={16} /></button>
   </section>
-  <aside className="payment-summary"><p className="eyebrow">ÖDEME ÖZETİ</p><h2>5’i Bir Arada</h2><div className="education-summary-facts"><span>5 modül · 45 ders</span><span>41 saat video</span><span>12 ay erişim</span><span>Katılım sertifikası</span></div><dl><div><dt>Eğitim bedeli</dt><dd>9.000 TL</dd></div><div><dt>İndirim</dt><dd>{discountState === "success" ? "−900 TL" : "0 TL"}</dd></div><div className="total"><dt>Toplam</dt><dd>{discountState === "success" ? "8.100 TL" : "9.000 TL"}</dd></div></dl><p>Fatura bilgilerinizi ödeme tamamlanmadan önce düzenleyebilirsiniz.</p></aside></div>;
+  <aside className="payment-summary"><p className="eyebrow">ÖDEME ÖZETİ</p><h2>5’i Bir Arada</h2><div className="education-summary-facts"><span>5 modül · 45 ders</span><span>41 saat video</span><span>12 ay erişim</span><span>Katılım sertifikası</span></div><dl className="payment-price-lines"><div><dt>Eğitim bedeli</dt><dd>9.000 TL</dd></div><div><dt>İndirim</dt><dd className={discountState === "success" ? "discounted" : ""}>{discountState === "success" ? "−900 TL" : "0 TL"}</dd></div></dl>
+    <div className={`discount-entry summary-discount ${discountOpen ? "open" : ""}`}><button className="discount-trigger" onClick={() => setDiscountOpen(value => !value)} aria-expanded={discountOpen}><span>%</span><strong>İndirim kodu gir</strong><i>{discountOpen ? "−" : "+"}</i></button>{discountOpen && <div className="discount-form"><label><span>İndirim kodu</span><input value={discountCode} onChange={event => { setDiscountCode(event.target.value); setDiscountState("idle"); }} placeholder="Kodunuzu yazın" /></label><button onClick={applyDiscount} disabled={!discountCode.trim()}>Uygula</button>{discountState === "success" && <p className="success">Kod uygulandı.</p>}{discountState === "error" && <p className="error">Kod geçerli değil.</p>}</div>}</div>
+    <dl className="payment-total"><div className="total"><dt>Toplam</dt><dd>{discountState === "success" ? "8.100 TL" : "9.000 TL"}</dd></div></dl>
+    <div className="summary-payment-methods"><p>ÖDEME YÖNTEMİ</p><div className="payment-tabs"><button className={method === "transfer" ? "active" : ""} onClick={() => onMethod("transfer")}><EducationIcon name="file" size={18} /><span>Havale / EFT</span><small>Manuel onay</small></button><button className={method === "card" ? "active" : ""} onClick={() => onMethod("card")}><EducationIcon name="card" size={18} /><span>Kredi kartı</span><small>3D Secure</small></button></div></div>
+    <p>Fatura bilgilerinizi ödeme tamamlanmadan önce düzenleyebilirsiniz.</p></aside>
+    {agreementOpen && <EducationAgreementModal method={method} onClose={() => setAgreementOpen(false)} onAccept={() => { if (method === "transfer") setTransferAccepted(true); else setCardAccepted(true); setAgreementOpen(false); }} />}
+  </div>;
+}
+
+function EducationAgreementModal({ method, onClose, onAccept }: { method: "transfer" | "card"; onClose: () => void; onAccept: () => void }) {
+  const [content, setContent] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [reachedEnd, setReachedEnd] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch("/legal/uyelik-sozlesmesi.txt").then((response) => response.text()).then(setContent);
+  }, []);
+
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [onClose]);
+
+  function handleScroll() {
+    const element = contentRef.current;
+    if (!element) return;
+    const distance = element.scrollHeight - element.clientHeight;
+    const nextProgress = distance <= 0 ? 100 : Math.min(100, (element.scrollTop / distance) * 100);
+    setProgress(nextProgress);
+    if (nextProgress >= 99 || distance <= 0) setReachedEnd(true);
+  }
+
+  return <div className="legal-modal-backdrop" role="presentation"><section className="legal-modal" role="dialog" aria-modal="true" aria-labelledby="education-contract-title">
+    <header><div><p>{method === "transfer" ? "HAVALE / EFT ÖNCESİ ONAY" : "KREDİ KARTI ÖNCESİ ONAY"}</p><h2 id="education-contract-title">Sözleşme ve Kullanım Koşulları</h2></div><button onClick={onClose} aria-label="Pencereyi kapat">×</button></header>
+    <div className="legal-scroll-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}><span style={{ width: `${progress}%` }} /></div>
+    <div className="legal-document-content" ref={contentRef} onScroll={handleScroll} tabIndex={0}>{content ? <pre>{content}</pre> : <div className="legal-loading">Sözleşme yükleniyor…</div>}</div>
+    <footer><div><EducationIcon name="check" size={18} /><span>{reachedEnd ? "Belgenin sonuna ulaştınız." : "Kabul edebilmek için belgenin sonuna kadar ilerleyin."}</span></div><div><button className="legal-cancel" onClick={onClose}>Vazgeç</button><button className="legal-accept" onClick={onAccept} disabled={!reachedEnd}>Okudum ve kabul ediyorum</button></div></footer>
+  </section></div>;
 }
 
 function EducationMessages() {
-  return <section className="education-messages"><header><p className="eyebrow">EĞİTİM DESTEĞİ</p><h2>Program ekibiyle yazışma</h2><p>Bu paket mentörlük desteği içerdiği için sorularınızı buradan iletebilirsiniz.</p></header><div><textarea placeholder="Mesajınızı yazın…" /><button>Gönder <EducationIcon name="arrow" size={15} /></button></div><small>Mesai saatlerinde ortalama 1 saat içinde yanıtlanır.</small></section>;
+  const [message, setMessage] = useState("");
+  const [sentMessages, setSentMessages] = useState<string[]>([]);
+
+  function sendMessage() {
+    const cleanMessage = message.trim();
+    if (!cleanMessage) return;
+    setSentMessages((current) => [...current, cleanMessage]);
+    setMessage("");
+  }
+
+  return <section className="detail-panel messages-panel">
+    <header className="detail-panel-heading"><div><p className="eyebrow">İLETİŞİM VE HAREKETLER</p><h2>Eğitim yazışmaları</h2><span>Mesajlarınız ve eğitiminizle ilgili önemli değişiklikler tek bir kronolojide tutulur.</span></div></header>
+    <div className="message-guidance">
+      <span><EducationIcon name="message" size={19} /></span>
+      <div><strong>Program ekibiyle iletişim</strong><p>Bu alan yalnızca 5’i Bir Arada eğitiminizle ilgili soru ve bilgilendirmeler içindir.</p></div>
+    </div>
+    <div className="message-composer">
+      <label htmlFor="education-message">Mesajınız</label>
+      <textarea id="education-message" value={message} onChange={(event) => setMessage(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) sendMessage(); }} placeholder="Program ekibine mesajınızı yazın…" />
+      <div><button className="send" type="button" onClick={sendMessage} disabled={!message.trim()}>Gönder <EducationIcon name="arrow" size={15} /></button></div>
+    </div>
+    <div className="response-expectation"><EducationIcon name="clock" size={16} /><span><strong>Yanıt süresi:</strong> Mesai saatlerinde ortalama 1 saat.</span></div>
+    <div className="messages-thread">
+      <div className="thread-day"><span>Bugün</span></div>
+      {[...sentMessages].reverse().map((sentMessage, index) => <article className="customer-message sent" key={`${sentMessage}-${index}`}><div><strong>Siz <small>Şimdi</small></strong><p>{sentMessage}</p><span className="message-delivery"><EducationIcon name="check" size={12} />Gönderildi</span></div></article>)}
+      <article className="expert-message"><span>NY</span><div><strong>Dr. Naci Yılmaz <small>09:21</small></strong><p>Merhaba Kerem Bey, eğitiminizle ilgili tüm sorularınızı bu alan üzerinden bize iletebilirsiniz.</p></div></article>
+      <div className="thread-day"><span>23 Temmuz 2026</span></div>
+      <details className="system-event" open>
+        <summary><span className="system-event-marker"><EducationIcon name="check" size={14} /></span><div><small>SİSTEM HAREKETİ</small><strong>Eğitim kaydı oluşturuldu</strong><time>23:09</time></div><i>Ayrıntılar</i></summary>
+        <dl><div><dt>Eğitim</dt><dd>5’i Bir Arada</dd></div><div><dt>Durum</dt><dd>Ödeme bekleniyor</dd></div><div><dt>Erişim süresi</dt><dd>12 ay</dd></div></dl>
+      </details>
+    </div>
+  </section>;
 }
 
 function LockedContent({ kind, onPayment }: { kind: "content" | "invoice"; onPayment: () => void }) {

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ProfileMenu } from "../../components/ProfileMenu";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Section = "overview" | "files" | "payment" | "messages" | "deliveries" | "appointments" | "invoice" | "extra";
 type IconName = "arrow" | "back" | "bell" | "book" | "calendar" | "card" | "check" | "clock" | "copy" | "download" | "file" | "home" | "invoice" | "message" | "plus" | "search" | "spark" | "upload" | "video";
@@ -42,6 +42,64 @@ const navItems: { key: Section; label: string; icon: IconName }[] = [
   { key: "appointments", label: "Randevular", icon: "calendar" },
   { key: "invoice", label: "Fatura", icon: "invoice" },
 ];
+
+type FileKind = "excel" | "word" | "powerpoint" | "spss" | "pdf" | "image" | "video" | "archive" | "generic";
+
+function FileTypeIcon({ filename }: { filename: string }) {
+  const extension = filename.split(".").pop()?.toLocaleLowerCase("tr") ?? "";
+  const kind: FileKind =
+    ["xls", "xlsx", "csv"].includes(extension) ? "excel" :
+    ["doc", "docx", "rtf"].includes(extension) ? "word" :
+    ["ppt", "pptx", "pps", "ppsx"].includes(extension) ? "powerpoint" :
+    ["sav", "zsav", "sps", "spv", "spo"].includes(extension) ? "spss" :
+    extension === "pdf" ? "pdf" :
+    ["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(extension) ? "image" :
+    ["mp4", "mov", "avi", "webm"].includes(extension) ? "video" :
+    ["zip", "rar", "7z", "tar", "gz"].includes(extension) ? "archive" :
+    "generic";
+
+  const labels: Record<FileKind, string> = {
+    excel: "Microsoft Excel",
+    word: "Microsoft Word",
+    powerpoint: "Microsoft PowerPoint",
+    spss: "IBM SPSS",
+    pdf: "PDF",
+    image: "Görsel",
+    video: "Video",
+    archive: "Arşiv",
+    generic: "Dosya",
+  };
+
+  const iconPaths: Partial<Record<FileKind, string>> = {
+    excel: "/icons/icons8-microsoft-excel-2019-48.png",
+    word: "/icons/icons8-microsoft-word-2025-48.png",
+    powerpoint: "/icons/icons8-microsoft-powerpoint-2025-48.png",
+    spss: "/icons/icons8-spss-50.png",
+    pdf: "/icons/icons8-pdf-48.png",
+    image: "/icons/icons8-image-file-50.png",
+    video: "/icons/icons8-video-48.png",
+    archive: "/icons/icons8-winrar-48.png",
+  };
+  const iconPath = iconPaths[kind];
+
+  if (iconPath) {
+    return (
+      <span className="provided-file-icon" aria-label={`${labels[kind]} dosyası`} title={`${labels[kind]} dosyası`}>
+        <Image src={iconPath} alt="" width={50} height={50} />
+      </span>
+    );
+  }
+
+  return (
+    <span className="file-type-icon generic" aria-label="Dosya" title="Dosya">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.45" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path className="file-sheet" d="M6 2.75h8l4 4V21.25H6z" />
+        <path className="file-fold" d="M14 2.75v4h4" />
+        <path d="M9 9h6M9 12h6M9 15h4" />
+      </svg>
+    </span>
+  );
+}
 
 export default function OrderDetailPage() {
   const [section, setSection] = useState<Section>("overview");
@@ -112,45 +170,221 @@ function Overview({ onPayment }: { onPayment: () => void }) {
       <div><dt>Planlanan teslim</dt><dd>Ödeme sonrası belirlenir</dd></div><div><dt>Toplam ücret</dt><dd>5.000 TL</dd></div>
       <div><dt>Ödeme durumu</dt><dd className="warning">Ödeme bekleniyor</dd></div><div><dt>Teslimat yöntemi</dt><dd>Rapor dosyası + videolu anlatım</dd></div>
     </dl></section>
-    <section className="detail-panel"><PanelHeading eyebrow="İLK DOSYALAR" title="Talep sırasında yüklenen dosyalar" /><div className="initial-file"><span className="doc-badge">XLSX</span><div><strong>orneklem_verileri.xlsx</strong><small>1,8 MB · 23 Temmuz 2026</small></div><button><Icon name="download" size={17} />İndir</button></div></section>
+    <section className="detail-panel"><PanelHeading eyebrow="İLK DOSYALAR" title="Talep sırasında yüklenen dosyalar" /><div className="initial-file"><FileTypeIcon filename="orneklem_verileri.xlsx" /><div><strong>orneklem_verileri.xlsx</strong><small>1,8 MB · 23 Temmuz 2026</small></div><button><Icon name="download" size={17} />İndir</button></div></section>
   </div>;
 }
 
 function Files() {
-  return <div className="detail-stack"><section className="detail-panel"><PanelHeading eyebrow="DOSYA PAYLAŞIMI" title="Sipariş Kalemleri" description="Analizde kullanılacak Word ve Excel dosyalarını burada paylaşabilirsiniz." />
-    <div className="file-toolbar"><div><button className="active">Tümü · 2</button><button>Benim yüklediklerim · 1</button><button>Uzman dosyaları · 1</button></div><button className="upload-button"><Icon name="upload" size={16} />Dosya yükle</button></div>
-    <div className="work-files"><article><span className="doc-badge">XLSX</span><div><strong>orneklem_verileri.xlsx</strong><small>Sizin yüklediğiniz · 23 Temmuz · 1,8 MB</small></div><button><Icon name="download" size={17} /></button></article><article><span className="doc-badge word">DOCX</span><div><strong>analiz_plani.docx</strong><small>Uzman tarafından · Bugün · 420 KB</small></div><button><Icon name="download" size={17} /></button></article></div>
-  </section><div className="upload-zone"><Icon name="upload" size={24} /><strong>Dosyanızı buraya bırakın</strong><span>Word veya Excel · En fazla 25 MB</span></div></div>;
+  const [fileFilter, setFileFilter] = useState<"all" | "customer" | "expert">("all");
+  const [workFiles, setWorkFiles] = useState([
+    { name: "orneklem_verileri.xlsx", owner: "customer" as const, meta: "Sizin yüklediğiniz · 23 Temmuz · 1,8 MB" },
+    { name: "analiz_plani.docx", owner: "expert" as const, meta: "Uzman tarafından · Bugün · 420 KB" },
+  ]);
+  const [uploadMessage, setUploadMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const visibleFiles = workFiles.filter((file) => fileFilter === "all" || file.owner === fileFilter);
+  const customerFileCount = workFiles.filter((file) => file.owner === "customer").length;
+  const expertFileCount = workFiles.filter((file) => file.owner === "expert").length;
+
+  function formatFileSize(bytes: number) {
+    if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+    return `${(bytes / (1024 * 1024)).toLocaleString("tr-TR", { maximumFractionDigits: 1 })} MB`;
+  }
+
+  function handleFileSelection(event: React.ChangeEvent<HTMLInputElement>) {
+    const selectedFiles = Array.from(event.target.files ?? []);
+    const acceptedExtensions = [
+      "doc", "docx", "rtf",
+      "xls", "xlsx", "csv",
+      "ppt", "pptx", "pps", "ppsx",
+      "sav", "zsav", "sps", "spv", "spo",
+      "pdf",
+      "jpg", "jpeg", "png", "gif", "webp", "svg",
+      "mp4", "mov", "avi", "webm",
+      "zip", "rar", "7z", "tar", "gz",
+    ];
+    const validFiles = selectedFiles.filter((file) => {
+      const extension = file.name.split(".").pop()?.toLocaleLowerCase("tr") ?? "";
+      return acceptedExtensions.includes(extension) && file.size <= 25 * 1024 * 1024;
+    });
+
+    if (validFiles.length) {
+      setWorkFiles((current) => [
+        ...validFiles.map((file) => ({
+          name: file.name,
+          owner: "customer" as const,
+          meta: `Sizin yüklediğiniz · Şimdi · ${formatFileSize(file.size)}`,
+        })),
+        ...current,
+      ]);
+      setFileFilter("customer");
+      setUploadMessage({ type: "success", text: `${validFiles.length} dosya başarıyla listeye eklendi.` });
+    }
+
+    if (validFiles.length !== selectedFiles.length) {
+      setUploadMessage({ type: "error", text: "Bazı dosyalar desteklenmiyor veya 25 MB sınırını aşıyor." });
+    }
+
+    event.target.value = "";
+  }
+
+  return <div className="detail-stack"><section className="detail-panel"><PanelHeading eyebrow="DOSYA PAYLAŞIMI" title="Sipariş Kalemleri" description="Analizde kullanılacak çalışma, veri, sunum, görsel ve arşiv dosyalarını burada paylaşabilirsiniz." />
+    <div className="file-toolbar"><div role="group" aria-label="Dosyaları filtrele"><button className={fileFilter === "all" ? "active" : ""} onClick={() => setFileFilter("all")} aria-pressed={fileFilter === "all"}>Tümü · {workFiles.length}</button><button className={fileFilter === "customer" ? "active" : ""} onClick={() => setFileFilter("customer")} aria-pressed={fileFilter === "customer"}>Benim yüklediklerim · {customerFileCount}</button><button className={fileFilter === "expert" ? "active" : ""} onClick={() => setFileFilter("expert")} aria-pressed={fileFilter === "expert"}>Uzman dosyaları · {expertFileCount}</button></div><input ref={fileInputRef} className="visually-hidden-file-input" type="file" multiple accept=".doc,.docx,.rtf,.xls,.xlsx,.csv,.ppt,.pptx,.pps,.ppsx,.sav,.zsav,.sps,.spv,.spo,.pdf,.jpg,.jpeg,.png,.gif,.webp,.svg,.mp4,.mov,.avi,.webm,.zip,.rar,.7z,.tar,.gz" onChange={handleFileSelection} /><button className="upload-button" type="button" onClick={() => fileInputRef.current?.click()}><Icon name="upload" size={16} />Dosya yükle</button></div>
+    {uploadMessage && <p className={`file-upload-message ${uploadMessage.type}`} role="status">{uploadMessage.text}</p>}
+    <div className="work-files">{visibleFiles.map((file, index) => <article key={`${file.owner}-${file.name}-${index}`}><FileTypeIcon filename={file.name} /><div><strong>{file.name}</strong><small>{file.meta}</small></div><button aria-label={`${file.name} dosyasını indir`}><Icon name="download" size={17} /></button></article>)}</div>
+  </section><div className="upload-zone"><Icon name="upload" size={24} /><strong>Dosyanızı buraya bırakın</strong><span>Office, SPSS, PDF, görsel, video veya arşiv · En fazla 25 MB</span></div></div>;
 }
 
 function Payment({ method, onMethod }: { method: "transfer" | "card"; onMethod: (value: "transfer" | "card") => void }) {
   const [discountOpen, setDiscountOpen] = useState(false);
   const [discountCode, setDiscountCode] = useState("");
   const [discountState, setDiscountState] = useState<"idle" | "success" | "error">("idle");
+  const [cardAgreementOpen, setCardAgreementOpen] = useState(false);
+  const [cardAgreementAccepted, setCardAgreementAccepted] = useState(false);
+  const [transferAgreementOpen, setTransferAgreementOpen] = useState(false);
+  const [transferAgreementAccepted, setTransferAgreementAccepted] = useState(false);
   const applyDiscount = () => setDiscountState(discountCode.trim().toLocaleUpperCase("tr") === "EISTATISTIK10" ? "success" : "error");
 
-  return <div className="payment-layout"><section className="detail-panel payment-main"><PanelHeading eyebrow="GÜVENLİ ÖDEME" title="Ödeme yönteminizi seçin" />
-    <div className={`discount-entry ${discountOpen ? "open" : ""}`}>
+  return <div className="payment-layout"><section className="detail-panel payment-main"><PanelHeading eyebrow="GÜVENLİ ÖDEME" title={method === "transfer" ? "Havale / EFT ile ödeme" : "Kredi kartı ile ödeme"} description={method === "transfer" ? "Aşağıdaki banka bilgilerini kullanarak ödemenizi tamamlayın ve dekontunuzu yükleyin." : "Kart bilgilerinizi güvenli ödeme alanına girin."} />
+    {method === "transfer" ? <>
+      <div className="bank-box"><h3>Banka bilgileri</h3><dl><div><dt>Adı Soyadı</dt><dd>Naci MURAT</dd></div><div><dt>Banka</dt><dd>Akbank (0046) — 19 Mayıs Üniversitesi Şubesi (01389)</dd></div><div><dt>Hesap No</dt><dd><code>0014316</code></dd></div><div><dt>IBAN</dt><dd><code>TR64 0004 6013 8988 8000 0143 16</code><button><Icon name="copy" size={15} />Kopyala</button></dd></div><div><dt>Açıklama</dt><dd><code>DS260723008</code><button><Icon name="copy" size={15} />Kopyala</button></dd></div></dl><div className="receipt-upload"><Icon name="upload" size={22} /><div><strong>Dekont yükle</strong><span>PDF, JPG veya PNG · En fazla 10 MB</span></div><button>Dosya seç</button></div></div>
+      <button className={`payment-contract-consent ${transferAgreementAccepted ? "accepted" : ""}`} type="button" onClick={() => setTransferAgreementOpen(true)}>
+        <span>{transferAgreementAccepted ? <Icon name="check" size={15} /> : ""}</span>
+        <strong><u>Sözleşmeyi</u> okudum ve kabul ediyorum.</strong>
+        <i>{transferAgreementAccepted ? "Onaylandı" : "İncele"}</i>
+      </button>
+      <button className="pay-button" disabled={!transferAgreementAccepted}>Ödeme bildirimini gönder <Icon name="arrow" size={16} /></button>
+    </> : <>
+      <div className="secure-card-redirect">
+        <span><Icon name="card" size={25} /></span>
+        <div><p className="eyebrow">AKBANK 3D SECURE</p><h3>Ödemeniz Akbank güvencesiyle tamamlanacak</h3><p>Sonraki ekranda 3D güvenlikli Akbank Ortak Ödeme sayfasına yönlendirileceksiniz. Gerekli ve geçerli kart bilgilerini girdikten sonra tekrar EİSTATİSTİK sistemine geri döndürüleceksiniz.</p></div>
+      </div>
+      <button className={`payment-contract-consent ${cardAgreementAccepted ? "accepted" : ""}`} type="button" onClick={() => setCardAgreementOpen(true)}>
+        <span>{cardAgreementAccepted ? <Icon name="check" size={15} /> : ""}</span>
+        <strong><u>Sözleşmeyi</u> okudum ve kabul ediyorum.</strong>
+        <i>{cardAgreementAccepted ? "Onaylandı" : "İncele"}</i>
+      </button>
+      <div className="payment-privacy-note"><Icon name="card" size={17} /><span>Kart bilgileriniz EİSTATİSTİK tarafından alınmaz veya kaydedilmez.</span></div>
+      <button className="pay-button" disabled={!cardAgreementAccepted}>Kredi Kartı ile Ödeme Yap <Icon name="arrow" size={16} /></button>
+    </>}
+  </section><aside className="payment-summary">
+    <p className="eyebrow">ÖDEME ÖZETİ</p>
+    <h2>Güç analizi danışmanlığı</h2>
+    <dl className="payment-price-lines"><div><dt>Hizmet bedeli</dt><dd>5.000 TL</dd></div><div><dt>İndirim</dt><dd className={discountState === "success" ? "discounted" : ""}>{discountState === "success" ? "−500 TL" : "0 TL"}</dd></div></dl>
+    <div className={`discount-entry summary-discount ${discountOpen ? "open" : ""}`}>
       <button className="discount-trigger" onClick={() => setDiscountOpen(value => !value)} aria-expanded={discountOpen}>
         <span>%</span><strong>İndirim kodu gir</strong><i>{discountOpen ? "−" : "+"}</i>
       </button>
       {discountOpen && <div className="discount-form">
         <label><span>İndirim kodu</span><input value={discountCode} onChange={event => { setDiscountCode(event.target.value); setDiscountState("idle"); }} placeholder="Kodunuzu yazın" /></label>
         <button onClick={applyDiscount} disabled={!discountCode.trim()}>Uygula</button>
-        {discountState === "success" && <p className="success">Kod uygulandı. Ödeme özetiniz güncellendi.</p>}
-        {discountState === "error" && <p className="error">Bu kod geçerli değil. Kodu kontrol edip tekrar deneyin.</p>}
+        {discountState === "success" && <p className="success">Kod uygulandı.</p>}
+        {discountState === "error" && <p className="error">Kod geçerli değil.</p>}
       </div>}
     </div>
-    <div className="payment-tabs"><button className={method === "transfer" ? "active" : ""} onClick={() => onMethod("transfer")}><Icon name="invoice" size={18} />Havale / EFT</button><button className={method === "card" ? "active" : ""} onClick={() => onMethod("card")}><Icon name="card" size={18} />Kredi kartı</button></div>
-    {method === "transfer" ? <div className="bank-box"><h3>Banka bilgileri</h3><dl><div><dt>Alıcı</dt><dd>Eİstatistik Akademi Ltd. Şti.</dd></div><div><dt>Banka</dt><dd>Akbank · 19 Mayıs Üniversitesi Şubesi</dd></div><div><dt>IBAN</dt><dd><code>TR64 0004 6013 8988 8000 0143 16</code><button><Icon name="copy" size={15} />Kopyala</button></dd></div><div><dt>Açıklama</dt><dd><code>DS260723008</code><button><Icon name="copy" size={15} />Kopyala</button></dd></div></dl><div className="receipt-upload"><Icon name="upload" size={22} /><div><strong>Dekont yükle</strong><span>PDF, JPG veya PNG · En fazla 10 MB</span></div><button>Dosya seç</button></div></div>
-    : <div className="card-form"><label>Kart üzerindeki isim<input placeholder="Ad Soyad" /></label><label>Kart numarası<input placeholder="0000 0000 0000 0000" /></label><div><label>Son kullanma<input placeholder="AA / YY" /></label><label>CVV<input placeholder="•••" /></label></div><p>Ödemeniz 3D Secure ile güvenli şekilde tamamlanır.</p></div>}
-    <label className="agreement"><input type="checkbox" />Ön bilgilendirme formunu ve mesafeli satış sözleşmesini okudum, kabul ediyorum.</label>
-    <button className="pay-button">{method === "transfer" ? "Ödeme bildirimini gönder" : `${discountState === "success" ? "4.500" : "5.000"} TL öde`} <Icon name="arrow" size={16} /></button>
-  </section><aside className="payment-summary"><p className="eyebrow">ÖDEME ÖZETİ</p><h2>Güç analizi danışmanlığı</h2><dl><div><dt>Hizmet bedeli</dt><dd>5.000 TL</dd></div><div><dt>İndirim</dt><dd>{discountState === "success" ? "−500 TL" : "0 TL"}</dd></div><div className="total"><dt>Toplam</dt><dd>{discountState === "success" ? "4.500 TL" : "5.000 TL"}</dd></div></dl><p>Fatura bilgilerinizi ödeme öncesinde Fatura bölümünden düzenleyebilirsiniz.</p></aside></div>;
+    <dl className="payment-total"><div className="total"><dt>Toplam</dt><dd>{discountState === "success" ? "4.500 TL" : "5.000 TL"}</dd></div></dl>
+    <div className="summary-payment-methods">
+      <p>ÖDEME YÖNTEMİ</p>
+      <div className="payment-tabs"><button className={method === "transfer" ? "active" : ""} onClick={() => onMethod("transfer")}><Icon name="invoice" size={18} /><span>Havale / EFT</span><small>Manuel onay</small></button><button className={method === "card" ? "active" : ""} onClick={() => onMethod("card")}><Icon name="card" size={18} /><span>Kredi kartı</span><small>3D Secure</small></button></div>
+    </div>
+    <p>Fatura bilgilerinizi ödeme öncesinde Fatura bölümünden düzenleyebilirsiniz.</p>
+  </aside>
+  {cardAgreementOpen && <PaymentAgreementModal context="card" onClose={() => setCardAgreementOpen(false)} onAccept={() => { setCardAgreementAccepted(true); setCardAgreementOpen(false); }} />}
+  {transferAgreementOpen && <PaymentAgreementModal context="transfer" onClose={() => setTransferAgreementOpen(false)} onAccept={() => { setTransferAgreementAccepted(true); setTransferAgreementOpen(false); }} />}
+  </div>;
+}
+
+function PaymentAgreementModal({ context, onClose, onAccept }: { context: "card" | "transfer"; onClose: () => void; onAccept: () => void }) {
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [reachedEnd, setReachedEnd] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/legal/uyelik-sozlesmesi.txt")
+      .then((response) => response.text())
+      .then((text) => {
+        if (active) {
+          setContent(text);
+          setLoading(false);
+        }
+      });
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [onClose]);
+
+  function handleScroll() {
+    const element = contentRef.current;
+    if (!element) return;
+    const scrollableDistance = element.scrollHeight - element.clientHeight;
+    const nextProgress = scrollableDistance <= 0 ? 100 : Math.min(100, Math.max(0, (element.scrollTop / scrollableDistance) * 100));
+    setProgress(nextProgress);
+    if (nextProgress >= 99 || scrollableDistance <= 0) setReachedEnd(true);
+  }
+
+  return <div className="legal-modal-backdrop" role="presentation">
+    <section className="legal-modal" role="dialog" aria-modal="true" aria-labelledby="payment-contract-title">
+      <header><div><p>{context === "transfer" ? "HAVALE / EFT ÖNCESİ ONAY" : "KREDİ KARTI ÖNCESİ ONAY"}</p><h2 id="payment-contract-title">Sözleşme ve Kullanım Koşulları</h2></div><button onClick={onClose} aria-label="Pencereyi kapat">×</button></header>
+      <div className="legal-scroll-progress" role="progressbar" aria-label="Sözleşme okuma ilerlemesi" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}><span style={{ width: `${progress}%` }} /></div>
+      <div className="legal-document-content" ref={contentRef} onScroll={handleScroll} tabIndex={0}>
+        {loading ? <div className="legal-loading">Sözleşme yükleniyor…</div> : <pre>{content}</pre>}
+      </div>
+      <footer><div><Icon name="card" size={18} /><span>{reachedEnd ? "Belgenin sonuna ulaştınız." : "Kabul edebilmek için belgenin sonuna kadar ilerleyin."}</span></div><div><button className="legal-cancel" onClick={onClose}>Vazgeç</button><button className="legal-accept" onClick={onAccept} disabled={!reachedEnd}>Okudum ve kabul ediyorum</button></div></footer>
+    </section>
+  </div>;
 }
 
 function Messages() {
-  return <section className="detail-panel messages-panel"><PanelHeading eyebrow="İLETİŞİM" title="Uzmanınızla yazışmalar" description="Siparişinizle ilgili tüm mesajlar burada saklanır." /><div className="messages-thread"><div className="system-note">Sipariş oluşturuldu · 23 Temmuz, 23:11</div><article className="expert-message"><span>NY</span><div><strong>Dr. Naci Yılmaz <small>Bugün, 09:21</small></strong><p>Merhaba Kerem Bey, dosyanızı inceledim. Analiz öncesinde grup dağılımlarını doğrulamamız gerekiyor.</p></div></article><article className="customer-message"><div><strong>Siz <small>Bugün, 09:34</small></strong><p>Merhaba, güncel Excel dosyasını Sipariş Kalemleri bölümüne ekledim.</p></div></article></div><div className="message-composer"><textarea placeholder="Mesajınızı yazın…" /><div><button><Icon name="plus" size={17} />Dosya ekle</button><span>Mesai saatlerinde ortalama 1 saat içinde yanıtlanır.</span><button className="send">Gönder <Icon name="arrow" size={15} /></button></div></div></section>;
+  const [message, setMessage] = useState("");
+  const [sentMessages, setSentMessages] = useState<string[]>([]);
+
+  function sendMessage() {
+    const cleanMessage = message.trim();
+    if (!cleanMessage) return;
+    setSentMessages((current) => [...current, cleanMessage]);
+    setMessage("");
+  }
+
+  return <section className="detail-panel messages-panel">
+    <PanelHeading eyebrow="İLETİŞİM VE HAREKETLER" title="Sipariş yazışmaları" description="Mesajlarınız ve siparişinizdeki önemli değişiklikler tek bir kronolojide tutulur." />
+    <div className="message-guidance">
+      <span><Icon name="message" size={19} /></span>
+      <div><strong>Yeni analiz talepleri için ayrı talep oluşturun</strong><p>Bu alan mevcut siparişinizle ilgili soru, dosya ve bilgilendirmeler içindir.</p></div>
+      <Link href="/yeni-analiz-talebi">Yeni analiz talebi <Icon name="arrow" size={14} /></Link>
+    </div>
+    <div className="message-composer">
+      <label htmlFor="order-message">Mesajınız</label>
+      <textarea id="order-message" value={message} onChange={(event) => setMessage(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) sendMessage(); }} placeholder="Uzmanınıza mesajınızı yazın…" />
+      <div><button className="send" type="button" onClick={sendMessage} disabled={!message.trim()}>Gönder <Icon name="arrow" size={15} /></button></div>
+    </div>
+    <div className="response-expectation"><Icon name="clock" size={16} /><span><strong>Yanıt süresi:</strong> Mesai saatlerinde ortalama 1 saat.</span></div>
+    <div className="messages-thread">
+      <div className="thread-day"><span>Bugün</span></div>
+      {[...sentMessages].reverse().map((sentMessage, index) => <article className="customer-message sent" key={`${sentMessage}-${index}`}><div><strong>Siz <small>Şimdi</small></strong><p>{sentMessage}</p><span className="message-delivery"><Icon name="check" size={12} />Gönderildi</span></div></article>)}
+      <div className="system-note"><Icon name="upload" size={13} />orneklem_verileri.xlsx dosyası Sipariş Kalemleri’ne eklendi <time>09:35</time></div>
+      <article className="customer-message"><div><strong>Siz <small>09:34</small></strong><p>Merhaba, güncel Excel dosyasını Sipariş Kalemleri bölümüne ekledim.</p></div></article>
+      <article className="expert-message"><span>NY</span><div><strong>Dr. Naci Yılmaz <small>09:21</small></strong><p>Merhaba Kerem Bey, dosyanızı inceledim. Analiz öncesinde grup dağılımlarını doğrulamamız gerekiyor.</p></div></article>
+      <div className="thread-day"><span>24 Temmuz 2026</span></div>
+      <details className="system-event offer-event">
+        <summary><span className="system-event-marker"><Icon name="card" size={14} /></span><div><small>SİSTEM HAREKETİ</small><strong>Ücret teklifi hazırlandı</strong><time>09:18</time></div><i>Ayrıntılar</i></summary>
+        <dl><div><dt>Teklif tutarı</dt><dd>5.000 TL</dd></div><div><dt>Durum</dt><dd>Onayınız ve ödemeniz bekleniyor</dd></div></dl>
+      </details>
+      <div className="thread-day"><span>23 Temmuz 2026</span></div>
+      <details className="system-event" open>
+        <summary><span className="system-event-marker"><Icon name="check" size={14} /></span><div><small>SİSTEM HAREKETİ</small><strong>Sipariş oluşturuldu</strong><time>23:11</time></div><i>Ayrıntılar</i></summary>
+        <dl><div><dt>Hizmet</dt><dd>Power ve örneklem analizi</dd></div><div><dt>Seçilen teslimat</dt><dd>12 saat</dd></div><div><dt>Teslim şekli</dt><dd>Rapor + videolu anlatım</dd></div></dl>
+      </details>
+    </div>
+  </section>;
 }
 
 function Deliveries({ onPayment }: { onPayment: () => void }) {
