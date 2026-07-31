@@ -1008,18 +1008,15 @@ function DeliverySection() {
               <input ref={fileInputRef} className="visually-hidden-file-input" type="file" multiple onChange={(e) => addFiles(e.target.files)} />
               <div
                 className={`delivery-drop-zone ${dragOver ? "drag-over" : ""}`}
-                onClick={() => fileInputRef.current?.click()}
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleDrop}
-                role="button"
-                tabIndex={0}
                 aria-label="Dosya yükle alanı"
-                onKeyDown={(e) => e.key === "Enter" && fileInputRef.current?.click()}
               >
-                <Icon name="cloudUp" size={44} />
-                <strong>Dosyaları seçmek için tıklayınız</strong>
-                <span>(Ctrl/Cmd tuşuna basılı tutarak birden fazla dosya seçebilirsiniz)</span>
+                <Icon name="file" size={26} />
+                <strong>Dosyaları buraya bırakın</strong>
+                <span>Office, SPSS, PDF, görsel, video veya arşiv · En fazla 25 MB</span>
+                <span className="upload-drop-btn" onClick={() => fileInputRef.current?.click()}>Dosya seç</span>
               </div>
               {files.length > 0 && (
                 <div className="delivery-file-list">
@@ -1092,18 +1089,15 @@ function DeliverySection() {
               <input ref={analystFileInputRef} className="visually-hidden-file-input" type="file" multiple onChange={(e) => addAnalystFiles(e.target.files)} />
               <div
                 className={`delivery-drop-zone ${analystDragOver ? "drag-over" : ""}`}
-                onClick={() => analystFileInputRef.current?.click()}
                 onDragOver={(e) => { e.preventDefault(); setAnalystDragOver(true); }}
                 onDragLeave={() => setAnalystDragOver(false)}
                 onDrop={handleAnalystDrop}
-                role="button"
-                tabIndex={0}
                 aria-label="Analizör dosyası yükle alanı"
-                onKeyDown={(e) => e.key === "Enter" && analystFileInputRef.current?.click()}
               >
-                <Icon name="cloudUp" size={44} />
-                <strong>Dosyaları seçmek için tıklayınız</strong>
-                <span>(Ctrl/Cmd tuşuna basılı tutarak birden fazla dosya seçebilirsiniz)</span>
+                <Icon name="file" size={26} />
+                <strong>Dosyaları buraya bırakın</strong>
+                <span>Office, SPSS, PDF, görsel, video veya arşiv · En fazla 25 MB</span>
+                <span className="upload-drop-btn" onClick={() => analystFileInputRef.current?.click()}>Dosya seç</span>
               </div>
               {analystFiles.length > 0 && (
                 <div className="delivery-file-list">

@@ -33,8 +33,8 @@ type MenuKey = "orders" | "education" | "manage";
 const menus: { key: MenuKey; label: string; icon: AdminIconName; items: { label: string; href: string }[] }[] = [
   { key: "orders", label: "Sipariş Yönetimi", icon: "orders", items: [
     { label: "Mevcut Siparişler / Analizler", href: "/admin/siparisler" },
-    { label: "Yeni Analiz Talebi Oluştur", href: "#" },
-    { label: "Arşiv", href: "#" },
+    { label: "Yeni Analiz Talebi Oluştur", href: "/admin/yeni-analiz-talebi" },
+    { label: "Arşiv", href: "/admin/arsiv" },
   ] },
   { key: "education", label: "Eğitimler", icon: "education", items: [
     { label: "Satın Alınan Eğitimler", href: "#" },

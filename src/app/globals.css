@@ -521,8 +521,8 @@ button:focus-visible,a:focus-visible { outline:3px solid #69b9dc; outline-offset
 .file-upload-message.error { background:#fff2f1; color:#a7433d; }
 .work-files { padding:0 1.4rem; }.work-files article { min-height:72px; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:.75rem; border-bottom:1px solid #e8eef1; }.work-files article:last-child { border-bottom:0; }
 .work-files article > button { width:34px; height:34px; display:grid; place-items:center; border:0; border-radius:7px; background:#f0f4f5; color:#61798a; }
-.upload-zone { min-height:145px; display:grid; place-content:center; justify-items:center; gap:.4rem; border:1px dashed #a9bfcd; border-radius:12px; background:rgba(255,255,255,.5); color:#7790a2; }
-.upload-zone strong { color:var(--navy); font-size:.68rem; }.upload-zone span { font-size:.58rem; }
+.upload-zone { min-height:200px; display:grid; place-content:center; justify-items:center; gap:.4rem; border:1px dashed #9eb7c7; border-radius:11px; background:#f8fafb; color:#71899a; }
+.upload-zone strong { color:var(--navy); font-size:.82rem; }.upload-zone span:not(.upload-drop-btn) { font-size:.58rem; color:#8796a3; }
 .payment-layout { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:1rem; align-items:start; }
 .payment-tabs { padding:1rem 1.4rem; display:grid; grid-template-columns:1fr 1fr; gap:.5rem; }
 .payment-tabs button { min-height:43px; display:flex; align-items:center; justify-content:center; gap:.45rem; border:1px solid var(--line); border-radius:8px; background:#fff; color:#677c8e; font-size:.65rem; font-weight:750; }
@@ -1114,6 +1114,10 @@ button:focus-visible,a:focus-visible { outline:3px solid #69b9dc; outline-offset
 .admin-orders .orders-table-head,
 .admin-orders .orders-row { min-width: 1160px; grid-template-columns: 1.35fr 0.8fr 1.15fr 0.75fr 0.6fr 1.05fr 0.85fr 0.9fr; }
 .admin-orders .orders-row { min-height: 78px; }
+/* Arşiv tablosu: Sipariş · Hizmet · Durum · Kapanış · Müşteri · Analizör · Ücret · İşlem */
+.admin-orders .arsiv-head,
+.admin-orders .arsiv-head ~ .orders-row { min-width: 1100px; grid-template-columns: 1.2fr 1fr 1fr 0.8fr 1.1fr 0.9fr 0.65fr 0.85fr; }
+.arsiv-hero-icon { display:flex; align-items:center; padding:.5rem; color:#8b99a9; }
 /* plain text cell for date / delivery / remaining / analyst columns */
 .ao-cell { min-width:0; display:flex; flex-direction:column; gap:.22rem; }
 .ao-cell strong { display:block; overflow:hidden; color:var(--navy); font-size:.7rem; font-weight:800; white-space:nowrap; text-overflow:ellipsis; }
@@ -1215,11 +1219,12 @@ button:focus-visible,a:focus-visible { outline:3px solid #69b9dc; outline-offset
 .delivery-tab-bar button.active { background:var(--blue); color:#fff; border-color:var(--blue); }
 .delivery-tab-body { padding:1.25rem 1.2rem; border:1px solid var(--line); border-radius:0 0 12px 12px; display:grid; gap:1.1rem; }
 .delivery-field-label { margin:0 0 .5rem; color:var(--blue); font-size:.65rem; font-weight:800; }
-.delivery-drop-zone { min-height:165px; display:grid; place-content:center; justify-items:center; gap:.5rem; border:1.5px dashed #b5c8d5; border-radius:10px; background:#fafcfd; cursor:pointer; transition:.15s; }
-.delivery-drop-zone:hover,.delivery-drop-zone.drag-over { border-color:var(--blue); background:#f0f7fb; }
-.delivery-drop-zone strong { color:var(--navy); font-size:.7rem; font-weight:800; }
-.delivery-drop-zone span { color:#8b99a6; font-size:.57rem; }
-.delivery-drop-zone svg { color:#8fb8ca; }
+.delivery-drop-zone { min-height:200px; display:grid; place-content:center; justify-items:center; gap:.4rem; border:1px dashed #9eb7c7; border-radius:11px; background:#f8fafb; color:#71899a; transition:.15s; }
+.delivery-drop-zone.drag-over { border-color:var(--blue); background:#f0f7fb; }
+.delivery-drop-zone strong { color:var(--navy); font-size:.82rem; }
+.delivery-drop-zone span:not(.upload-drop-btn) { color:#8796a3; font-size:.58rem; }
+.delivery-drop-zone svg { color:#71899a; }
+.upload-drop-btn { min-height:35px; margin-top:.6rem; padding:0 .75rem; display:flex; align-items:center; border-radius:7px; background:var(--navy); color:#fff; font-size:.59rem; font-weight:800; cursor:pointer; }
 .delivery-file-list { display:grid; gap:.45rem; margin-top:.7rem; }
 .delivery-file-row { display:flex; align-items:center; gap:.65rem; padding:.6rem .8rem; border:1px solid var(--line); border-radius:8px; background:#fafcfc; }
 .delivery-file-row > div { flex:1; min-width:0; display:grid; gap:.18rem; }
