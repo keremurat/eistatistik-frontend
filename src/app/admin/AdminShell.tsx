@@ -30,7 +30,8 @@ function AdminIcon({ name, size = 17 }: { name: AdminIconName; size?: number }) 
 }
 
 type MenuKey = "orders" | "education" | "manage";
-const menus: { key: MenuKey; label: string; icon: AdminIconName; items: { label: string; href: string }[] }[] = [
+type MenuItemDef = { label: string; href: string; subItems?: { label: string; href: string }[] };
+const menus: { key: MenuKey; label: string; icon: AdminIconName; items: MenuItemDef[] }[] = [
   { key: "orders", label: "Sipariş Yönetimi", icon: "orders", items: [
     { label: "Mevcut Siparişler / Analizler", href: "/admin/siparisler" },
     { label: "Yeni Analiz Talebi Oluştur", href: "/admin/yeni-analiz-talebi" },
@@ -43,10 +44,15 @@ const menus: { key: MenuKey; label: string; icon: AdminIconName; items: { label:
     { label: "Arşiv", href: "#" },
   ] },
   { key: "manage", label: "Yönetim", icon: "manage", items: [
-    { label: "Sipariş Türleri", href: "#" },
-    { label: "Sipariş Analizör Değiştir", href: "#" },
-    { label: "Mesaj Şablonları", href: "#" },
-    { label: "Eğitim Talepleri", href: "#" },
+    { label: "Sipariş Türleri", href: "/admin/siparis-turleri" },
+    { label: "Sipariş Analizör Değiştir", href: "/admin/analizor-degistir" },
+    { label: "Mesaj Şablonları", href: "/admin/mesaj-sablonlari" },
+    { label: "Eğitim Talepleri", href: "#", subItems: [
+      { label: "Eğitim Listesi", href: "/admin/egitim-talepleri/egitim-listesi" },
+      { label: "Modül Listesi", href: "/admin/egitim-talepleri/modul-listesi" },
+      { label: "Ders Listesi", href: "/admin/egitim-talepleri/ders-listesi" },
+      { label: "Mentörlük Ayarı", href: "/admin/egitim-talepleri/mentorluk-ayari" },
+    ] },
     { label: "İndirim Kodları", href: "#" },
     { label: "Rol Yönetimi", href: "#" },
     { label: "Kullanıcı Yönetimi", href: "#" },
@@ -57,17 +63,19 @@ const menus: { key: MenuKey; label: string; icon: AdminIconName; items: { label:
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
-  const [openMenu, setOpenMenu] = useState<MenuKey | null>(null);
-  const [dataHidden, setDataHidden] = useState(false);
+  const [openMenu, setOpenMenu]       = useState<MenuKey | null>(null);
+  const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
+  const [dataHidden, setDataHidden]   = useState(false);
   const navRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
+    function closeAll() { setOpenMenu(null); setOpenSubMenu(null); }
     function closeOnOutsideClick(event: MouseEvent) {
-      if (navRef.current && !navRef.current.contains(event.target as Node)) setOpenMenu(null);
+      if (navRef.current && !navRef.current.contains(event.target as Node)) closeAll();
     }
     function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpenMenu(null);
+      if (event.key === "Escape") closeAll();
     }
     document.addEventListener("mousedown", closeOnOutsideClick);
     document.addEventListener("keydown", closeOnEscape);
@@ -85,15 +93,45 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <nav className="admin-nav" aria-label="Yönetici navigasyonu" ref={navRef}>
           <Link className={pathname === "/admin" ? "active" : ""} href="/admin"><AdminIcon name="home" />Anasayfa</Link>
           {menus.map((menu) => {
-            const menuActive = menu.items.some((item) => item.href !== "#" && pathname.startsWith(item.href));
+            const menuActive = menu.items.some((item) => {
+              if (item.href !== "#" && pathname.startsWith(item.href)) return true;
+              return item.subItems?.some((s) => s.href !== "#" && pathname.startsWith(s.href)) ?? false;
+            });
             return (
             <div className="admin-nav-wrap" key={menu.key}>
-              <button className={`admin-nav-trigger${menuActive ? " active" : ""}`} aria-expanded={openMenu === menu.key} aria-haspopup="menu" onClick={() => setOpenMenu((current) => (current === menu.key ? null : menu.key))}>
+              <button className={`admin-nav-trigger${menuActive ? " active" : ""}`} aria-expanded={openMenu === menu.key} aria-haspopup="menu" onClick={() => { setOpenMenu((current) => (current === menu.key ? null : menu.key)); setOpenSubMenu(null); }}>
                 <AdminIcon name={menu.icon} />{menu.label}<span className="nav-caret">⌄</span>
               </button>
               {openMenu === menu.key && (
                 <div className="admin-menu" role="menu">
-                  {menu.items.map((item) => <Link key={item.label} role="menuitem" href={item.href} onClick={() => setOpenMenu(null)}>{item.label}</Link>)}
+                  {menu.items.map((item) => {
+                    if (item.subItems) {
+                      return (
+                        <div key={item.label} className="admin-menu-item-wrap">
+                          <button
+                            className={`admin-menu-item-btn${openSubMenu === item.label ? " open" : ""}`}
+                            onClick={() => setOpenSubMenu((s) => s === item.label ? null : item.label)}
+                            aria-expanded={openSubMenu === item.label}
+                            aria-haspopup="menu"
+                            role="menuitem"
+                          >
+                            {item.label}<span className="admin-sub-arrow">›</span>
+                          </button>
+                          {openSubMenu === item.label && (
+                            <div className="admin-submenu" role="menu">
+                              {item.subItems.map((sub) => (
+                                <Link key={sub.label} role="menuitem" href={sub.href}
+                                  onClick={() => { setOpenMenu(null); setOpenSubMenu(null); }}>
+                                  {sub.label}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                    return <Link key={item.label} role="menuitem" href={item.href} onClick={() => setOpenMenu(null)}>{item.label}</Link>;
+                  })}
                 </div>
               )}
             </div>
