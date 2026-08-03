@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ProfileMenu } from "../../components/ProfileMenu";
 import { NotificationMenu } from "../../components/NotificationMenu";
+import { BrandLogo } from "../../components/BrandLogo";
 import { useEffect, useRef, useState } from "react";
 
 type Section = "overview" | "files" | "payment" | "messages" | "deliveries" | "appointments" | "invoice" | "extra";
@@ -111,7 +112,7 @@ export default function OrderDetailPage() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <Link className="brand" href="/dashboard" aria-label="Eİstatistik ana sayfa"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority /></Link>
+        <BrandLogo />
         <nav className="main-nav">
           <Link href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
           <Link className="active" href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>

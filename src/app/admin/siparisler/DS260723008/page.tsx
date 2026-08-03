@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
-import { AdminShell } from "../../AdminShell";
+import { AdminShell, MaskedNum } from "../../AdminShell";
 import { DatePicker } from "../../../components/DatePicker";
 
 type AdminSection = "overview" | "items" | "pricing" | "payment" | "messages" | "results" | "analyst" | "delivery" | "notes";
@@ -186,9 +186,9 @@ function OverviewSection({ onSection }: { onSection: (s: AdminSection) => void }
           <div><dt>Müşteri Adı Soyadı</dt><dd style={{ color: "var(--blue)" }}>ECE GÜNER</dd></div>
           <div><dt>Sipariş Tarihi</dt><dd>31.07.2026</dd></div>
           <div><dt>Teslimat Tarihi</dt><dd>06.08.2026</dd></div>
-          <div><dt>Ücretlendirme</dt><dd style={{ color: "#287a55" }}>7.700,00 TL (Ödendi)</dd></div>
+          <div><dt>Ücretlendirme</dt><dd style={{ color: "#287a55" }}><MaskedNum>7.700,00 TL (Ödendi)</MaskedNum></dd></div>
           <div><dt>Teslimat Şekli</dt><dd>Power analizi için tek bir teslimat şekli bulunmaktadır</dd></div>
-          <div><dt>Teslimat Süresi</dt><dd>4 iş günü analiz süresi ve 5. iş günü sonu teslimat</dd></div>
+          <div><dt>Teslimat Süresi</dt><dd><MaskedNum>4 iş günü analiz süresi ve 5. iş günü sonu teslimat</MaskedNum></dd></div>
         </dl>
       </section>
 
@@ -217,7 +217,7 @@ function OverviewSection({ onSection }: { onSection: (s: AdminSection) => void }
               <td>26737</td>
               <td><strong style={{ color: "var(--blue)" }}>PA260731006</strong></td>
               <td>Yetişkinlerde Oral Hijyen Davranışları, Algılanan Engeller ve Motivasyon</td>
-              <td style={{ fontVariantNumeric: "tabular-nums" }}>7.700,00 TL</td>
+              <td style={{ fontVariantNumeric: "tabular-nums" }}><MaskedNum>7.700,00 TL</MaskedNum></td>
               <td>31.07.2026</td>
               <td><span className="t-status active">Yapılıyor</span></td>
             </tr></tbody>
@@ -307,7 +307,7 @@ function PricingSection({ price, onSave }: { price: string; onSave: (v: string) 
           </button>
         </div>
       </div>
-      <p className="pricing-note">Müşteriye gösterilen tutar: <strong>{price} TL</strong>. Teklifi kaydettiğinizde Ödeme sekmesi güncellenir ve müşteri bilgilendirilir.</p>
+      <p className="pricing-note">Müşteriye gösterilen tutar: <strong><MaskedNum>{price} TL</MaskedNum></strong>. Teklifi kaydettiğinizde Ödeme sekmesi güncellenir ve müşteri bilgilendirilir.</p>
     </section>
   );
 }
@@ -354,10 +354,10 @@ function PaymentSection({ method, onMethod, price }: { method: "transfer" | "car
         <p className="eyebrow">ÖDEME ÖZETİ</p>
         <h2>Yetişkinlerde Oral Hijyen Davranışları</h2>
         <dl className="payment-price-lines">
-          <div><dt>Hizmet bedeli</dt><dd>{price} TL</dd></div>
-          <div><dt>İndirim</dt><dd>0 TL</dd></div>
+          <div><dt>Hizmet bedeli</dt><dd><MaskedNum>{price} TL</MaskedNum></dd></div>
+          <div><dt>İndirim</dt><dd><MaskedNum>0 TL</MaskedNum></dd></div>
         </dl>
-        <dl className="payment-total"><div className="total"><dt>Toplam</dt><dd>{price} TL</dd></div></dl>
+        <dl className="payment-total"><div className="total"><dt>Toplam</dt><dd><MaskedNum>{price} TL</MaskedNum></dd></div></dl>
         <div className="summary-payment-methods">
           <p>ÖDEME YÖNTEMİ</p>
           <div className="payment-tabs">
@@ -384,7 +384,7 @@ function AdminPaymentApprovalModal({ price, onClose, onAccept }: { price: string
           <p>Müşterinin banka havalesi ile ödeme yaptığını teyit ediyorsunuz.</p>
           <dl className="detail-facts" style={{ marginTop: "1rem", borderTop: "1px solid var(--line)" }}>
             <div><dt>Müşteri</dt><dd>ECE GÜNER</dd></div>
-            <div><dt>Tutar</dt><dd>{price} TL</dd></div>
+            <div><dt>Tutar</dt><dd><MaskedNum>{price} TL</MaskedNum></dd></div>
             <div><dt>Sipariş Kodu</dt><dd>PA260731006</dd></div>
           </dl>
         </div>
@@ -421,11 +421,11 @@ function MessagesSection() {
         <div className="thread-day"><span>31 Temmuz 2026</span></div>
         <details className="system-event offer-event" open>
           <summary><span className="system-event-marker"><Icon name="card" size={14} /></span><div><small>SİSTEM HAREKETİ</small><strong>Ücret teklifi hazırlandı</strong><time>09:18</time></div><i>Ayrıntılar</i></summary>
-          <dl><div><dt>Teklif tutarı</dt><dd>7.700,00 TL</dd></div><div><dt>Durum</dt><dd>Ödeme bekleniyor</dd></div></dl>
+          <dl><div><dt>Teklif tutarı</dt><dd><MaskedNum>7.700,00 TL</MaskedNum></dd></div><div><dt>Durum</dt><dd>Ödeme bekleniyor</dd></div></dl>
         </details>
         <details className="system-event">
           <summary><span className="system-event-marker"><Icon name="check" size={14} /></span><div><small>SİSTEM HAREKETİ</small><strong>Sipariş oluşturuldu</strong><time>31.07.2026 14:34</time></div><i>Ayrıntılar</i></summary>
-          <dl><div><dt>Hizmet</dt><dd>Power analizi</dd></div><div><dt>Teslimat süresi</dt><dd>4 iş günü</dd></div></dl>
+          <dl><div><dt>Hizmet</dt><dd>Power analizi</dd></div><div><dt>Teslimat süresi</dt><dd><MaskedNum>4 iş günü</MaskedNum></dd></div></dl>
         </details>
       </div>
     </section>
@@ -1121,7 +1121,7 @@ function AnalystSection() {
                 {log.map((entry, i) => (
                   <tr key={i}>
                     <td>{entry.name}</td>
-                    <td>{entry.fee}</td>
+                    <td><MaskedNum>{entry.fee}</MaskedNum></td>
                     <td>{entry.assignedAt}</td>
                     <td>{entry.range}</td>
                   </tr>

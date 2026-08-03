@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { NotificationMenu } from "../components/NotificationMenu";
+import { BrandLogo } from "../components/BrandLogo";
 
 type IconName = "arrow" | "bell" | "book" | "calendar" | "chevron" | "clock" | "file" | "home" | "message" | "more" | "plus" | "search" | "spark";
 type OrderStatus = "action" | "active" | "completed" | "cancelled";
@@ -85,7 +86,7 @@ export default function OrdersPage() {
     <div className="app-shell">
       <a className="skip-link" href="#orders-content">İçeriğe geç</a>
       <header className="topbar">
-        <Link className="brand" href="/dashboard" aria-label="Eİstatistik ana sayfa"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority /></Link>
+        <BrandLogo />
         <nav className="main-nav" aria-label="Ana navigasyon">
           <Link href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
           <Link className="active" href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>

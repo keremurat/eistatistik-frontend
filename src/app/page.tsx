@@ -73,6 +73,7 @@ export default function AuthPage() {
       return;
     }
     setLoading(true);
+    localStorage.setItem("eistatistik_role", account.role);
     window.setTimeout(() => router.push(account.landing), 650);
   }
 
@@ -82,6 +83,7 @@ export default function AuthPage() {
     const valid = register.firstName.trim() && register.lastName.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(register.email) && register.password.length >= 6 && register.password === register.confirm && membershipAccepted && kvkkAccepted;
     if (!valid) return;
     setLoading(true);
+    localStorage.setItem("eistatistik_role", "musteri");
     window.setTimeout(() => router.push("/dashboard"), 650);
   }
 
@@ -120,13 +122,13 @@ export default function AuthPage() {
             <header className="auth-register-header"><h2>Hesap<br /><span>oluşturun.</span></h2><p>Birkaç adımda Eİstatistik çalışma alanınıza katılın.</p></header>
             <form className="auth-register-form" onSubmit={handleRegister} noValidate>
               <div className="auth-field-row">
-                <AuthField icon="user" placeholder="Ad" value={register.firstName} onChange={value => setRegister(current => ({ ...current, firstName: value }))} invalid={submitted && !register.firstName.trim()} />
-                <AuthField icon="user" placeholder="Soyad" value={register.lastName} onChange={value => setRegister(current => ({ ...current, lastName: value }))} invalid={submitted && !register.lastName.trim()} />
+                <AuthField icon="user" placeholder="Adınızı girin" value={register.firstName} onChange={value => setRegister(current => ({ ...current, firstName: value }))} invalid={submitted && !register.firstName.trim()} />
+                <AuthField icon="user" placeholder="Soyadınızı girin" value={register.lastName} onChange={value => setRegister(current => ({ ...current, lastName: value }))} invalid={submitted && !register.lastName.trim()} />
               </div>
-              <AuthField icon="mail" type="email" placeholder="E-posta adresi" value={register.email} onChange={value => setRegister(current => ({ ...current, email: value }))} invalid={submitted && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(register.email)} />
+              <AuthField icon="mail" type="email" placeholder="E-posta adresinizi girin" value={register.email} onChange={value => setRegister(current => ({ ...current, email: value }))} invalid={submitted && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(register.email)} />
               <div className="auth-field-row">
-                <AuthField icon="lock" type="password" placeholder="Şifre" value={register.password} onChange={value => setRegister(current => ({ ...current, password: value }))} invalid={submitted && register.password.length < 6} />
-                <AuthField icon="lock" type="password" placeholder="Şifre tekrar" value={register.confirm} onChange={value => setRegister(current => ({ ...current, confirm: value }))} invalid={submitted && register.password !== register.confirm} />
+                <AuthField icon="lock" type="password" placeholder="En az 6 karakter" value={register.password} onChange={value => setRegister(current => ({ ...current, password: value }))} invalid={submitted && register.password.length < 6} />
+                <AuthField icon="lock" type="password" placeholder="Şifreyi tekrar girin" value={register.confirm} onChange={value => setRegister(current => ({ ...current, confirm: value }))} invalid={submitted && register.password !== register.confirm} />
               </div>
               <div className="auth-legal-consents">
                 <button type="button" className={submitted && !membershipAccepted ? "invalid" : ""} onClick={() => setLegalDocument("membership")}><span className={membershipAccepted ? "accepted" : ""}>{membershipAccepted ? "✓" : ""}</span><strong><u>Üyelik Sözleşmesi</u> şartlarını okudum ve kabul ediyorum.</strong></button>

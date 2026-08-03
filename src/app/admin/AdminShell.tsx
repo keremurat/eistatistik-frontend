@@ -6,14 +6,21 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { NotificationMenu } from "../components/NotificationMenu";
+import { FavoritesProvider, useFavorites, type Favorite } from "./FavoritesContext";
 
 const DataHiddenContext = createContext(false);
 /** Admin panelinde verilerin gizli (göz kapalı) olup olmadığını okur. */
 export function useDataHidden() {
   return useContext(DataHiddenContext);
 }
+/** Sayısal değeri, göz kapalıyken •••  ile maskeler. */
+export function MaskedNum({ children }: { children: React.ReactNode }) {
+  const hidden = useDataHidden();
+  if (hidden) return <span style={{ color: "var(--muted)", letterSpacing: ".1em", userSelect: "none", fontWeight: 700 }}>• • •</span>;
+  return <>{children}</>;
+}
 
-type AdminIconName = "home" | "orders" | "education" | "manage" | "calendar" | "message" | "eye" | "eyeOff";
+type AdminIconName = "home" | "orders" | "education" | "manage" | "calendar" | "message" | "eye" | "eyeOff" | "star" | "starFilled" | "trash" | "inbox";
 
 function AdminIcon({ name, size = 17 }: { name: AdminIconName; size?: number }) {
   const paths: Record<AdminIconName, React.ReactNode> = {
@@ -23,10 +30,82 @@ function AdminIcon({ name, size = 17 }: { name: AdminIconName; size?: number }) 
     manage: <><rect x="3" y="4" width="18" height="4" rx="1" /><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M9 12h6" /></>,
     calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>,
     message: <path d="M21 12a8 8 0 0 1-9 8 9 9 0 0 1-4-.9L3 21l1.9-5A9 9 0 1 1 21 12Z" />,
-    eye: <><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" /></>,
-    eyeOff: <><path d="m3 3 18 18" /><path d="M10.6 6.2A10.7 10.7 0 0 1 12 6c6.5 0 10 6 10 6a15 15 0 0 1-2.2 2.8M6.2 6.2C3.4 8 2 12 2 12s3.5 6 10 6a10 10 0 0 0 4.1-.8" /></>,
+    eye:        <><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" /></>,
+    eyeOff:     <><path d="m3 3 18 18" /><path d="M10.6 6.2A10.7 10.7 0 0 1 12 6c6.5 0 10 6 10 6a15 15 0 0 1-2.2 2.8M6.2 6.2C3.4 8 2 12 2 12s3.5 6 10 6a10 10 0 0 0 4.1-.8" /></>,
+    star:       <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />,
+    starFilled: <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" fill="currentColor" />,
+    trash:      <><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2" /></>,
+    inbox:      <><polyline points="22 12 16 12 14 15 10 15 8 12 2 12" /><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" /></>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+}
+
+/* ── Favoriler dropdown ──────────────────────────────────────────────────── */
+function FavoritesMenu() {
+  const { favs, toggle } = useFavorites();
+  const [open, setOpen]  = useState(false);
+  const menuRef          = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDown(e: MouseEvent) { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false); }
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") setOpen(false); }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
+  }, [open]);
+
+  return (
+    <div className="favorites-menu-wrap" ref={menuRef}>
+      <button
+        className={`icon-button${open ? " open" : ""}`}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-label={`Favoriler${favs.length > 0 ? `, ${favs.length} öğe` : ""}`}
+        onClick={() => setOpen(o => !o)}
+      >
+        <AdminIcon name={favs.length > 0 ? "starFilled" : "star"} size={20} />
+        {favs.length > 0 && <span className="notification-dot" style={{ background: "#b66d2e" }}>{favs.length}</span>}
+      </button>
+
+      {open && (
+        <div className="favorites-dropdown" role="menu">
+          <div className="favorites-dropdown-head">
+            <strong>Favoriler</strong>
+            {favs.length > 0 && <span>{favs.length} öğe</span>}
+          </div>
+
+          {favs.length === 0 ? (
+            <div className="favorites-empty">
+              <AdminIcon name="inbox" size={28} />
+              <p>Henüz favori eklenmedi</p>
+            </div>
+          ) : (
+            <div className="favorites-list">
+              {favs.map(fav => (
+                <div key={fav.id} className="favorites-item" role="menuitem">
+                  <Link href={fav.href} onClick={() => setOpen(false)} className="favorites-item-body">
+                    <AdminIcon name="starFilled" size={13} />
+                    <span className="favorites-item-text">
+                      <strong>{fav.label}</strong>
+                      {fav.sub && <small>{fav.sub}</small>}
+                    </span>
+                  </Link>
+                  <button
+                    className="favorites-item-remove"
+                    aria-label={`${fav.label} favorilerden çıkar`}
+                    onClick={() => toggle(fav)}
+                  >
+                    <AdminIcon name="trash" size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 type MenuKey = "orders" | "education" | "manage";
@@ -65,7 +144,7 @@ const menus: { key: MenuKey; label: string; icon: AdminIconName; items: MenuItem
       { label: "Görev Listesi", href: "/admin/gorev-isleri/gorev-listesi" },
       { label: "Arşiv", href: "/admin/gorev-isleri/arsiv" },
     ] },
-    { label: "Proje Muhasebesi Ekle", href: "#" },
+    { label: "Proje Muhasebesi Ekle", href: "/admin/proje-muhasebesi" },
   ] },
 ];
 
@@ -104,6 +183,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
+    <FavoritesProvider>
     <div className="app-shell">
       <a className="skip-link" href="#admin-main">İçeriğe geç</a>
       <header className="topbar">
@@ -170,19 +250,23 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </div>
             );
           })}
-          <Link href="#"><AdminIcon name="calendar" />Takvim</Link>
+          <Link className={pathname === "/admin/takvim" ? "active" : ""} href="/admin/takvim"><AdminIcon name="calendar" />Takvim</Link>
         </nav>
         <div className="top-actions">
           <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a>
           <button className={`icon-button ${dataHidden ? "open" : ""}`} onClick={() => setDataHidden((current) => !current)} aria-pressed={dataHidden} aria-label={dataHidden ? "Verileri göster" : "Verileri gizle"} title={dataHidden ? "Verileri göster" : "Verileri gizle"}>
             <AdminIcon name={dataHidden ? "eyeOff" : "eye"} size={20} />
           </button>
+          <FavoritesMenu />
           <NotificationMenu />
-          <ProfileMenu />
+          <ProfileMenu roleLabel="Yönetici" ordersHref="/admin/siparisler" ordersLabel="Sipariş Yönetimi" />
         </div>
       </header>
-      <main id="admin-main" className="admin-dash"><DataHiddenContext.Provider value={dataHidden}>{children}</DataHiddenContext.Provider></main>
+      <main id="admin-main" className="admin-dash" data-hidden={dataHidden ? "true" : undefined}>
+        <DataHiddenContext.Provider value={dataHidden}>{children}</DataHiddenContext.Provider>
+      </main>
       <button className="support-button" aria-label="Destek"><AdminIcon name="message" /><span>Destek</span></button>
     </div>
+    </FavoritesProvider>
   );
 }

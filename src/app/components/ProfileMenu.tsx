@@ -15,7 +15,13 @@ function ProfileMenuIcon({ name }: { name: MenuIcon }) {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
 
-export function ProfileMenu() {
+interface ProfileMenuProps {
+  roleLabel?: string;
+  ordersHref?: string;
+  ordersLabel?: string;
+}
+
+export function ProfileMenu({ roleLabel = "Müşteri hesabı", ordersHref = "/siparislerim", ordersLabel = "Siparişler" }: ProfileMenuProps = {}) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -46,7 +52,7 @@ export function ProfileMenu() {
         aria-haspopup="menu"
       >
         <span className="avatar">KM</span>
-        <span className="profile-copy"><strong>Kerem Murat</strong><small>Müşteri hesabı</small></span>
+        <span className="profile-copy"><strong>Kerem Murat</strong><small>{roleLabel}</small></span>
         <span className="profile-caret">⌄</span>
       </button>
 
@@ -58,7 +64,7 @@ export function ProfileMenu() {
           </div>
           <nav aria-label="Profil işlemleri">
             <Link href="/ayarlar" role="menuitem" onClick={() => setOpen(false)}><ProfileMenuIcon name="settings" /><span>Ayarlar</span></Link>
-            <Link href="/siparislerim" role="menuitem" onClick={() => setOpen(false)}><ProfileMenuIcon name="orders" /><span>Siparişler</span></Link>
+            <Link href={ordersHref} role="menuitem" onClick={() => setOpen(false)}><ProfileMenuIcon name="orders" /><span>{ordersLabel}</span></Link>
             <Link className="logout" href="/" role="menuitem" onClick={() => setOpen(false)}><ProfileMenuIcon name="logout" /><span>Çıkış yap</span></Link>
           </nav>
         </div>

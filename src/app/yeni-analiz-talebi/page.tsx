@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { NotificationMenu } from "../components/NotificationMenu";
+import { BrandLogo } from "../components/BrandLogo";
 
 type Category = "all" | "analysis" | "consulting" | "presentation" | "other";
 type IconName = "arrow" | "back" | "bell" | "book" | "chart" | "check" | "clock" | "file" | "home" | "invoice" | "message" | "people" | "phone" | "plus" | "search" | "spark" | "target";
@@ -200,7 +201,7 @@ export default function NewRequestPage() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <Link className="brand" href="/dashboard" aria-label="Eİstatistik ana sayfa"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority /></Link>
+        <BrandLogo />
         <nav className="main-nav">
           <Link href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
           <Link href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AdminShell } from "../AdminShell";
+import { useFavorites } from "../FavoritesContext";
 
 // ── Tipler ────────────────────────────────────────────────────────
 type IconName    = "arrow" | "file" | "plus" | "search" | "user";
@@ -425,7 +426,7 @@ function OrderContextMenu({ order, isFavorite, isMessageClosed, onFavoriteToggle
 export default function AdminOrdersPage() {
   const [activeTab,      setActiveTab]      = useState<TabKey>("all");
   const [query,          setQuery]          = useState("");
-  const [favorites,      setFavorites]      = useState<Set<string>>(new Set());
+  const { isFav, toggle: toggleFav }         = useFavorites();
   const [cancelledSet,   setCancelledSet]   = useState<Set<string>>(new Set());
   const [deletedSet,     setDeletedSet]     = useState<Set<string>>(new Set());
   const [archivedSet,    setArchivedSet]    = useState<Set<string>>(new Set());
@@ -470,8 +471,13 @@ export default function AdminOrdersPage() {
     return allOrders.filter(o => o.customer === target.customer && o.code !== relatedFor).slice(0, 8);
   }, [relatedFor]);
 
-  function toggleFavorite(code: string) {
-    setFavorites(prev => { const n = new Set(prev); n.has(code) ? n.delete(code) : n.add(code); return n; });
+  function toggleFavorite(order: Order) {
+    toggleFav({
+      id:    order.code,
+      label: `${PREFIX_LABELS[order.code.slice(0, 2)] ?? "Analiz Talebi"} — ${order.code}`,
+      sub:   `${order.customer} · ${order.date.split(" ")[0]}`,
+      href:  "/admin/siparisler/DS260723008",
+    });
   }
   function archive(code: string)      { setArchivedSet(prev  => new Set(prev).add(code)); }
   function closeMessage(code: string) { setMsgClosedSet(prev => new Set(prev).add(code)); }
@@ -577,9 +583,9 @@ export default function AdminOrdersPage() {
                             </Link>
                             <OrderContextMenu
                               order={order}
-                              isFavorite={favorites.has(order.code)}
+                              isFavorite={isFav(order.code)}
                               isMessageClosed={msgClosedSet.has(order.code)}
-                              onFavoriteToggle={() => toggleFavorite(order.code)}
+                              onFavoriteToggle={() => toggleFavorite(order)}
                               onCancelRequest={() => setConfirmCfg({ type: "cancel", code: order.code })}
                               onDeleteRequest={() => setConfirmCfg({ type: "delete", code: order.code })}
                               onArchive={() => archive(order.code)}

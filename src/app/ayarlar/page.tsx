@@ -5,6 +5,7 @@ import Image from "next/image";
 import { FormEvent, useState } from "react";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { NotificationMenu } from "../components/NotificationMenu";
+import { BrandLogo } from "../components/BrandLogo";
 
 type Section = "account" | "billing" | "security";
 type BillingType = "individual" | "corporate";
@@ -45,7 +46,7 @@ export default function SettingsPage() {
     <div className="app-shell">
       <a className="skip-link" href="#main-content">İçeriğe geç</a>
       <header className="topbar">
-        <Link className="brand" href="/dashboard" aria-label="Eİstatistik ana sayfa"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority /></Link>
+        <BrandLogo />
         <nav className="main-nav" aria-label="Ana navigasyon">
           <Link href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
           <Link href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
