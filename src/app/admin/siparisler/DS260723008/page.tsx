@@ -6,6 +6,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
 import { AdminShell } from "../../AdminShell";
+import { DatePicker } from "../../../components/DatePicker";
 
 type AdminSection = "overview" | "items" | "pricing" | "payment" | "messages" | "results" | "analyst" | "delivery" | "notes";
 type IconName = "arrow" | "assign" | "back" | "card" | "chart" | "check" | "clock" | "cloudUp" | "copy" | "download" | "eye" | "file" | "heart" | "invoice" | "list" | "message" | "note" | "package" | "percent" | "plus" | "search" | "star" | "tag" | "upload" | "user" | "video" | "x";
@@ -564,10 +565,10 @@ function NotesSection() {
                   {/* Cevap */}
                   <input className="notes-input" placeholder="Cevap" value={draft.response ?? ""} onChange={(e) => setDraft((d) => ({ ...d, response: e.target.value }))} />
                   {/* Bitirme Zamanı — custom portal takvim */}
-                  <SingleDatePicker
+                  <DatePicker
                     value={draft.deadline ?? ""}
                     onChange={(v) => setDraft((d) => ({ ...d, deadline: v }))}
-                    placeholder="Tarih seçin…"
+                    placeholder="GG.AA.YYYY"
                   />
                 </div>
                 <div className="notes-form-footer">
@@ -680,84 +681,6 @@ function CustomDropdown({ value, onChange, options, placeholder = "Seçin…" }:
           {options.map((opt) => (
             <button key={opt} type="button" role="option" aria-selected={opt === value} className={opt === value ? "active-opt" : ""} onClick={() => { onChange(opt); setOpen(false); }}>{opt}</button>
           ))}
-        </div>,
-        document.body
-      )}
-    </div>
-  );
-}
-
-/* ─── Single-date picker (aynı takvim görünümü, tek tarih seçer) ─ */
-function SingleDatePicker({ value, onChange, placeholder = "Tarih seçin…" }: {
-  value: string; onChange: (v: string) => void; placeholder?: string;
-}) {
-  const [open,     setOpen]     = useState(false);
-  const [viewYear, setViewYear] = useState(new Date().getFullYear());
-  const [viewMonth,setViewMonth]= useState(new Date().getMonth());
-  const [popupPos, setPopupPos] = useState({ top: 0, left: 0, width: 270 });
-  const btnRef   = useRef<HTMLButtonElement>(null);
-  const popupRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function h(e: MouseEvent) {
-      if (btnRef.current  && !btnRef.current.contains(e.target as Node) &&
-          popupRef.current && !popupRef.current.contains(e.target as Node)) setOpen(false);
-    }
-    function esc(e: KeyboardEvent) { if (e.key === "Escape") setOpen(false); }
-    document.addEventListener("mousedown", h); document.addEventListener("keydown", esc);
-    return () => { document.removeEventListener("mousedown", h); document.removeEventListener("keydown", esc); };
-  }, []);
-
-  function openCalendar() {
-    if (btnRef.current) {
-      const r = btnRef.current.getBoundingClientRect();
-      setPopupPos({ top: r.bottom + 6, left: r.left, width: Math.max(270, r.width) });
-    }
-    if (value) {
-      const p = value.split(".");
-      if (p.length === 3) { setViewMonth(parseInt(p[1]) - 1); setViewYear(parseInt(p[2])); }
-    }
-    setOpen((o) => !o);
-  }
-
-  function selectDay(day: Date) {
-    onChange(`${String(day.getDate()).padStart(2,"0")}.${String(day.getMonth()+1).padStart(2,"0")}.${day.getFullYear()}`);
-    setOpen(false);
-  }
-
-  function sameDay(a: Date, b: Date) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
-  function prevMonth() { if (viewMonth===0) { setViewMonth(11); setViewYear(y=>y-1); } else setViewMonth(m=>m-1); }
-  function nextMonth() { if (viewMonth===11) { setViewMonth(0); setViewYear(y=>y+1); } else setViewMonth(m=>m+1); }
-
-  const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
-  const firstDow    = (() => { const d = new Date(viewYear, viewMonth, 1).getDay(); return d===0 ? 6 : d-1; })();
-  const today       = new Date();
-  const selected    = (() => { if (!value) return null; const p = value.split("."); return p.length===3 ? new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0])) : null; })();
-  const MONTHS      = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
-
-  return (
-    <div className="date-range-wrap">
-      <button ref={btnRef} type="button" className={`date-range-btn ${open ? "open" : ""}`} style={{ minHeight: 38 }} onClick={openCalendar}>
-        {value ? <span>{value}</span> : <span style={{ color: "#aab5be" }}>{placeholder}</span>}
-        <Icon name="clock" size={14} />
-      </button>
-      {open && typeof document !== "undefined" && createPortal(
-        <div ref={popupRef} className="date-picker-popup" style={{ position: "fixed", top: popupPos.top, left: popupPos.left, width: popupPos.width, zIndex: 9999 }}>
-          <div className="cal-header">
-            <button type="button" onClick={prevMonth}>‹</button>
-            <strong>{MONTHS[viewMonth]} {viewYear}</strong>
-            <button type="button" onClick={nextMonth}>›</button>
-          </div>
-          <div className="cal-weekdays">{["Pt","Sa","Ça","Pe","Cu","Ct","Pz"].map((d) => <span key={d}>{d}</span>)}</div>
-          <div className="cal-grid">
-            {Array.from({ length: firstDow }, (_, i) => <div key={`e${i}`} className="cal-day empty" />)}
-            {Array.from({ length: daysInMonth }, (_, i) => {
-              const day = new Date(viewYear, viewMonth, i+1);
-              const isSel = selected && sameDay(day, selected);
-              const cls = ["cal-day", isSel ? "range-start range-end" : "", sameDay(day, today) ? "today-mark" : ""].filter(Boolean).join(" ");
-              return <button key={i} type="button" className={cls} onClick={() => selectDay(day)}>{i+1}</button>;
-            })}
-          </div>
         </div>,
         document.body
       )}

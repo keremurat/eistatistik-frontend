@@ -1566,3 +1566,96 @@ button:focus-visible,a:focus-visible { outline:3px solid #69b9dc; outline-offset
 .ders-upload-zone:hover { border-color:#a0bfcc; background:#f5fafb; }
 .ders-upload-label { font-size:.7rem; font-weight:700; color:#54687a; }
 .ders-upload-hint { font-size:.6rem; color:var(--muted); max-width:220px; line-height:1.4; }
+
+/* ── İndirim Kodu tablo hücreleri ── */
+.ic-code { color:var(--blue); font-weight:700; }
+.ic-desc-link { color:var(--blue); font-weight:700; text-decoration:none; }
+.ic-desc-link:hover { text-decoration:underline; }
+.ic-date-cell { font-size:.64rem; color:#54687a; white-space:nowrap; }
+
+/* ── Custom Date Picker (Takvim) ── */
+.dc-wrap { position:relative; }
+.dc-input { width:100%; padding:.5rem .75rem; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); font:inherit; font-size:.7rem; font-weight:700; cursor:pointer; transition:.15s; }
+.dc-input:focus { border-color:#7cacc4; box-shadow:0 0 0 2px var(--blue-soft); outline:0; }
+.dc-input.has-value { color:var(--navy); }
+.dc-panel { position:absolute; top:calc(100% + 6px); left:0; z-index:65; width:272px; background:#fff; border:1px solid var(--line); border-radius:13px; box-shadow:0 18px 45px rgba(19,43,70,.18); padding:.65rem; animation:profile-menu-in .15s ease-out; }
+.dc-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:.55rem; }
+.dc-nav-label { font-size:.73rem; font-weight:850; color:var(--navy); letter-spacing:-.01em; }
+.dc-nav-btn { width:28px; height:28px; display:grid; place-items:center; border:0; border-radius:6px; background:transparent; color:var(--navy); cursor:pointer; font-size:.85rem; transition:.1s; }
+.dc-nav-btn:hover { background:var(--canvas); }
+.dc-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+.dc-dow { font-size:.54rem; font-weight:850; color:var(--muted); text-align:center; padding:.22rem 0; letter-spacing:.02em; }
+.dc-cell { width:100%; aspect-ratio:1; display:grid; place-items:center; border:0; border-radius:6px; background:transparent; color:#3f556a; font:inherit; font-size:.65rem; font-weight:700; cursor:pointer; transition:.1s; }
+.dc-cell:hover:not(:disabled) { background:var(--canvas); color:var(--navy); }
+.dc-cell.today { color:var(--blue); font-weight:900; }
+.dc-cell.selected { background:var(--navy); color:#fff; font-weight:800; border-radius:6px; }
+.dc-cell.selected.today { background:var(--blue); }
+.dc-cell:disabled { opacity:0; cursor:default; pointer-events:none; }
+
+/* ── Custom Searchable Select ── */
+.cs-wrap { position:relative; }
+.cs-trigger { width:100%; min-height:40px; padding:.45rem .75rem; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); font:inherit; font-size:.7rem; font-weight:700; text-align:left; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:.4rem; transition:.12s; }
+.cs-trigger:hover { border-color:#b0cad4; }
+.cs-trigger.open { border-color:#7cacc4; box-shadow:0 0 0 2px var(--blue-soft); }
+.cs-arrow { font-size:.6rem; color:var(--muted); flex-shrink:0; transition:transform .15s; }
+.cs-trigger.open .cs-arrow { transform:rotate(180deg); }
+.cs-placeholder { color:#a0b0ba; }
+.cs-panel { position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:65; background:#fff; border:1px solid var(--line); border-radius:9px; box-shadow:0 12px 30px rgba(19,43,70,.13); padding:.3rem; animation:profile-menu-in .12s ease-out; }
+.cs-search-input { width:100%; padding:.35rem .5rem; border:1px solid var(--line); border-radius:6px; background:#f8fafb; color:var(--ink); font:inherit; font-size:.68rem; font-weight:700; margin-bottom:.25rem; }
+.cs-search-input:focus { border-color:#7cacc4; outline:0; }
+.cs-option { width:100%; padding:.45rem .6rem; display:block; border:0; border-radius:5px; background:transparent; color:#3f556a; font:inherit; font-size:.7rem; font-weight:700; text-align:left; cursor:pointer; transition:.1s; }
+.cs-option:hover { background:var(--canvas); color:var(--navy); }
+.cs-option.active { color:var(--blue); }
+
+/* ── Görev İşlemleri — Kanban Board ──────────────────────────────────────── */
+.kanban-page { padding:1.5rem 2rem; }
+.kanban-header { display:flex; align-items:center; gap:.65rem; margin-bottom:1.5rem; }
+.kanban-title { font-size:1.1rem; font-weight:850; color:var(--navy); letter-spacing:-.02em; flex:1; margin:0; }
+.kanban-board { display:flex; gap:1.1rem; align-items:flex-start; overflow-x:auto; padding-bottom:1.5rem; }
+.kanban-col { min-width:296px; flex:0 0 296px; }
+.kanban-col-head { display:flex; align-items:center; gap:.45rem; margin-bottom:.8rem; }
+.kanban-col-title { font-size:.59rem; font-weight:850; letter-spacing:.13em; color:var(--muted); }
+.kanban-col-count { font-size:.58rem; font-weight:800; color:#a0b0ba; background:var(--canvas); border:1px solid var(--line); border-radius:99px; padding:.1rem .45rem; }
+.gorev-card { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:.85rem; margin-bottom:.6rem; box-shadow:0 4px 14px rgba(19,43,70,.05); }
+.gorev-card-top { display:flex; justify-content:space-between; align-items:center; gap:.5rem; margin-bottom:.45rem; }
+.gorev-etiket { font-size:.52rem; font-weight:800; padding:.2rem .52rem; border-radius:99px; text-transform:uppercase; letter-spacing:.07em; white-space:nowrap; }
+.gorev-etiket-acil         { background:#fff3f2; color:#c85a51; }
+.gorev-etiket-hatirlatma   { background:#f0faf6; color:#287a55; }
+.gorev-etiket-bilgilendirme{ background:var(--blue-soft); color:var(--blue); }
+.gorev-etiket-teslimat     { background:#fdf4ec; color:#b66d2e; }
+.gorev-etiket-rapor        { background:#f5f0fb; color:#6b5ab2; }
+.gorev-etiket-ekanaliz     { background:#eef6fa; color:#2a7f9e; }
+.gorev-card-tarih { font-size:.58rem; color:var(--muted); font-weight:700; white-space:nowrap; flex-shrink:0; }
+.gorev-card-title { font-size:.71rem; font-weight:850; color:var(--navy); margin:.3rem 0 .4rem; letter-spacing:-.01em; }
+.gorev-card-meta { display:flex; align-items:flex-start; gap:.35rem; font-size:.61rem; color:#54687a; margin-bottom:.2rem; font-weight:700; line-height:1.4; }
+.gorev-card-meta-icon { flex-shrink:0; margin-top:.1rem; color:#a0b0ba; }
+.gorev-card-desc { font-size:.61rem; color:#54687a; line-height:1.5; margin:.45rem 0; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.gorev-card-foot { display:flex; justify-content:space-between; align-items:center; margin-top:.55rem; padding-top:.55rem; border-top:1px solid var(--line); }
+.gorev-card-atanan { font-size:.57rem; font-weight:850; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+
+/* ── Admin form modalı (görev / pano ekleme, yasal değil) ──────────────────── */
+.admin-modal-backdrop { position:fixed; inset:0; background:rgba(7,21,36,.46); z-index:8000; display:flex; align-items:center; justify-content:center; padding:1.5rem; }
+.admin-modal { background:var(--surface); border-radius:15px; box-shadow:0 35px 90px rgba(7,21,36,.28); width:100%; max-width:660px; max-height:90vh; display:flex; flex-direction:column; animation:profile-menu-in .18s ease-out; }
+.admin-modal-head { display:flex; align-items:center; justify-content:space-between; padding:1.1rem 1.4rem; border-bottom:1px solid var(--line); flex-shrink:0; }
+.admin-modal-head h2 { font-size:.95rem; font-weight:850; color:var(--navy); letter-spacing:-.02em; margin:0; }
+.admin-modal-close { width:28px; height:28px; border-radius:7px; border:0; background:var(--canvas); color:var(--muted); font-size:1.15rem; cursor:pointer; display:grid; place-items:center; line-height:1; }
+.admin-modal-close:hover { background:var(--line); }
+.admin-modal-body { padding:1.2rem 1.4rem; flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:.85rem; }
+.admin-modal-grid-2 { display:grid; grid-template-columns:1.4fr 1fr; gap:.75rem; }
+.admin-modal-grid-3 { display:grid; grid-template-columns:1fr 1.3fr 1fr; gap:.75rem; }
+.admin-modal-foot { padding:.9rem 1.4rem; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:.55rem; flex-shrink:0; }
+.admin-modal-foot .btn-cancel { padding:.52rem 1.1rem; border-radius:7px; border:1px solid var(--line); background:var(--canvas); color:var(--ink); font:inherit; font-size:.7rem; font-weight:800; cursor:pointer; transition:.12s; }
+.admin-modal-foot .btn-cancel:hover { background:var(--line); }
+.admin-modal-foot .btn-save { padding:.52rem 1.1rem; border-radius:7px; border:0; background:var(--navy); color:#fff; font:inherit; font-size:.7rem; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:.4rem; transition:.12s; }
+.admin-modal-foot .btn-save:hover:not(:disabled) { background:var(--navy-deep); }
+.admin-modal-foot .btn-save:disabled { opacity:.5; cursor:default; }
+
+/* Yapılacaklar checklist */
+.yapilanlar-list { display:flex; flex-direction:column; gap:.4rem; }
+.yapilanlar-item { display:flex; align-items:center; gap:.45rem; }
+.yapilanlar-input { flex:1; padding:.35rem .6rem; border:1px solid var(--line); border-radius:6px; font:inherit; font-size:.68rem; font-weight:700; color:var(--ink); background:#fff; }
+.yapilanlar-input:focus { border-color:#7cacc4; outline:0; }
+.yapilanlar-remove { width:24px; height:24px; border:0; border-radius:5px; background:none; color:var(--muted); cursor:pointer; display:grid; place-items:center; flex-shrink:0; transition:.1s; }
+.yapilanlar-remove:hover { background:#fff3f2; color:#c85a51; }
+.yapilanlar-add { display:inline-flex; align-items:center; gap:.3rem; font-size:.68rem; font-weight:800; color:var(--blue); background:none; border:0; cursor:pointer; padding:0; margin-top:.15rem; }
+.yapilanlar-add:hover { text-decoration:underline; }

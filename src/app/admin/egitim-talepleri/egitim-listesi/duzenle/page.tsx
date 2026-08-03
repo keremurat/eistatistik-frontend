@@ -5,6 +5,7 @@ import { Suspense, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { AdminShell } from "../../../AdminShell";
 import { trainings, EgitimTur, EsnekKota, EgitimDurum, Sertifika } from "../data";
+import { DatePicker } from "../../../../components/DatePicker";
 
 type IconName = "back" | "check";
 function Icon({ name, size = 17 }: { name: IconName; size?: number }) {
@@ -143,11 +144,11 @@ function EditForm() {
               <div className="edu-row-2">
                 <div className="form-field">
                   <label htmlFor="ef-baslama">Başlangıç Tarihi</label>
-                  <input id="ef-baslama" value={baslama} onChange={(e) => setBaslama(e.target.value)} placeholder="GG.AA.YYYY" />
+                  <DatePicker id="ef-baslama" value={baslama} onChange={setBaslama} />
                 </div>
                 <div className="form-field">
                   <label htmlFor="ef-bitis">Bitiş Tarihi</label>
-                  <input id="ef-bitis" value={bitis} onChange={(e) => setBitis(e.target.value)} placeholder="GG.AA.YYYY" />
+                  <DatePicker id="ef-bitis" value={bitis} onChange={setBitis} />
                 </div>
               </div>
 

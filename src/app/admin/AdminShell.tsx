@@ -53,11 +53,18 @@ const menus: { key: MenuKey; label: string; icon: AdminIconName; items: MenuItem
       { label: "Ders Listesi", href: "/admin/egitim-talepleri/ders-listesi" },
       { label: "Mentörlük Ayarı", href: "/admin/egitim-talepleri/mentorluk-ayari" },
     ] },
-    { label: "İndirim Kodları", href: "#" },
-    { label: "Rol Yönetimi", href: "#" },
-    { label: "Kullanıcı Yönetimi", href: "#" },
-    { label: "Duyurular", href: "#" },
-    { label: "Görev İşlemleri", href: "#" },
+    { label: "İndirim Kodları", href: "/admin/indirim-kodlari" },
+    { label: "Rol Yönetimi", href: "/admin/rol-yonetimi" },
+    { label: "Kullanıcı Yönetimi", href: "#", subItems: [
+      { label: "Kullanıcılar", href: "/admin/kullanici-yonetimi" },
+      { label: "Toplu Mesaj Gönder", href: "/admin/toplu-mesaj" },
+    ] },
+    { label: "Duyurular", href: "/admin/duyurular" },
+    { label: "Görev İşlemleri", href: "#", subItems: [
+      { label: "Görev Listesi (Kart)", href: "/admin/gorev-isleri/gorev-listesi-kart" },
+      { label: "Görev Listesi", href: "/admin/gorev-isleri/gorev-listesi" },
+      { label: "Arşiv", href: "/admin/gorev-isleri/arsiv" },
+    ] },
     { label: "Proje Muhasebesi Ekle", href: "#" },
   ] },
 ];
@@ -66,24 +73,35 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [openMenu, setOpenMenu]       = useState<MenuKey | null>(null);
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
   const [dataHidden, setDataHidden]   = useState(false);
-  const navRef = useRef<HTMLElement>(null);
+  const navRef          = useRef<HTMLElement>(null);
+  const menuCloseTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const subCloseTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
     function closeAll() { setOpenMenu(null); setOpenSubMenu(null); }
-    function closeOnOutsideClick(event: MouseEvent) {
-      if (navRef.current && !navRef.current.contains(event.target as Node)) closeAll();
-    }
     function closeOnEscape(event: KeyboardEvent) {
       if (event.key === "Escape") closeAll();
     }
-    document.addEventListener("mousedown", closeOnOutsideClick);
     document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("mousedown", closeOnOutsideClick);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
+    return () => document.removeEventListener("keydown", closeOnEscape);
   }, []);
+
+  function openMenuKey(key: MenuKey) {
+    if (menuCloseTimer.current) { clearTimeout(menuCloseTimer.current); menuCloseTimer.current = null; }
+    setOpenMenu(key);
+    setOpenSubMenu(null);
+  }
+  function scheduleCloseMenu() {
+    menuCloseTimer.current = setTimeout(() => { setOpenMenu(null); setOpenSubMenu(null); }, 150);
+  }
+  function openSub(label: string) {
+    if (subCloseTimer.current) { clearTimeout(subCloseTimer.current); subCloseTimer.current = null; }
+    setOpenSubMenu(label);
+  }
+  function scheduleCloseSub() {
+    subCloseTimer.current = setTimeout(() => setOpenSubMenu(null), 150);
+  }
 
   return (
     <div className="app-shell">
@@ -98,8 +116,18 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               return item.subItems?.some((s) => s.href !== "#" && pathname.startsWith(s.href)) ?? false;
             });
             return (
-            <div className="admin-nav-wrap" key={menu.key}>
-              <button className={`admin-nav-trigger${menuActive ? " active" : ""}`} aria-expanded={openMenu === menu.key} aria-haspopup="menu" onClick={() => { setOpenMenu((current) => (current === menu.key ? null : menu.key)); setOpenSubMenu(null); }}>
+            <div
+              className="admin-nav-wrap"
+              key={menu.key}
+              onMouseEnter={() => openMenuKey(menu.key)}
+              onMouseLeave={scheduleCloseMenu}
+            >
+              <button
+                className={`admin-nav-trigger${menuActive ? " active" : ""}`}
+                aria-expanded={openMenu === menu.key}
+                aria-haspopup="menu"
+                onClick={() => { setOpenMenu((c) => (c === menu.key ? null : menu.key)); setOpenSubMenu(null); }}
+              >
                 <AdminIcon name={menu.icon} />{menu.label}<span className="nav-caret">⌄</span>
               </button>
               {openMenu === menu.key && (
@@ -107,7 +135,12 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   {menu.items.map((item) => {
                     if (item.subItems) {
                       return (
-                        <div key={item.label} className="admin-menu-item-wrap">
+                        <div
+                          key={item.label}
+                          className="admin-menu-item-wrap"
+                          onMouseEnter={() => openSub(item.label)}
+                          onMouseLeave={scheduleCloseSub}
+                        >
                           <button
                             className={`admin-menu-item-btn${openSubMenu === item.label ? " open" : ""}`}
                             onClick={() => setOpenSubMenu((s) => s === item.label ? null : item.label)}
