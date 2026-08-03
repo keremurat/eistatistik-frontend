@@ -2,7 +2,7 @@
 // Giriş, girilen e-postaya göre ilgili rolün iniş sayfasına yönlendirir.
 // Not: Gerçek sistemde kimlik doğrulama sunucu tarafında yapılmalıdır.
 
-export type Role = "musteri" | "admin";
+export type Role = "musteri" | "analizor" | "admin";
 
 export type DemoAccount = {
   email: string;
@@ -18,6 +18,7 @@ export const DEMO_PASSWORD = "password123";
 /** Yeni rol eklemek için buraya bir kayıt ekle: `{role}@eistatistik.com`. */
 export const demoAccounts: DemoAccount[] = [
   { email: "musteri@eistatistik.com", role: "musteri", name: "Kerem Murat", landing: "/dashboard" },
+  { email: "analizor@eistatistik.com", role: "analizor", name: "Analizör", landing: "/analizor" },
   { email: "admin@eistatistik.com", role: "admin", name: "Yönetici", landing: "/admin" },
 ];
 

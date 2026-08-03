@@ -6,6 +6,7 @@ import Image from "next/image";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { NotificationMenu } from "../components/NotificationMenu";
 import { BrandLogo } from "../components/BrandLogo";
+import { CustomerEducationMenu } from "../components/CustomerEducationMenu";
 
 type IconName = "arrow" | "bell" | "book" | "calendar" | "chevron" | "clock" | "file" | "home" | "message" | "more" | "plus" | "search" | "spark";
 type OrderStatus = "action" | "active" | "completed" | "cancelled";
@@ -90,7 +91,7 @@ export default function OrdersPage() {
         <nav className="main-nav" aria-label="Ana navigasyon">
           <Link href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
           <Link className="active" href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
-          <Link href="/egitimler"><Icon name="book" size={17} />Eğitimlerim</Link>
+          <CustomerEducationMenu />
           <a href="#"><Icon name="spark" size={17} />Hizmetler</a>
         </nav>
         <div className="top-actions">

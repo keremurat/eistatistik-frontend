@@ -6,6 +6,7 @@ import Image from "next/image";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { NotificationMenu } from "../components/NotificationMenu";
 import { BrandLogo } from "../components/BrandLogo";
+import { CustomerEducationMenu } from "../components/CustomerEducationMenu";
 
 type IconName = "arrow" | "bell" | "book" | "calendar" | "check" | "chevron" | "clock" | "file" | "home" | "message" | "plus" | "search" | "spark";
 
@@ -118,7 +119,7 @@ export default function DashboardPage() {
         <nav className="main-nav" aria-label="Ana navigasyon">
           <Link className="active" href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
           <Link href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
-          <Link href="/egitimler"><Icon name="book" size={17} />Eğitimlerim</Link>
+          <CustomerEducationMenu />
           <a href="#"><Icon name="spark" size={17} />Hizmetler</a>
         </nav>
         <div className="top-actions">

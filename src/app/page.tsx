@@ -34,24 +34,7 @@ export default function AuthPage() {
   const [membershipAccepted, setMembershipAccepted] = useState(false);
   const [kvkkAccepted, setKvkkAccepted] = useState(false);
   const [legalDocument, setLegalDocument] = useState<LegalDocument | null>(null);
-  const logoClickCount = useRef(0);
-  const logoClickTimer = useRef<number | null>(null);
   const isRegister = mode === "register";
-
-  function handleLogoClick() {
-    logoClickCount.current += 1;
-    if (logoClickTimer.current) window.clearTimeout(logoClickTimer.current);
-
-    if (logoClickCount.current >= 5) {
-      logoClickCount.current = 0;
-      router.push("/dashboard");
-      return;
-    }
-
-    logoClickTimer.current = window.setTimeout(() => {
-      logoClickCount.current = 0;
-    }, 2500);
-  }
 
   function changeMode(next: "login" | "register") {
     if (next === mode) return;
@@ -69,7 +52,7 @@ export default function AuthPage() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email) || login.password.length < 6) return;
     const account = findDemoAccount(login.email, login.password);
     if (!account) {
-      setAuthError("E-posta veya şifre hatalı. Demo: musteri@eistatistik.com · admin@eistatistik.com · şifre: password123");
+      setAuthError("E-posta veya şifre hatalı. Demo hesap şifresi: password123");
       return;
     }
     setLoading(true);
@@ -91,9 +74,9 @@ export default function AuthPage() {
     <section className="auth-card">
       <aside className={`auth-brand-panel ${hasNavigated ? (isRegister ? "move-right" : "move-left") : isRegister ? "at-right" : ""}`}>
         <span className="auth-brand-art" aria-hidden="true" />
-        <button className="auth-logo-shortcut" type="button" onClick={handleLogoClick} aria-label="Eİstatistik">
+        <div className="auth-logo-shortcut" aria-label="Eİstatistik">
           <Image className="auth-logo-white" src="/Beyaz e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority />
-        </button>
+        </div>
         <div className="auth-brand-copy">
           <p>ANALİZ · EĞİTİM · DANIŞMANLIK</p>
           <h1>{isRegister ? <>Çalışma alanınızı<br /><em>bugün oluşturun.</em></> : <>Akademik sürecinize<br /><em>hoş geldiniz.</em></>}</h1>

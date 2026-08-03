@@ -6,6 +6,7 @@ import { FormEvent, useState } from "react";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { NotificationMenu } from "../components/NotificationMenu";
 import { BrandLogo } from "../components/BrandLogo";
+import { CustomerEducationMenu } from "../components/CustomerEducationMenu";
 
 type Section = "account" | "billing" | "security";
 type BillingType = "individual" | "corporate";
@@ -50,7 +51,7 @@ export default function SettingsPage() {
         <nav className="main-nav" aria-label="Ana navigasyon">
           <Link href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
           <Link href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
-          <Link href="/egitimler"><Icon name="book" size={17} />Eğitimlerim</Link>
+          <CustomerEducationMenu />
           <Link href="/yeni-analiz-talebi"><Icon name="spark" size={17} />Hizmetler</Link>
         </nav>
         <div className="top-actions">

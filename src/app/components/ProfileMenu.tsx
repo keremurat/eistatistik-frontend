@@ -19,9 +19,12 @@ interface ProfileMenuProps {
   roleLabel?: string;
   ordersHref?: string;
   ordersLabel?: string;
+  name?: string;
+  email?: string;
+  initials?: string;
 }
 
-export function ProfileMenu({ roleLabel = "Müşteri hesabı", ordersHref = "/siparislerim", ordersLabel = "Siparişler" }: ProfileMenuProps = {}) {
+export function ProfileMenu({ roleLabel = "Müşteri hesabı", ordersHref = "/siparislerim", ordersLabel = "Siparişler", name = "Kerem Murat", email = "kerem@example.com", initials = "KM" }: ProfileMenuProps = {}) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -51,21 +54,21 @@ export function ProfileMenu({ roleLabel = "Müşteri hesabı", ordersHref = "/si
         aria-expanded={open}
         aria-haspopup="menu"
       >
-        <span className="avatar">KM</span>
-        <span className="profile-copy"><strong>Kerem Murat</strong><small>{roleLabel}</small></span>
+        <span className="avatar">{initials}</span>
+        <span className="profile-copy"><strong>{name}</strong><small>{roleLabel}</small></span>
         <span className="profile-caret">⌄</span>
       </button>
 
       {open && (
         <div className="profile-dropdown" role="menu">
           <div className="profile-dropdown-head">
-            <span className="avatar">KM</span>
-            <span><strong>Kerem Murat</strong><small>kerem@example.com</small></span>
+            <span className="avatar">{initials}</span>
+            <span><strong>{name}</strong><small>{email}</small></span>
           </div>
           <nav aria-label="Profil işlemleri">
             <Link href="/ayarlar" role="menuitem" onClick={() => setOpen(false)}><ProfileMenuIcon name="settings" /><span>Ayarlar</span></Link>
             <Link href={ordersHref} role="menuitem" onClick={() => setOpen(false)}><ProfileMenuIcon name="orders" /><span>{ordersLabel}</span></Link>
-            <Link className="logout" href="/" role="menuitem" onClick={() => setOpen(false)}><ProfileMenuIcon name="logout" /><span>Çıkış yap</span></Link>
+            <Link className="logout" href="/" role="menuitem" onClick={() => { localStorage.removeItem("eistatistik_role"); setOpen(false); }}><ProfileMenuIcon name="logout" /><span>Çıkış yap</span></Link>
           </nav>
         </div>
       )}

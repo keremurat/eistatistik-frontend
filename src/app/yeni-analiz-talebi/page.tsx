@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { NotificationMenu } from "../components/NotificationMenu";
 import { BrandLogo } from "../components/BrandLogo";
+import { CustomerEducationMenu } from "../components/CustomerEducationMenu";
 
 type Category = "all" | "analysis" | "consulting" | "presentation" | "other";
 type IconName = "arrow" | "back" | "bell" | "book" | "chart" | "check" | "clock" | "file" | "home" | "invoice" | "message" | "people" | "phone" | "plus" | "search" | "spark" | "target";
@@ -205,7 +206,7 @@ export default function NewRequestPage() {
         <nav className="main-nav">
           <Link href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
           <Link href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
-          <Link href="/egitimler"><Icon name="book" size={17} />Eğitimlerim</Link>
+          <CustomerEducationMenu />
           <a className="active" href="#"><Icon name="spark" size={17} />Hizmetler</a>
         </nav>
         <div className="top-actions"><a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a><NotificationMenu /><ProfileMenu /></div>

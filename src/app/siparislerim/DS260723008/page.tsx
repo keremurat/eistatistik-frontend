@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ProfileMenu } from "../../components/ProfileMenu";
 import { NotificationMenu } from "../../components/NotificationMenu";
 import { BrandLogo } from "../../components/BrandLogo";
+import { CustomerEducationMenu } from "../../components/CustomerEducationMenu";
 import { useEffect, useRef, useState } from "react";
 
 type Section = "overview" | "files" | "payment" | "messages" | "deliveries" | "appointments" | "invoice" | "extra";
@@ -116,7 +117,7 @@ export default function OrderDetailPage() {
         <nav className="main-nav">
           <Link href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
           <Link className="active" href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
-          <Link href="/egitimler"><Icon name="book" size={17} />Eğitimlerim</Link><Link href="/yeni-analiz-talebi"><Icon name="spark" size={17} />Hizmetler</Link>
+          <CustomerEducationMenu /><Link href="/yeni-analiz-talebi"><Icon name="spark" size={17} />Hizmetler</Link>
         </nav>
         <div className="top-actions"><a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a><NotificationMenu /><ProfileMenu /></div>
       </header>
