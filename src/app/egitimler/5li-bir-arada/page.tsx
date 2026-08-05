@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { EducationIcon, EducationShell } from "../EducationShell";
+import { MessageTemplatePicker } from "../../components/MessageTemplatePicker";
 
 type Tab = "overview" | "curriculum" | "payment" | "messages" | "content" | "invoice";
 
@@ -141,6 +142,11 @@ function EducationAgreementModal({ method, onClose, onAccept }: { method: "trans
 function EducationMessages() {
   const [message, setMessage] = useState("");
   const [sentMessages, setSentMessages] = useState<string[]>([]);
+  const isAnalyst = useSyncExternalStore(
+    (notify) => { window.addEventListener("storage", notify); return () => window.removeEventListener("storage", notify); },
+    () => localStorage.getItem("eistatistik_role") === "analizor",
+    () => false,
+  );
 
   function sendMessage() {
     const cleanMessage = message.trim();
@@ -158,7 +164,7 @@ function EducationMessages() {
     <div className="message-composer">
       <label htmlFor="education-message">Mesajınız</label>
       <textarea id="education-message" value={message} onChange={(event) => setMessage(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) sendMessage(); }} placeholder="Program ekibine mesajınızı yazın…" />
-      <div><button className="send" type="button" onClick={sendMessage} disabled={!message.trim()}>Gönder <EducationIcon name="arrow" size={15} /></button></div>
+      <div>{isAnalyst && <MessageTemplatePicker scope="education" onSelect={setMessage}/>}<button className="send" type="button" onClick={sendMessage} disabled={!message.trim()}>Gönder <EducationIcon name="arrow" size={15} /></button></div>
     </div>
     <div className="response-expectation"><EducationIcon name="clock" size={16} /><span><strong>Yanıt süresi:</strong> Mesai saatlerinde ortalama 1 saat.</span></div>
     <div className="messages-thread">

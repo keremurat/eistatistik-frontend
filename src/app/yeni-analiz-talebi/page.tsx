@@ -209,13 +209,17 @@ export default function NewRequestPage() {
           <CustomerEducationMenu />
           <a className="active" href="#"><Icon name="spark" size={17} />Hizmetler</a>
         </nav>
-        <div className="top-actions"><a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a><NotificationMenu /><ProfileMenu /></div>
+        <div className="top-actions"><a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a><NotificationMenu role="musteri" /><ProfileMenu /></div>
       </header>
 
       <main className="request-page">
-        <Link className="back-link" href="/siparislerim"><Icon name="back" size={16} />Siparişlerime dön</Link>
-        <div className="request-progress" aria-label="Talep oluşturma adımları">
-          {stepLabels.map((label, index) => <div className={step === index + 1 ? "active" : step > index + 1 ? "done" : ""} key={label}><button onClick={() => index + 1 < step && goTo(index + 1)}><span>{step > index + 1 ? <Icon name="check" size={12} /> : index + 1}</span><strong>{label}</strong></button>{index < stepLabels.length - 1 && <i />}</div>)}
+        <div className="request-back-row">
+          <Link className="back-link" href="/siparislerim"><Icon name="back" size={15} />Siparişlerime dön</Link>
+        </div>
+        <div className="request-wizard-bar">
+          <div className="request-progress" aria-label="Talep oluşturma adımları">
+            {stepLabels.map((label, index) => <div className={step === index + 1 ? "active" : step > index + 1 ? "done" : ""} key={label}><button onClick={() => index + 1 < step && goTo(index + 1)}><span>{step > index + 1 ? <Icon name="check" size={12} /> : index + 1}</span><strong>{label}</strong></button>{index < stepLabels.length - 1 && <i />}</div>)}
+          </div>
         </div>
 
         {step === 1 && <><RequestHero step={1} title="Nasıl yardımcı olabiliriz?" description="İhtiyacınıza en uygun hizmeti seçin. Sonraki adımda çalışmanızın ayrıntılarını birlikte netleştireceğiz." />

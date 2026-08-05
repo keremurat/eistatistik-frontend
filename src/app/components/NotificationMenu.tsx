@@ -26,17 +26,56 @@ type NotificationItem = {
   read: boolean;
 };
 
-const initialNotifications: NotificationItem[] = [
-  { id: "n1", icon: "file", title: "Raporunuza yeni dosya eklendi", meta: "Regresyon analizi · 18 dakika önce", href: "/siparislerim/DS260723008", read: false },
-  { id: "n2", icon: "calendar", title: "Görüşmeniz planlandı", meta: "24 Temmuz, 14:30 · Google Meet", href: "/siparislerim/DS260723008", read: false },
-  { id: "n3", icon: "message", title: "Uzmanınız mesaj gönderdi", meta: "Yüksek lisans tezi analizi · Dün", href: "/siparislerim/DS260723008", read: true },
-  { id: "n4", icon: "card", title: "Ücret teklifiniz hazır", meta: "Güç analizi danışmanlığı · Dün", href: "/siparislerim/DS260723008", read: true },
-];
+export type NotificationRole = "musteri" | "analizor" | "admin";
 
-export function NotificationMenu() {
+type NotificationConfig = {
+  items: NotificationItem[];
+  allHref: string;
+};
+
+const notificationConfigs: Record<NotificationRole, NotificationConfig> = {
+  musteri: {
+    allHref: "/dashboard",
+    items: [
+      { id: "musteri-dosya", icon: "file", title: "Raporunuza yeni dosya eklendi", meta: "Regresyon analizi · 18 dakika önce", href: "/siparislerim/DS260723008", read: false },
+      { id: "musteri-gorusme", icon: "calendar", title: "Görüşmeniz planlandı", meta: "24 Temmuz, 14:30 · Google Meet", href: "/siparislerim/DS260723008", read: false },
+      { id: "musteri-mesaj", icon: "message", title: "Uzmanınız mesaj gönderdi", meta: "Yüksek lisans tezi analizi · Dün", href: "/siparislerim/DS260723008", read: true },
+      { id: "musteri-teklif", icon: "card", title: "Ücret teklifiniz hazır", meta: "Güç analizi danışmanlığı · Dün", href: "/siparislerim/DS260723008", read: true },
+    ],
+  },
+  analizor: {
+    allHref: "/analizor/islerim",
+    items: [
+      { id: "analizor-is", icon: "file", title: "Yeni bir iş size atandı", meta: "Power ve örneklem analizi · 8 dakika önce", href: "/analizor/islerim", read: false },
+      { id: "analizor-gorusme", icon: "calendar", title: "Görüşmeniz yaklaşıyor", meta: "Bugün 14:30 · Kerem Murat", href: "/analizor/gorusmeler", read: false },
+      { id: "analizor-mesaj", icon: "message", title: "Müşteri yeni yanıt gönderdi", meta: "SA260803014 · 36 dakika önce", href: "/analizor/islerim", read: true },
+      { id: "analizor-teslim", icon: "bell", title: "Teslim süresi yaklaşıyor", meta: "2 çalışma bugün teslim edilecek", href: "/analizor/takvim", read: true },
+    ],
+  },
+  admin: {
+    allHref: "/admin",
+    items: [
+      { id: "admin-siparis", icon: "file", title: "Yeni sipariş oluşturuldu", meta: "İstatistiksel veri analizi · 5 dakika önce", href: "/admin/siparisler", read: false },
+      { id: "admin-odeme", icon: "card", title: "Ödeme bildirimi bekliyor", meta: "Dekont kontrolü gerekli · 14 dakika önce", href: "/admin/siparisler", read: false },
+      { id: "admin-kullanici", icon: "bell", title: "Yeni kullanıcı kaydı", meta: "Müşteri hesabı · 1 saat önce", href: "/admin/kullanici-yonetimi", read: true },
+      { id: "admin-takvim", icon: "calendar", title: "Takvim ataması güncellendi", meta: "Analizör görüşmesi · Dün", href: "/admin/takvim", read: true },
+    ],
+  },
+};
+
+export function NotificationMenu({ role = "musteri" }: { role?: NotificationRole }) {
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const [readIdsByRole, setReadIdsByRole] = useState<Record<NotificationRole, string[]>>({
+    musteri: [],
+    analizor: [],
+    admin: [],
+  });
   const menuRef = useRef<HTMLDivElement>(null);
+  const config = notificationConfigs[role];
+  const notifications = config.items.map((notification) => ({
+    ...notification,
+    read: notification.read || readIdsByRole[role].includes(notification.id),
+  }));
   const unreadCount = notifications.filter((notification) => !notification.read).length;
 
   useEffect(() => {
@@ -56,8 +95,14 @@ export function NotificationMenu() {
     };
   }, []);
 
-  const markAllRead = () => setNotifications((current) => current.map((notification) => ({ ...notification, read: true })));
-  const markRead = (id: string) => setNotifications((current) => current.map((notification) => (notification.id === id ? { ...notification, read: true } : notification)));
+  const markAllRead = () => setReadIdsByRole((current) => ({
+    ...current,
+    [role]: config.items.map((notification) => notification.id),
+  }));
+  const markRead = (id: string) => setReadIdsByRole((current) => ({
+    ...current,
+    [role]: current[role].includes(id) ? current[role] : [...current[role], id],
+  }));
 
   return (
     <div className="notification-menu-wrap" ref={menuRef}>
@@ -93,7 +138,7 @@ export function NotificationMenu() {
               </Link>
             ))}
           </div>
-          <Link className="notification-dropdown-foot" href="/dashboard" role="menuitem" onClick={() => setOpen(false)}>Tüm bildirimleri gör</Link>
+          <Link className="notification-dropdown-foot" href={config.allHref} role="menuitem" onClick={() => setOpen(false)}>Tüm bildirimleri gör</Link>
         </div>
       )}
     </div>

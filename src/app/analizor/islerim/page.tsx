@@ -70,12 +70,12 @@ export default function AnalystWorksPage() {
         <Link href="/analizor"><Icon name="home" />Genel bakış</Link>
         <Link className="active" href="/analizor/islerim"><Icon name="tasks" />İşlerim</Link>
         <CustomerEducationMenu />
-        <Link href="/analizor#meetings"><Icon name="video" />Görüşmeler</Link>
-        <Link href="/analizor#analyst-calendar"><Icon name="calendar" />Takvim</Link>
+        <Link href="/analizor/gorusmeler"><Icon name="video" />Görüşmeler</Link>
+        <Link href="/analizor/takvim"><Icon name="calendar" />Takvim</Link>
       </nav>
       <div className="top-actions">
         <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a>
-        <NotificationMenu />
+        <NotificationMenu role="analizor" />
         <ProfileMenu roleLabel="Analizör hesabı" ordersHref="/analizor/islerim" ordersLabel="İşlerim" name="Naci Yılmaz" email="analizor@eistatistik.com" initials="NY" />
       </div>
     </header>
@@ -100,12 +100,13 @@ export default function AnalystWorksPage() {
         <header><div><p className="eyebrow">ATANAN ÇALIŞMALAR</p><h2>İş listeniz</h2></div><span>{visibleWorks.length} kayıt</span></header>
         <div className="analyst-work-head"><span>Çalışma</span><span>Müşteri</span><span>Durum</span><span>Teslim</span><span>İlerleme</span><span>İşlem</span></div>
         {visibleWorks.map(work => <article className="analyst-work-row" key={work.code}>
+          <Link className="order-row-link" href={`/analizor/islerim/${work.code}`} aria-label={`${work.title} iş detayını görüntüle`} />
           <div className="order-identity"><span className="order-file"><Icon name="file" /></span><span><strong>{work.title}</strong><small>{work.code}</small></span></div>
           <div className="analyst-work-customer"><strong>{work.customer}</strong><small>Müşteri</small></div>
           <div className="order-state"><span className={`state-dot analyst-${work.status}`} /><span><strong>{work.statusLabel}</strong><small>{work.detail}</small></span></div>
           <div className="delivery-cell"><Icon name="clock" size={16} /><span><strong>{work.due}</strong><small>{work.remaining}</small></span></div>
           <div className="progress-cell"><div><span style={{ width: `${work.progress}%` }} /></div><small>{work.progress}%</small></div>
-          <button className={work.status === "delivery" || work.status === "new" ? "context-action primary" : "context-action"}>{work.status === "new" ? "İşi incele" : work.status === "delivery" ? "Teslimi tamamla" : "Çalışmayı aç"}<Icon name="arrow" size={15} /></button>
+          <Link href={`/analizor/islerim/${work.code}`} className={work.status === "delivery" || work.status === "new" ? "context-action primary" : "context-action"}>{work.status === "new" ? "İşi incele" : work.status === "delivery" ? "Teslimi tamamla" : "Çalışmayı aç"}<Icon name="arrow" size={15} /></Link>
         </article>)}
         {visibleWorks.length === 0 && <div className="orders-empty"><span><Icon name="search" size={24} /></span><h2>İş bulunamadı</h2><p>Arama kelimenizi veya seçtiğiniz durum filtresini değiştirin.</p><button onClick={() => { setFilter("all"); setQuery(""); }}>Filtreleri temizle</button></div>}
       </section>

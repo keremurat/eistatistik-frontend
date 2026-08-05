@@ -174,9 +174,7 @@ function EventChip({ ev }: { ev: CalEvent }) {
   return (
     <a
       className={`cal-event${ev.type === "pa" ? " cal-event-pa" : ""}`}
-      href={`/admin/siparisler/${ev.code}`}
-      target="_blank"
-      rel="noopener noreferrer"
+      href={`/admin/siparisler/${ev.code}?section=${ev.type === "pa" ? "notes" : "overview"}`}
     >
       <span className="cal-dot" />
       <span className="cal-event-text">{ev.time} {ev.code}{ev.isEk ? " Ek" : ""}</span>

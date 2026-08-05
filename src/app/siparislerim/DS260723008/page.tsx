@@ -119,7 +119,7 @@ export default function OrderDetailPage() {
           <Link className="active" href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
           <CustomerEducationMenu /><Link href="/yeni-analiz-talebi"><Icon name="spark" size={17} />Hizmetler</Link>
         </nav>
-        <div className="top-actions"><a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a><NotificationMenu /><ProfileMenu /></div>
+        <div className="top-actions"><a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a><NotificationMenu role="musteri" /><ProfileMenu /></div>
       </header>
 
       <main className="detail-page">

@@ -6,7 +6,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { NotificationMenu } from "../components/NotificationMenu";
-import { FavoritesProvider, useFavorites, type Favorite } from "./FavoritesContext";
+import { FavoritesProvider, useFavorites } from "./FavoritesContext";
 
 const DataHiddenContext = createContext(false);
 /** Admin panelinde verilerin gizli (göz kapalı) olup olmadığını okur. */
@@ -117,10 +117,10 @@ const menus: { key: MenuKey; label: string; icon: AdminIconName; items: MenuItem
     { label: "Arşiv", href: "/admin/arsiv" },
   ] },
   { key: "education", label: "Eğitimler", icon: "education", items: [
-    { label: "Satın Alınan Eğitimler", href: "#" },
-    { label: "Yeni Eğitim Satın Al", href: "#" },
-    { label: "Eğitim İstekleri", href: "#" },
-    { label: "Arşiv", href: "#" },
+    { label: "Satın Alınan Eğitimler", href: "/admin/egitimler/satin-alinan" },
+    { label: "Yeni Eğitim Satın Al", href: "/admin/egitimler/yeni" },
+    { label: "Eğitim İstekleri", href: "/admin/egitimler/istekler" },
+    { label: "Arşiv", href: "/admin/egitimler/arsiv" },
   ] },
   { key: "manage", label: "Yönetim", icon: "manage", items: [
     { label: "Sipariş Türleri", href: "/admin/siparis-turleri" },
@@ -258,7 +258,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <AdminIcon name={dataHidden ? "eyeOff" : "eye"} size={20} />
           </button>
           <FavoritesMenu />
-          <NotificationMenu />
+          <NotificationMenu role="admin" />
           <ProfileMenu roleLabel="Yönetici" ordersHref="/admin/siparisler" ordersLabel="Sipariş Yönetimi" />
         </div>
       </header>

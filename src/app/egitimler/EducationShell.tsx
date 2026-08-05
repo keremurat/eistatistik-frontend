@@ -53,8 +53,8 @@ export function EducationShell({ children }: { children: React.ReactNode }) {
           <Link href="/analizor"><EducationIcon name="home" size={17} />Genel bakış</Link>
           <Link href="/analizor/islerim"><EducationIcon name="tasks" size={17} />İşlerim</Link>
           <CustomerEducationMenu />
-          <Link href="/analizor#meetings"><EducationIcon name="video" size={17} />Görüşmeler</Link>
-          <Link href="/analizor#analyst-calendar"><EducationIcon name="calendar" size={17} />Takvim</Link>
+          <Link href="/analizor/gorusmeler"><EducationIcon name="video" size={17} />Görüşmeler</Link>
+          <Link href="/analizor/takvim"><EducationIcon name="calendar" size={17} />Takvim</Link>
         </> : <>
           <Link href="/dashboard"><EducationIcon name="home" size={17} />Genel bakış</Link>
           <Link href="/siparislerim"><EducationIcon name="file" size={17} />Siparişlerim</Link>
@@ -66,7 +66,7 @@ export function EducationShell({ children }: { children: React.ReactNode }) {
         <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç">
           <Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} />
         </a>
-        <NotificationMenu />
+        <NotificationMenu role={isAnalyst ? "analizor" : "musteri"} />
         {isAnalyst
           ? <ProfileMenu roleLabel="Analizör hesabı" ordersHref="/analizor/islerim" ordersLabel="İşlerim" name="Naci Yılmaz" email="analizor@eistatistik.com" initials="NY" />
           : <ProfileMenu />}

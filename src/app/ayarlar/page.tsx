@@ -56,7 +56,7 @@ export default function SettingsPage() {
         </nav>
         <div className="top-actions">
           <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a>
-          <NotificationMenu />
+          <NotificationMenu role="musteri" />
           <ProfileMenu />
         </div>
       </header>

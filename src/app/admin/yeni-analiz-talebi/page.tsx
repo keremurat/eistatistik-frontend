@@ -196,9 +196,13 @@ export default function AdminNewRequestPage() {
   return (
     <AdminShell>
       <main className="request-page">
-        <Link className="back-link" href="/admin/siparisler"><Icon name="back" size={16} />Siparişlere dön</Link>
-        <div className="request-progress" aria-label="Talep oluşturma adımları">
-          {stepLabels.map((label, index) => <div className={step === index + 1 ? "active" : step > index + 1 ? "done" : ""} key={label}><button onClick={() => index + 1 < step && goTo(index + 1)}><span>{step > index + 1 ? <Icon name="check" size={12} /> : index + 1}</span><strong>{label}</strong></button>{index < stepLabels.length - 1 && <i />}</div>)}
+        <div className="request-back-row">
+          <Link className="back-link" href="/admin/siparisler"><Icon name="back" size={15} />Siparişlere dön</Link>
+        </div>
+        <div className="request-wizard-bar">
+          <div className="request-progress" aria-label="Talep oluşturma adımları">
+            {stepLabels.map((label, index) => <div className={step === index + 1 ? "active" : step > index + 1 ? "done" : ""} key={label}><button onClick={() => index + 1 < step && goTo(index + 1)}><span>{step > index + 1 ? <Icon name="check" size={12} /> : index + 1}</span><strong>{label}</strong></button>{index < stepLabels.length - 1 && <i />}</div>)}
+          </div>
         </div>
 
         {step === 1 && <><RequestHero step={1} title="Nasıl yardımcı olabiliriz?" description="İhtiyaca en uygun hizmeti seçin. Sonraki adımda çalışmanın ayrıntılarını birlikte netleştireceğiz." />

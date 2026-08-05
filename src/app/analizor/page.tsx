@@ -58,14 +58,14 @@ export default function AnalystDashboardPage() {
           <Link className="active" href="/analizor"><Icon name="home" />Genel bakış</Link>
           <Link href="/analizor/islerim"><Icon name="tasks" />İşlerim</Link>
           <CustomerEducationMenu />
-          <a href="#meetings"><Icon name="video" />Görüşmeler</a>
-          <a href="#analyst-calendar"><Icon name="calendar" />Takvim</a>
+          <Link href="/analizor/gorusmeler"><Icon name="video" />Görüşmeler</Link>
+          <Link href="/analizor/takvim"><Icon name="calendar" />Takvim</Link>
         </nav>
         <div className="top-actions">
           <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç">
             <Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} />
           </a>
-          <NotificationMenu />
+          <NotificationMenu role="analizor" />
           <ProfileMenu roleLabel="Analizör hesabı" ordersHref="/analizor/islerim" ordersLabel="İşlerim" name="Naci Yılmaz" email="analizor@eistatistik.com" initials="NY" />
         </div>
       </header>

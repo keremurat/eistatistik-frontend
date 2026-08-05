@@ -1,206 +1,122 @@
-"use client";
-
 import Image from "next/image";
-import { FormEvent, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { findDemoAccount } from "./lib/demoAccounts";
+import Link from "next/link";
+import { LandingExperience } from "./components/LandingExperience";
+import { LandingFaq } from "./components/LandingFaq";
+import { LandingHeader } from "./components/LandingHeader";
+import { LandingProcess } from "./components/LandingProcess";
 
-type IconName = "arrow" | "eye" | "eyeOff" | "lock" | "mail" | "shield" | "user";
-type LegalDocument = "membership" | "kvkk";
+const services = [
+  { title: "İstatistiksel veri analizi", copy: "Tez, makale ve araştırmalarınız için yöntem seçimi, analiz ve akademik standartlarda raporlama.", image: "/service-illustrations/statistical-analysis-v2.png", type: "Analiz ve araştırma" },
+  { title: "Power ve örneklem analizi", copy: "Araştırmanızın ihtiyaç duyduğu örneklem büyüklüğünü ve istatistiksel gücü güvenle planlayın.", image: "/service-illustrations/power-analysis-v2.png", type: "Araştırma planlama" },
+  { title: "Online mentörlük", copy: "Yöntem, bulgular ve akademik süreç boyunca alanında deneyimli bir uzmanla birebir çalışın.", image: "/service-illustrations/mentoring-v2.png", type: "Danışmanlık" },
+  { title: "Graphical abstract", copy: "Araştırmanızın yöntemini ve bulgularını yayın kalitesinde anlaşılır bir görsel anlatıma dönüştürün.", image: "/service-illustrations/graphical-abstract-v2.png", type: "Akademik sunum" },
+  { title: "Proforma fatura", copy: "Kurumsal satın alma ve akademik bütçe süreçleri için gerekli proforma belgelerinizi oluşturun.", image: "/service-illustrations/proforma-invoice-v2.png", type: "Finansal belge" },
+  { title: "Akademik mobil uygulama", copy: "Araştırma ve eğitim içeriğinizi hedef kitlenize özel bir dijital ürüne dönüştürün.", image: "/service-illustrations/academic-mobile-app-v2.png", type: "Dijital ürün" },
+];
 
-function AuthIcon({ name, size = 18 }: { name: IconName; size?: number }) {
-  const paths: Record<IconName, React.ReactNode> = {
-    arrow: <><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>,
-    eye: <><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" /></>,
-    eyeOff: <><path d="m3 3 18 18" /><path d="M10.6 6.2A10.7 10.7 0 0 1 12 6c6.5 0 10 6 10 6a15 15 0 0 1-2.2 2.8M6.2 6.2C3.4 8 2 12 2 12s3.5 6 10 6a10 10 0 0 0 4.1-.8" /></>,
-    lock: <><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>,
-    mail: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></>,
-    shield: <><path d="M12 22s8-3 8-10V5l-8-3-8 3v7c0 7 8 10 8 10Z" /><path d="m9 12 2 2 4-4" /></>,
-    user: <><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>,
-  };
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
-}
+const faqs: Array<[string, string]> = [
+  ["Hangi alanlarda analiz desteği alabilirim?", "Sağlık bilimlerinden sosyal bilimlere kadar nicel araştırmalarda yöntem seçimi, veri analizi, yorumlama ve raporlama desteği alabilirsiniz."],
+  ["Dosyalarım ve araştırma verilerim güvende mi?", "Dosyalar yalnızca ilgili çalışma kapsamında yetkilendirilmiş ekip tarafından erişilen müşteri alanında tutulur."],
+  ["Teslim sürecini nasıl takip edeceğim?", "Siparişinizin her aşaması çalışma alanınıza işlenir. Bildirimler, mesajlar ve görüşmeler aynı sipariş altında görünür."],
+  ["Analiz tamamlandıktan sonra destek alabilir miyim?", "Teslimden sonra siparişiniz uygunsa ek analiz talebi oluşturabilir, sonuçlarla ilgili görüşme planlayabilirsiniz."],
+];
 
-export default function AuthPage() {
-  const router = useRouter();
-  const [mode, setMode] = useState<"login" | "register">("login");
-  const [hasNavigated, setHasNavigated] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [login, setLogin] = useState({ email: "", password: "" });
-  const [authError, setAuthError] = useState("");
-  const [register, setRegister] = useState({ firstName: "", lastName: "", email: "", password: "", confirm: "" });
-  const [membershipAccepted, setMembershipAccepted] = useState(false);
-  const [kvkkAccepted, setKvkkAccepted] = useState(false);
-  const [legalDocument, setLegalDocument] = useState<LegalDocument | null>(null);
-  const isRegister = mode === "register";
+export default function LandingPage() {
+  return (
+    <main className="landing-page">
+      <LandingHeader />
 
-  function changeMode(next: "login" | "register") {
-    if (next === mode) return;
-    setHasNavigated(true);
-    setMode(next);
-    setSubmitted(false);
-    setShowPassword(false);
-    setAuthError("");
-  }
-
-  function handleLogin(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSubmitted(true);
-    setAuthError("");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email) || login.password.length < 6) return;
-    const account = findDemoAccount(login.email, login.password);
-    if (!account) {
-      setAuthError("E-posta veya şifre hatalı. Demo hesap şifresi: password123");
-      return;
-    }
-    setLoading(true);
-    localStorage.setItem("eistatistik_role", account.role);
-    window.setTimeout(() => router.push(account.landing), 650);
-  }
-
-  function handleRegister(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSubmitted(true);
-    const valid = register.firstName.trim() && register.lastName.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(register.email) && register.password.length >= 6 && register.password === register.confirm && membershipAccepted && kvkkAccepted;
-    if (!valid) return;
-    setLoading(true);
-    localStorage.setItem("eistatistik_role", "musteri");
-    window.setTimeout(() => router.push("/dashboard"), 650);
-  }
-
-  return <main className="auth-page">
-    <section className="auth-card">
-      <aside className={`auth-brand-panel ${hasNavigated ? (isRegister ? "move-right" : "move-left") : isRegister ? "at-right" : ""}`}>
-        <span className="auth-brand-art" aria-hidden="true" />
-        <div className="auth-logo-shortcut" aria-label="Eİstatistik">
-          <Image className="auth-logo-white" src="/Beyaz e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority />
-        </div>
-        <div className="auth-brand-copy">
-          <p>ANALİZ · EĞİTİM · DANIŞMANLIK</p>
-          <h1>{isRegister ? <>Çalışma alanınızı<br /><em>bugün oluşturun.</em></> : <>Akademik sürecinize<br /><em>hoş geldiniz.</em></>}</h1>
-          <span>{isRegister ? "Analizlerinizi, görüşmelerinizi ve eğitimlerinizi tek hesap üzerinden yönetin." : "Siparişlerinizi takip edin, uzmanınızla görüşün ve eğitimlerinize devam edin."}</span>
-        </div>
-        <div className="auth-security"><span><AuthIcon name="shield" size={21} /></span><div><strong>Güvenli müşteri alanı</strong><small>Verileriniz şifreli bağlantıyla korunur.</small></div></div>
-      </aside>
-
-      <section className={`auth-form-area ${isRegister ? "show-register" : ""}`}>
-        <div className="auth-form-inner">
-          {!isRegister ? <>
-            <header className="auth-login-header"><h2>Tekrar<br /><span>hoş geldiniz.</span></h2><p>Hesabınıza giriş yapın ve çalışmalarınıza devam edin.</p></header>
-            <form className="auth-login-form" onSubmit={handleLogin} noValidate>
-              <AuthField icon="mail" type="email" placeholder="E-posta adresi" value={login.email} onChange={value => { setLogin(current => ({ ...current, email: value })); setAuthError(""); }} invalid={submitted && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email)} error="Geçerli bir e-posta adresi girin." />
-              <AuthField icon="lock" type={showPassword ? "text" : "password"} placeholder="Şifre" value={login.password} onChange={value => { setLogin(current => ({ ...current, password: value })); setAuthError(""); }} invalid={submitted && login.password.length < 6} error="Şifreniz en az 6 karakter olmalı." action={<button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}><AuthIcon name={showPassword ? "eyeOff" : "eye"} size={16} /></button>} />
-              {authError && <p className="auth-error" role="alert">{authError}</p>}
-              <div className="auth-form-options"><label><input type="checkbox" defaultChecked />Beni hatırla</label><a href="mailto:destek@eistatistik.com?subject=Şifre yenileme">Şifremi unuttum</a></div>
-              <button className="auth-primary-button" disabled={loading}>{loading ? <span className="login-loader" /> : <>Giriş yap <AuthIcon name="arrow" size={16} /></>}</button>
-            </form>
-            <div className="auth-form-footer">
-              <div className="auth-divider"><span>veya</span></div>
-              <button className="auth-google" type="button"><GoogleIcon />Google ile devam et</button>
-              <p className="auth-switch-copy">Hesabınız yok mu? <button onClick={() => changeMode("register")}>Hemen kaydolun</button></p>
+      <section className="landing-hero">
+        <div className="landing-hero-fibers" aria-hidden="true"><i /><i /><i /><i /><i /></div>
+        <div className="landing-hero-content">
+          <div className="landing-hero-copy">
+            <p className="landing-kicker">ANALİZ, EĞİTİM VE AKADEMİK DANIŞMANLIK</p>
+            <h1>Araştırmanızın her adımında <span>netlik.</span></h1>
+            <p>Uzman desteği, güvenli dosya paylaşımı ve şeffaf süreç yönetimi tek çalışma alanında.</p>
+            <div className="landing-hero-actions">
+              <Link href="/giris">Analiz talebi oluştur <span aria-hidden="true">→</span></Link>
+              <a href="#platform">Platformu görün</a>
             </div>
-          </> : <>
-            <header className="auth-register-header"><h2>Hesap<br /><span>oluşturun.</span></h2><p>Birkaç adımda Eİstatistik çalışma alanınıza katılın.</p></header>
-            <form className="auth-register-form" onSubmit={handleRegister} noValidate>
-              <div className="auth-field-row">
-                <AuthField icon="user" placeholder="Adınızı girin" value={register.firstName} onChange={value => setRegister(current => ({ ...current, firstName: value }))} invalid={submitted && !register.firstName.trim()} />
-                <AuthField icon="user" placeholder="Soyadınızı girin" value={register.lastName} onChange={value => setRegister(current => ({ ...current, lastName: value }))} invalid={submitted && !register.lastName.trim()} />
-              </div>
-              <AuthField icon="mail" type="email" placeholder="E-posta adresinizi girin" value={register.email} onChange={value => setRegister(current => ({ ...current, email: value }))} invalid={submitted && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(register.email)} />
-              <div className="auth-field-row">
-                <AuthField icon="lock" type="password" placeholder="En az 6 karakter" value={register.password} onChange={value => setRegister(current => ({ ...current, password: value }))} invalid={submitted && register.password.length < 6} />
-                <AuthField icon="lock" type="password" placeholder="Şifreyi tekrar girin" value={register.confirm} onChange={value => setRegister(current => ({ ...current, confirm: value }))} invalid={submitted && register.password !== register.confirm} />
-              </div>
-              <div className="auth-legal-consents">
-                <button type="button" className={submitted && !membershipAccepted ? "invalid" : ""} onClick={() => setLegalDocument("membership")}><span className={membershipAccepted ? "accepted" : ""}>{membershipAccepted ? "✓" : ""}</span><strong><u>Üyelik Sözleşmesi</u> şartlarını okudum ve kabul ediyorum.</strong></button>
-                <button type="button" className={submitted && !kvkkAccepted ? "invalid" : ""} onClick={() => setLegalDocument("kvkk")}><span className={kvkkAccepted ? "accepted" : ""}>{kvkkAccepted ? "✓" : ""}</span><strong><u>KVKK Aydınlatma Metni</u>’ni okudum ve kabul ediyorum.</strong></button>
-              </div>
-              <button className="auth-primary-button" disabled={loading}>{loading ? <span className="login-loader" /> : <>Kayıt ol <AuthIcon name="arrow" size={16} /></>}</button>
-            </form>
-            <div className="auth-form-footer">
-              <div className="auth-divider"><span>veya</span></div>
-              <button className="auth-google" type="button"><GoogleIcon />Google ile kayıt ol</button>
-              <p className="auth-switch-copy register">Zaten hesabınız var mı? <button onClick={() => changeMode("login")}>Giriş yapın</button></p>
+          </div>
+          <div className="landing-hero-product" aria-label="Eİstatistik müşteri çalışma alanı önizlemesi">
+            <div className="landing-hero-browser">
+              <div className="landing-browser-bar"><span /><span /><span /><b>app.eistatistik.com</b></div>
+              <div className="landing-browser-screen"><iframe src="/dashboard" title="Eİstatistik çalışma alanı" tabIndex={-1} /></div>
             </div>
-          </>}
+            <div className="landing-float-card float-meeting"><strong>14:30</strong><span>Uzman görüşmeniz</span></div>
+            <div className="landing-float-card float-progress"><span>Analiz ilerlemesi</span><strong>%82</strong><i /></div>
+          </div>
         </div>
       </section>
-    </section>
-    <p className="auth-page-note">© 2026 Eİstatistik · Güvenli müşteri platformu</p>
-    {legalDocument && <LegalModal key={legalDocument} document={legalDocument} onClose={() => setLegalDocument(null)} onAccept={() => {
-      if (legalDocument === "membership") {
-        setMembershipAccepted(true);
-        setLegalDocument("kvkk");
-      } else {
-        setKvkkAccepted(true);
-        setLegalDocument(null);
-      }
-    }} />}
-  </main>;
-}
 
-function AuthField({ icon, type = "text", placeholder, value, onChange, invalid = false, error, action }: { icon: IconName; type?: string; placeholder: string; value: string; onChange: (value: string) => void; invalid?: boolean; error?: string; action?: React.ReactNode }) {
-  return <label className={`auth-field ${invalid ? "invalid" : ""}`}><div><AuthIcon name={icon} size={16} /><input type={type} placeholder={placeholder} value={value} onChange={event => onChange(event.target.value)} autoComplete={type === "email" ? "email" : type === "password" ? "current-password" : "off"} aria-invalid={invalid} />{action}</div>{invalid && error && <small>{error}</small>}</label>;
-}
+      <section className="landing-proof" aria-label="Eistatistik ürün ailesi">
+        <p>Eistatistik ürün ailesi, araştırmanın her aşamasında yanınızda.</p>
+        <div className="landing-family-logos">
+          <a href="#services" className="landing-family-brand brand-eistatistik">
+            <span className="landing-family-logo"><Image src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} /></span>
+            <small>Analiz ve danışmanlık</small>
+          </a>
+          <div className="landing-family-brand brand-akademi">
+            <span className="landing-family-logo"><Image src="/eistatistik-akademi.png" alt="Eİstatistik Akademi" width={1321} height={331} /></span>
+            <small>Uygulamalı eğitim</small>
+          </div>
+          <a href="https://www.istabot.com/" target="_blank" rel="noreferrer" className="landing-family-brand brand-istabot">
+            <span className="landing-family-logo"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></span>
+            <small>Analiz asistanı</small>
+          </a>
+        </div>
+      </section>
 
-function GoogleIcon() {
-  return <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.6 12.2c0-.8-.1-1.5-.2-2.2H12v4.3h5.9a5 5 0 0 1-2.2 3.3v2.8h3.6c2.1-2 3.3-4.8 3.3-8.2Z" /><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.8c-1 .7-2.2 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.5H2.2V17A11 11 0 0 0 12 23Z" /><path fill="#FBBC05" d="M5.8 14.1a6.6 6.6 0 0 1 0-4.2V7.1H2.2A11 11 0 0 0 1 12c0 1.8.4 3.5 1.2 4.9l3.6-2.8Z" /><path fill="#EA4335" d="M12 5.4c1.6 0 3.1.5 4.2 1.6l3.2-3.1A10.6 10.6 0 0 0 12 1a11 11 0 0 0-9.8 6.1l3.6 2.8c.9-2.6 3.3-4.5 6.2-4.5Z" /></svg>;
-}
+      <section className="landing-services" id="services">
+        <header className="landing-section-heading services-heading">
+          <h2>Araştırmanız için gereken uzmanlık, tek yerde.</h2>
+          <p>Standart bir paket değil, çalışmanızın gerçek ihtiyacına göre şekillenen profesyonel destek.</p>
+        </header>
+        <div className="landing-service-grid">
+          {services.map((service, index) => (
+            <article className={`landing-service-card service-${index + 1}`} key={service.title}>
+              <div className="landing-service-visual"><Image src={service.image} alt="" fill sizes="(max-width: 760px) 100vw, 45vw" /></div>
+              <div>
+                <span>{service.type}</span>
+                <h3>{service.title}</h3>
+                <p>{service.copy}</p>
+                <Link href="/giris">Hizmeti inceleyin <b aria-hidden="true">→</b></Link>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
 
-function LegalModal({ document, onClose, onAccept }: { document: LegalDocument; onClose: () => void; onAccept: () => void }) {
-  const [content, setContent] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [reachedEnd, setReachedEnd] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const title = document === "membership" ? "Üyelik Sözleşmesi" : "KVKK Aydınlatma Metni";
+      <LandingExperience />
 
-  useEffect(() => {
-    let active = true;
-    fetch(document === "membership" ? "/legal/uyelik-sozlesmesi.txt" : "/legal/kvkk-aydinlatma-metni.txt")
-      .then(response => response.text())
-      .then(text => { if (active) { setContent(text); setLoading(false); } });
-    return () => { active = false; };
-  }, [document]);
+      <LandingProcess />
 
-  useEffect(() => {
-    function closeOnEscape(event: KeyboardEvent) { if (event.key === "Escape") onClose(); }
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [onClose]);
+      <section className="landing-values">
+        <div className="landing-value-primary">
+          <p>Veriniz yalnızca bir dosya değildir.</p>
+          <h2>Araştırmanızın emeğini ciddiye alan bir çalışma alanı.</h2>
+          <Link href="/giris">Çalışma alanınızı açın <span aria-hidden="true">→</span></Link>
+        </div>
+        <div className="landing-value security"><strong>Güvenli dosya paylaşımı</strong><p>Analiz dosyaları, sonuçlar ve yazışmalar siparişe bağlı tutulur.</p></div>
+        <div className="landing-value transparent"><strong>Şeffaf ilerleme</strong><p>Sırada ne olduğunu ve sizden ne beklendiğini her an görün.</p></div>
+        <div className="landing-value human"><strong>Gerçek uzman iletişimi</strong><p>Otomatik yanıtlar yerine çalışmanızı bilen uzmanla görüşün.</p></div>
+      </section>
 
-  function handleScroll() {
-    const element = contentRef.current;
-    if (!element) return;
+      <section className="landing-faq" id="faq">
+        <div><h2>Başlamadan önce merak ettikleriniz.</h2><p>Yanıtını bulamadığınız bir konu için ekibimizle iletişime geçebilirsiniz.</p><a href="mailto:destek@eistatistik.com">destek@eistatistik.com</a></div>
+        <LandingFaq items={faqs} />
+      </section>
 
-    const scrollableDistance = element.scrollHeight - element.clientHeight;
-    const progress = scrollableDistance <= 0
-      ? 100
-      : Math.min(100, Math.max(0, (element.scrollTop / scrollableDistance) * 100));
+      <section className="landing-final-cta">
+        <div><h2>Çalışmanız hazırsa, biz de hazırız.</h2><p>Talebinizi oluşturun. Uzman ekibimiz kapsamı birlikte netleştirsin.</p></div>
+        <Link href="/giris">Analiz talebi oluştur <span aria-hidden="true">→</span></Link>
+      </section>
 
-    setScrollProgress(progress);
-    if (progress >= 99 || scrollableDistance <= 0) setReachedEnd(true);
-  }
-
-  return <div className="legal-modal-backdrop" role="presentation">
-    <section className="legal-modal" role="dialog" aria-modal="true" aria-labelledby="legal-modal-title">
-      <header><div><p>ONAYLANMASI GEREKEN BELGE</p><h2 id="legal-modal-title">{title}</h2></div><button onClick={onClose} aria-label="Pencereyi kapat">×</button></header>
-      <div
-        className="legal-scroll-progress"
-        role="progressbar"
-        aria-label={`${title} okuma ilerlemesi`}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(scrollProgress)}
-      >
-        <span style={{ width: `${scrollProgress}%` }} />
-      </div>
-      <div className="legal-document-content" ref={contentRef} onScroll={handleScroll} tabIndex={0}>
-        {loading ? <div className="legal-loading"><span className="login-loader" />Belge yükleniyor…</div> : <pre>{content}</pre>}
-      </div>
-      <footer><div><AuthIcon name="shield" size={18} /><span>{reachedEnd ? "Belgenin sonuna ulaştınız." : "Kabul edebilmek için belgenin sonuna kadar ilerleyin."}</span></div><div><button className="legal-cancel" onClick={onClose}>Vazgeç</button><button className="legal-accept" onClick={onAccept} disabled={!reachedEnd}>Okudum ve kabul ediyorum</button></div></footer>
-    </section>
-  </div>;
+      <footer className="landing-footer">
+        <Image src="/Beyaz e-istatistik.png" alt="Eİstatistik" width={230} height={54} />
+        <div><a href="#services">Hizmetler</a><a href="#platform">Platform</a><a href="mailto:destek@eistatistik.com">İletişim</a><Link href="/giris">Giriş yap</Link></div>
+        <p>© 2026 Eİstatistik. Tüm hakları saklıdır.</p>
+      </footer>
+    </main>
+  );
 }
