@@ -59,7 +59,7 @@ export function EduDetailTabs({ content, materials, faqs, gallery }: Props) {
             {gallery.map((code) => (
               <div className="edu-gallery-item" key={code}>
                 <iframe
-                  src={`https://www.instagram.com/p/${code}/embed/captioned`}
+                  src={`https://www.instagram.com/p/${code}/embed`}
                   title="Instagram gönderisi"
                   loading="lazy"
                   scrolling="no"

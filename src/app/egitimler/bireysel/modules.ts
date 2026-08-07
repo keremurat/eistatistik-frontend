@@ -44,6 +44,13 @@ export type EduDetail = {
 };
 
 const defaultMaterials = ["Alana özgü hazırlanmış ders notları", "Tüm derslere ait video kayıtları"];
+const appliedMaterials = [
+  "Alana özgü hazırlanmış ders notları",
+  "Alana özgü veri setleri",
+  "Microsoft Word örnek rapor şablonları",
+  "Analiz Seçim Diyagramı",
+  "Tüm derslere ait video kayıtları",
+];
 // Galeri, Instagram gönderi kısa kodlarını tutar (instagram.com/p/<kod>). Embed olarak önizlenir.
 const defaultGallery = ["CafiJ6ntKJL", "CTu9cBlKW5r"];
 
@@ -102,11 +109,52 @@ const overrides: Record<string, Partial<EduDetail>> = {
       "Veri görselleştirme",
       "Makale okuryazarlığı saati",
     ],
+    materials: appliedMaterials,
+  },
+  "ileri-duzey-istatistiksel-veri-analizi": {
+    videoId: "YUwTxvds8EE",
+    gallery: [
+      "Cg2JIClqBQu", "CX9Q5N7NOz9", "CYhAYdNtr6A", "CbVnYs3NfEp", "CQ6sA2hp-Vl",
+      "BxXu0lJl00t", "BwPLKCylzu0", "BvolAt7nmWF", "Bt_esPBn6dL", "BtI_AoYnSAC",
+      "BsxR86enRc_", "Bpw7zsKHsed", "BhrYiSlFbvq", "B4P_Z4Vna_2",
+    ],
+    content: [
+      "Tek yönlü varyans analizi",
+      "İki yönlü varyans analizi",
+      "Tekrarlı ölçümler varyans analizi",
+      "MANOVA",
+      "Tek değişkenli ve çok değişkenli lineer regresyon analizi",
+      "Lojistik regresyon analizi",
+      "Sağ kalım analizi: Yaşam tabloları, Kaplan Meier, Logrank testi, Cox regresyon analizi",
+      "ROC analizi",
+      "Test seçim yöntemi için geliştirdiğimiz “Analiz Seçim Diyagramı”nın kullanımı",
+      "Raporlama teknikleri için geliştirilen Excel formülleri ile tablolaştırma",
+      "Veri görselleştirme",
+      "EndNote kullanımı",
+      "Makale okuryazarlığı saati",
+    ],
+    materials: appliedMaterials,
+  },
+  "olcek-gelistirme-yapisal-esitlik": {
+    videoId: "IoQXJuTk0LU",
+    gallery: ["CRMxm-lpCTo", "B2cOfsLHvEC", "BuCRULTH3-B", "BtEBZQKnrmP", "B4-UQLznKho"],
+    content: [
+      "Güvenirlik analizi",
+      "Açıklayıcı faktör analizi",
+      "IBM AMOS kullanımı ve pratikleri",
+      "Yapısal eşitlik modellemesine ilişkin temel kavramlar",
+      "Tek faktörlü doğrulayıcı faktör analizi",
+      "Birinci düzey çok faktörlü doğrulayıcı faktör analizi",
+      "İkinci düzey doğrulayıcı faktör analizi",
+      "Örtük değişkenlerle yapısal model analizi",
+      "Yol analizi modelleri",
+      "Raporlama teknikleri için geliştirilen Excel formülleri ile tablolaştırma",
+      "Makale okuryazarlığı saati",
+    ],
     materials: [
       "Alana özgü hazırlanmış ders notları",
       "Alana özgü veri setleri",
       "Microsoft Word örnek rapor şablonları",
-      "Analiz Seçim Diyagramı",
       "Tüm derslere ait video kayıtları",
     ],
   },

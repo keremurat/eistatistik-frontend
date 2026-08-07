@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 export function LandingHeader() {
@@ -9,10 +10,17 @@ export function LandingHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<"services" | "education" | "work" | null>(null);
   const headerRef = useRef<HTMLElement | null>(null);
+  const pathname = usePathname();
 
   const closeNavigation = () => {
     setOpen(false);
     setActiveDropdown(null);
+  };
+
+  // Anasayfadayken "Anasayfa"ya tıklamak yeni gezinme tetiklemediğinden sayfayı tepeye kaydır.
+  const goHome = () => {
+    closeNavigation();
+    if (pathname === "/") window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const toggleDropdown = (dropdown: "services" | "education" | "work") => {
@@ -68,18 +76,18 @@ export function LandingHeader() {
           <span /><span />
         </button>
         <nav className={open ? "open" : ""} aria-label="Ana menü">
-          <Link href="/" onClick={closeNavigation}>Anasayfa</Link>
+          <Link href="/" onClick={goHome}>Anasayfa</Link>
 
           <details className="landing-nav-dropdown" open={activeDropdown === "services"}>
             <summary onClick={(event) => { event.preventDefault(); toggleDropdown("services"); }}>Hizmetlerimiz</summary>
             <div className="landing-nav-dropdown-menu">
               <Link href="/hizmetler/istatistiksel-analiz" onClick={closeNavigation}>İstatistiksel Analiz</Link>
               <Link href="/hizmetler/power-analizi" onClick={closeNavigation}>Power Analizi</Link>
-              <a href="#services" onClick={closeNavigation}>Graphical Abstract</a>
-              <a href="#services" onClick={closeNavigation}>Veri İşleme</a>
+              <Link href="/#services" onClick={closeNavigation}>Graphical Abstract</Link>
+              <Link href="/#services" onClick={closeNavigation}>Veri İşleme</Link>
               <Link href="/hizmetler/gecerlilik-guvenilirlik" onClick={closeNavigation}>Geçerlilik ve Güvenilirlik Analizi</Link>
               <Link href="/hizmetler/proforma" onClick={closeNavigation}>Proforma</Link>
-              <a href="#services" onClick={closeNavigation}>Danışmanlık</a>
+              <Link href="/#services" onClick={closeNavigation}>Danışmanlık</Link>
             </div>
           </details>
 
@@ -87,20 +95,20 @@ export function LandingHeader() {
             <summary onClick={(event) => { event.preventDefault(); toggleDropdown("education"); }}>Eğitimler</summary>
             <div className="landing-nav-dropdown-menu compact">
               <Link href="/egitimler/bireysel" onClick={closeNavigation}>Bireysel Eğitim</Link>
-              <a href="#services" onClick={closeNavigation}>Kurumsal Eğitim</a>
+              <Link href="/#services" onClick={closeNavigation}>Kurumsal Eğitim</Link>
             </div>
           </details>
 
-          <a href="#platform" onClick={closeNavigation}>Platform</a>
-          <a href="#process" onClick={closeNavigation}>Nasıl çalışır?</a>
-          <a href="#faq" onClick={closeNavigation}>Merak edilenler</a>
-          <a href="#faq" onClick={closeNavigation}>Blog</a>
+          <Link href="/#platform" onClick={closeNavigation}>Platform</Link>
+          <Link href="/#process" onClick={closeNavigation}>Nasıl çalışır?</Link>
+          <Link href="/#faq" onClick={closeNavigation}>Merak edilenler</Link>
+          <Link href="/#faq" onClick={closeNavigation}>Blog</Link>
 
           <details className="landing-nav-dropdown" open={activeDropdown === "work"}>
             <summary onClick={(event) => { event.preventDefault(); toggleDropdown("work"); }}>Neler Yaptık?</summary>
             <div className="landing-nav-dropdown-menu compact">
-              <a href="#platform" onClick={closeNavigation}>Davetli Konuşmalar</a>
-              <a href="#platform" onClick={closeNavigation}>Referanslar</a>
+              <Link href="/neler-yaptik/davetli-konusmalar" onClick={closeNavigation}>Davetli Konuşmalar</Link>
+              <Link href="/#platform" onClick={closeNavigation}>Referanslar</Link>
             </div>
           </details>
 
