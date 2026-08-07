@@ -25,11 +25,13 @@ function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
 // ── 3-nokta context menüsü ────────────────────────────────────────────────────
 function ContextMenu({
   duyuruId,
+  basePath,
   open,
   onClose,
   onDelete,
 }: {
   duyuruId: number;
+  basePath: string;
   open: boolean;
   onClose: () => void;
   onDelete: (id: number) => void;
@@ -61,7 +63,7 @@ function ContextMenu({
       animation: "profile-menu-in .15s ease-out",
     }}>
       <Link
-        href={`/admin/duyurular/duzenle?id=${duyuruId}`}
+        href={`${basePath}/duzenle?id=${duyuruId}`}
         role="menuitem"
         onClick={onClose}
         style={{
@@ -96,6 +98,10 @@ function ContextMenu({
 
 // ── Sayfa ─────────────────────────────────────────────────────────────────────
 export default function DuyurularPage() {
+  return <AdminShell><AnnouncementsContent /></AdminShell>;
+}
+
+export function AnnouncementsContent({ basePath = "/admin/duyurular" }: { basePath?: string }) {
   const [rows,        setRows]        = useState<Duyuru[]>(DUYURULAR);
   const [openMenu,    setOpenMenu]    = useState<number | null>(null);
   const [deleted,     setDeleted]     = useState<number | null>(null);
@@ -118,7 +124,7 @@ export default function DuyurularPage() {
   };
 
   return (
-    <AdminShell>
+    <>
       <div className="st-page">
         <header className="orders-hero">
           <div>
@@ -126,7 +132,7 @@ export default function DuyurularPage() {
             <h1>Duyuru Listesi</h1>
           </div>
           <Link
-            href="/admin/duyurular/ekle"
+            href={`${basePath}/ekle`}
             style={{
               display: "inline-flex", alignItems: "center", gap: ".4rem",
               minHeight: 38, padding: "0 1.1rem", border: 0, borderRadius: 8,
@@ -252,6 +258,7 @@ export default function DuyurularPage() {
                           </button>
                           <ContextMenu
                             duyuruId={d.id}
+                            basePath={basePath}
                             open={openMenu === d.id}
                             onClose={() => setOpenMenu(null)}
                             onDelete={handleDelete}
@@ -266,6 +273,6 @@ export default function DuyurularPage() {
           </div>
         </section>
       </div>
-    </AdminShell>
+    </>
   );
 }

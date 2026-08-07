@@ -27,11 +27,12 @@ function Icon({ name, size = 17 }: { name: IconName; size?: number }) {
 // ── Row context menu ───────────────────────────────────────────────
 type RowMenuProps = {
   id: number;
+  basePath: string;
   onDelete: () => void;
   onCustomers: () => void;
 };
 
-function RowMenu({ id, onDelete, onCustomers }: RowMenuProps) {
+function RowMenu({ id, basePath, onDelete, onCustomers }: RowMenuProps) {
   const [open, setOpen] = useState(false);
   const [pos,  setPos]  = useState({ top: 0, right: 0 });
   const btnRef  = useRef<HTMLButtonElement>(null);
@@ -85,7 +86,7 @@ function RowMenu({ id, onDelete, onCustomers }: RowMenuProps) {
         <div ref={menuRef} className="order-ctx-menu" role="menu"
           style={{ position: "fixed", top: pos.top, right: pos.right, zIndex: 9999 }}>
           <button className="ctx-item" role="menuitem"
-            onClick={() => { setOpen(false); router.push(`/admin/egitim-talepleri/egitim-listesi/duzenle?id=${id}`); }}>
+            onClick={() => { setOpen(false); router.push(`${basePath}/duzenle?id=${id}`); }}>
             <Icon name="edit" size={14} />Düzenle
           </button>
           <div className="ctx-separator" role="separator" />
@@ -107,6 +108,10 @@ function RowMenu({ id, onDelete, onCustomers }: RowMenuProps) {
 const PER_PAGE = 10;
 
 export default function EgitimListesiPage() {
+  return <AdminShell><EducationListContent /></AdminShell>;
+}
+
+export function EducationListContent({ basePath = "/admin/egitim-talepleri/egitim-listesi" }: { basePath?: string }) {
   const [page,      setPage]      = useState(1);
   const [fAdi,      setFAdi]      = useState("");
   const [fAciklama, setFAciklama] = useState("");
@@ -141,14 +146,14 @@ export default function EgitimListesiPage() {
     : null;
 
   return (
-    <AdminShell>
+    <>
       <div className="st-page">
         <header className="orders-hero">
           <div>
             <p className="eyebrow">YÖNETİM · EĞİTİM TALEPLERİ</p>
             <h1>Eğitim Listesi</h1>
           </div>
-          <Link className="orders-create" href="/admin/egitim-talepleri/egitim-listesi/ekle">
+          <Link className="orders-create" href={`${basePath}/ekle`}>
             <Icon name="plus" size={16} />Ekle
           </Link>
         </header>
@@ -212,6 +217,7 @@ export default function EgitimListesiPage() {
                     <td style={{ textAlign: "center", padding: "0 .5rem" }}>
                       <RowMenu
                         id={t.id}
+                        basePath={basePath}
                         onDelete={() => setDeleteConfirm(t.id)}
                         onCustomers={() => setCustomersId(t.id)}
                       />
@@ -327,6 +333,6 @@ export default function EgitimListesiPage() {
         </div>,
         document.body
       )}
-    </AdminShell>
+    </>
   );
 }

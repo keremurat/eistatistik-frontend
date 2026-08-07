@@ -496,7 +496,7 @@ function PanoEkleModal({ onClose, onSave, mevcutSira }: {
 }
 
 // ── Ana sayfa ─────────────────────────────────────────────────────────────────
-export default function GorevListesiKartPage() {
+export function TaskKanbanContent() {
   const [panolar,   setPanolar]   = useState<Pano[]>(INIT_PANOLAR);
   const [gorevler,  setGorevler]  = useState<Gorev[]>(INIT_GOREVLER);
   const [gorevModal,   setGorevModal]   = useState(false);
@@ -531,7 +531,7 @@ export default function GorevListesiKartPage() {
   const sorted = [...panolar].sort((a, b) => a.sira - b.sira);
 
   return (
-    <AdminShell>
+    <>
       <div className="kanban-page">
         <header className="orders-hero">
           <div>
@@ -595,6 +595,10 @@ export default function GorevListesiKartPage() {
           onSave={p => { addPano(p); setPanoModal(false); }}
         />
       )}
-    </AdminShell>
+    </>
   );
+}
+
+export default function GorevListesiKartPage() {
+  return <AdminShell><TaskKanbanContent /></AdminShell>;
 }

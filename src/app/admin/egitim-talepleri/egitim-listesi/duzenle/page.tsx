@@ -116,8 +116,8 @@ function EditForm() {
                 </div>
                 <div className="form-field">
                   <label>Eğitim Resmi (900x500)</label>
-                  <div className="edu-file-wrap">
-                    <button className="edu-file-btn" type="button" onClick={() => fileInputRef.current?.click()}>
+                  <div className="edu-file-wrap clickable-upload" role="button" tabIndex={0} onClick={() => fileInputRef.current?.click()} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); fileInputRef.current?.click(); } }}>
+                    <button className="edu-file-btn" type="button" tabIndex={-1}>
                       Dosya Seç
                     </button>
                     <span className="edu-file-name">{imgFile || "Dosya seçilmedi"}</span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { AdminShell } from "../AdminShell";
 
 // ── Tipler ────────────────────────────────────────────────────────────────────
@@ -169,21 +169,55 @@ function Icon({ name, size = 15 }: { name: IName; size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{p[name]}</svg>;
 }
 
+function UserFilterSelect({ value, onChange }: { value: string | null; onChange: (value: string | null) => void }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const selectedLabel = value ?? "Tümü";
+
+  useEffect(() => {
+    function closeOutside(event: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(event.target as Node)) setOpen(false);
+    }
+    function closeEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", closeOutside);
+    document.addEventListener("keydown", closeEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeOutside);
+      document.removeEventListener("keydown", closeEscape);
+    };
+  }, []);
+
+  return <div className="cal-user-filter" ref={wrapRef}>
+    <button type="button" className={`cs-trigger cal-user-filter-trigger${open ? " open" : ""}`} onClick={() => setOpen(current => !current)} aria-haspopup="listbox" aria-expanded={open}>
+      <span><small>Kişi</small>{selectedLabel}</span>
+      <span className="cs-arrow" aria-hidden="true">▾</span>
+    </button>
+    {open && <div className="cs-panel cal-user-filter-panel" role="listbox">
+      <button type="button" role="option" aria-selected={!value} className={`cs-option${!value ? " active" : ""}`} onClick={() => { onChange(null); setOpen(false); }}>Tümü</button>
+      {USERS.map(user => <button type="button" role="option" aria-selected={value === user} className={`cs-option${value === user ? " active" : ""}`} key={user} onClick={() => { onChange(user); setOpen(false); }}>{user}</button>)}
+    </div>}
+  </div>;
+}
+
 // ── Etkinlik çipi ─────────────────────────────────────────────────────────────
-function EventChip({ ev }: { ev: CalEvent }) {
+function EventChip({ ev, basePath, showOwner = false }: { ev: CalEvent; basePath: string; showOwner?: boolean }) {
+  const label = `${ev.time} ${ev.code}${ev.isEk ? " Ek" : ""}${showOwner ? ` · ${ev.atanan}` : ""}`;
   return (
     <a
       className={`cal-event${ev.type === "pa" ? " cal-event-pa" : ""}`}
-      href={`/admin/siparisler/${ev.code}?section=${ev.type === "pa" ? "notes" : "overview"}`}
+      href={`${basePath}/${ev.code}?section=${ev.type === "pa" ? "notes" : "overview"}`}
+      title={label}
     >
       <span className="cal-dot" />
-      <span className="cal-event-text">{ev.time} {ev.code}{ev.isEk ? " Ek" : ""}</span>
+      <span className="cal-event-text">{label}</span>
     </a>
   );
 }
 
 // ── Ay görünümü ───────────────────────────────────────────────────────────────
-function MonthView({ year, month, events }: { year: number; month: number; events: CalEvent[] }) {
+function MonthView({ year, month, events, basePath, showOwner }: { year: number; month: number; events: CalEvent[]; basePath: string; showOwner?: boolean }) {
   const days  = useMemo(() => monthGrid(year, month), [year, month]);
   const byDay = useMemo(() => byDateMap(events), [events]);
   const today = toStr(new Date());
@@ -198,7 +232,7 @@ function MonthView({ year, month, events }: { year: number; month: number; event
           <div key={i} className={`cal-cell${other ? " cal-cell-other" : ""}${str === today ? " cal-cell-today" : ""}`}>
             <span className="cal-date-num">{d.getDate()}</span>
             <div className="cal-cell-events">
-              {(byDay[str] ?? []).map(ev => <EventChip key={ev.id} ev={ev} />)}
+              {(byDay[str] ?? []).map(ev => <EventChip key={ev.id} ev={ev} basePath={basePath} showOwner={showOwner} />)}
             </div>
           </div>
         );
@@ -208,7 +242,7 @@ function MonthView({ year, month, events }: { year: number; month: number; event
 }
 
 // ── Hafta görünümü ────────────────────────────────────────────────────────────
-function WeekView({ base, events }: { base: Date; events: CalEvent[] }) {
+function WeekView({ base, events, basePath, showOwner }: { base: Date; events: CalEvent[]; basePath: string; showOwner?: boolean }) {
   const days  = useMemo(() => weekDays(base), [base]);
   const byDay = useMemo(() => byDateMap(events), [events]);
   const today = toStr(new Date());
@@ -236,7 +270,7 @@ function WeekView({ base, events }: { base: Date; events: CalEvent[] }) {
               const evs  = (byDay[str] ?? []).filter(e => e.time.startsWith(h));
               return (
                 <div key={i} className={`cal-week-cell${str === today ? " today" : ""}`}>
-                  {evs.map(ev => <EventChip key={ev.id} ev={ev} />)}
+                  {evs.map(ev => <EventChip key={ev.id} ev={ev} basePath={basePath} showOwner={showOwner} />)}
                 </div>
               );
             })}
@@ -248,7 +282,7 @@ function WeekView({ base, events }: { base: Date; events: CalEvent[] }) {
 }
 
 // ── Gün görünümü ──────────────────────────────────────────────────────────────
-function DayView({ base, events }: { base: Date; events: CalEvent[] }) {
+function DayView({ base, events, basePath, showOwner }: { base: Date; events: CalEvent[]; basePath: string; showOwner?: boolean }) {
   const str      = toStr(base);
   const dayEvs   = events.filter(e => e.dateStr === str);
   const today    = toStr(new Date());
@@ -267,7 +301,7 @@ function DayView({ base, events }: { base: Date; events: CalEvent[] }) {
             <div key={h} className={`cal-day-row${evs.length > 0 ? " has-events" : ""}`}>
               <span className="cal-day-time">{h}:00</span>
               <div className="cal-day-events">
-                {evs.map(ev => <EventChip key={ev.id} ev={ev} />)}
+                {evs.map(ev => <EventChip key={ev.id} ev={ev} basePath={basePath} showOwner={showOwner} />)}
               </div>
             </div>
           );
@@ -280,7 +314,7 @@ function DayView({ base, events }: { base: Date; events: CalEvent[] }) {
 // ── Ana sayfa ─────────────────────────────────────────────────────────────────
 const TODAY = new Date(2026, 7, 3); // 3 Ağustos 2026
 
-export default function TakvimPage() {
+export function CalendarContent({ basePath = "/admin/siparisler", showOwner = false, onePage = false }: { basePath?: string; showOwner?: boolean; onePage?: boolean }) {
   const [view,         setView]        = useState<ViewMode>("ay");
   const [current,      setCurrent]     = useState<Date>(TODAY);
   const [selectedUser, setSelectedUser]= useState<string | null>(null);
@@ -317,8 +351,7 @@ export default function TakvimPage() {
   }
 
   return (
-    <AdminShell>
-      <div className="cal-page">
+      <div className={`cal-page${onePage ? " cal-page-one" : ""}`}>
 
         {/* Takvim ana alanı */}
         <div className="cal-main">
@@ -338,18 +371,25 @@ export default function TakvimPage() {
                 </button>
               ))}
             </div>
+            {onePage && <div className="cal-inline-tools">
+              <span className="cal-inline-legend" aria-label="Renk göstergesi">
+                <i className="cal-legend-dot cal-legend-dot-sa" />Analiz
+                <i className="cal-legend-dot cal-legend-dot-pa" />Görüşme
+              </span>
+              <UserFilterSelect value={selectedUser} onChange={setSelectedUser} />
+            </div>}
           </div>
 
           {/* Görünüm */}
           <div className="cal-view-wrap">
-            {view === "ay"    && <MonthView year={y} month={m} events={filtered} />}
-            {view === "hafta" && <WeekView  base={current} events={filtered} />}
-            {view === "gun"   && <DayView   base={current} events={filtered} />}
+            {view === "ay"    && <MonthView year={y} month={m} events={filtered} basePath={basePath} showOwner={showOwner} />}
+            {view === "hafta" && <WeekView  base={current} events={filtered} basePath={basePath} showOwner={showOwner} />}
+            {view === "gun"   && <DayView   base={current} events={filtered} basePath={basePath} showOwner={showOwner} />}
           </div>
         </div>
 
         {/* Sağ kenar */}
-        <aside className="cal-sidebar">
+        {!onePage && <aside className="cal-sidebar">
 
           {/* Renk açıklaması */}
           <div className="cal-legend">
@@ -378,9 +418,12 @@ export default function TakvimPage() {
               onClick={() => setSelectedUser(selectedUser === u ? null : u)}
             >{u}</button>
           ))}
-        </aside>
+        </aside>}
 
       </div>
-    </AdminShell>
   );
+}
+
+export default function TakvimPage() {
+  return <AdminShell><CalendarContent /></AdminShell>;
 }

@@ -26,7 +26,7 @@ type NotificationItem = {
   read: boolean;
 };
 
-export type NotificationRole = "musteri" | "analizor" | "admin";
+export type NotificationRole = "musteri" | "analizor" | "asistan" | "admin";
 
 type NotificationConfig = {
   items: NotificationItem[];
@@ -52,6 +52,15 @@ const notificationConfigs: Record<NotificationRole, NotificationConfig> = {
       { id: "analizor-teslim", icon: "bell", title: "Teslim süresi yaklaşıyor", meta: "2 çalışma bugün teslim edilecek", href: "/analizor/takvim", read: true },
     ],
   },
+  asistan: {
+    allHref: "/asistan",
+    items: [
+      { id: "asistan-teslim", icon: "bell", title: "Teslim süresi geçen siparişler var", meta: "10 sipariş kontrol bekliyor", href: "/asistan", read: false },
+      { id: "asistan-yanit", icon: "message", title: "Yeni müşteri yanıtları alındı", meta: "3 yazışma işlem bekliyor", href: "/asistan", read: false },
+      { id: "asistan-ek-analiz", icon: "file", title: "Ek analiz talepleri güncellendi", meta: "53 açık talep bulunuyor", href: "/asistan", read: true },
+      { id: "asistan-takvim", icon: "calendar", title: "Bugünün iş planı hazır", meta: "14 açık görev", href: "/asistan", read: true },
+    ],
+  },
   admin: {
     allHref: "/admin",
     items: [
@@ -68,6 +77,7 @@ export function NotificationMenu({ role = "musteri" }: { role?: NotificationRole
   const [readIdsByRole, setReadIdsByRole] = useState<Record<NotificationRole, string[]>>({
     musteri: [],
     analizor: [],
+    asistan: [],
     admin: [],
   });
   const menuRef = useRef<HTMLDivElement>(null);

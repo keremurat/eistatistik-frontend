@@ -34,6 +34,10 @@ const DURUM_RENK: Record<KullaniciDurum, { bg: string; color: string; dot: strin
 };
 
 export default function KullaniciListesiPage() {
+  return <AdminShell><UserListContent /></AdminShell>;
+}
+
+export function UserListContent({ basePath = "/admin/kullanici-yonetimi" }: { basePath?: string }) {
   const [search, setSearch] = useState("");
 
   const filtered = KULLANICILAR.filter((u) => {
@@ -49,7 +53,7 @@ export default function KullaniciListesiPage() {
   });
 
   return (
-    <AdminShell>
+    <>
       <div className="st-page">
         <header className="orders-hero">
           <div>
@@ -154,7 +158,7 @@ export default function KullaniciListesiPage() {
                       </td>
                       <td style={{ textAlign: "right" }}>
                         <Link
-                          href={`/admin/kullanici-yonetimi/${u.id}`}
+                          href={`${basePath}/${u.id}`}
                           style={{
                             display: "inline-flex", alignItems: "center", gap: ".3rem",
                             padding: ".3rem .75rem", border: 0, borderRadius: 7,
@@ -172,6 +176,6 @@ export default function KullaniciListesiPage() {
           </div>
         </section>
       </div>
-    </AdminShell>
+    </>
   );
 }

@@ -61,13 +61,13 @@ function MenuIcon({ name }: { name: string }) {
   return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
 
-function EducationMenu({ code, student, onAction }: { code: string; student: string; onAction: (action: string) => void }) {
+function EducationMenu({ code, student, basePath, onAction }: { code: string; student: string; basePath: string; onAction: (action: string) => void }) {
   const [open, setOpen] = useState(false);
   const [marked, setMarked] = useState(false);
   const [pos, setPos] = useState({ top: 0, right: 0 });
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const detailHref = `/admin/egitimler/satin-alinan/${code}`;
+  const detailHref = `${basePath}/satin-alinan/${code}`;
 
   useEffect(() => {
     if (!open) return;
@@ -110,6 +110,10 @@ function EducationMenu({ code, student, onAction }: { code: string; student: str
 }
 
 export default function PurchasedEducationsPage() {
+  return <AdminShell><PurchasedEducationsContent /></AdminShell>;
+}
+
+export function PurchasedEducationsContent({ basePath = "/admin/egitimler" }: { basePath?: string }) {
   const [status, setStatus] = useState<StatusFilter>("all");
   const [query, setQuery] = useState("");
   const [education, setEducation] = useState("all");
@@ -133,7 +137,7 @@ export default function PurchasedEducationsPage() {
     });
   }, [education, query, status]);
 
-  return <AdminShell>
+  return <>
     <div className="admin-education-page">
       <header className="orders-hero admin-education-hero">
         <div><p className="eyebrow">EĞİTİM YÖNETİMİ</p><h1>Satın Alınan Eğitimler</h1><p>Kayıtları, ödeme durumlarını ve kursiyer erişimlerini tek yerden yönetin.</p></div>
@@ -166,8 +170,8 @@ export default function PurchasedEducationsPage() {
             <div className={`education-admin-status ${record.status}`}><span /><div><strong>{statuses[record.status].label}</strong><small>{statuses[record.status].detail}</small></div></div>
             <strong className="education-price">{record.price ? money.format(record.price) : "Ücretsiz"}</strong>
             <div className="education-row-actions">
-              <Link className="education-row-action" href={`/admin/egitimler/satin-alinan/${record.code}`}>Görüntüle <span aria-hidden="true">→</span></Link>
-              <EducationMenu code={record.code} student={record.student} onAction={action => setDialog({ action, record })}/>
+              <Link className="education-row-action" href={`${basePath}/satin-alinan/${record.code}`}>Görüntüle <span aria-hidden="true">→</span></Link>
+              <EducationMenu code={record.code} student={record.student} basePath={basePath} onAction={action => setDialog({ action, record })}/>
             </div>
           </article>) : <div className="orders-empty">Filtrelerle eşleşen eğitim kaydı bulunamadı.</div>}
         </div>
@@ -178,5 +182,5 @@ export default function PurchasedEducationsPage() {
         <div className="dm-footer"><button className="dm-btn secondary" onClick={() => setDialog(null)}>Vazgeç</button><button className={`dm-btn${dialog.action === "Sil" ? " danger" : " primary"}`} onClick={() => setDialog(null)}>İşlemi onayla</button></div>
       </div></div>}
     </div>
-  </AdminShell>;
+  </>;
 }

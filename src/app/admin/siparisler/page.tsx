@@ -197,7 +197,7 @@ function ActivityModal({ orderCode, onClose }: { orderCode: string; onClose: () 
 }
 
 // ── Modal: İlişkili Siparişler ────────────────────────────────────
-function RelatedOrdersModal({ orderCode, relatedOrders, onClose }: { orderCode: string; relatedOrders: Order[]; onClose: () => void }) {
+function RelatedOrdersModal({ orderCode, relatedOrders, detailHref, onClose }: { orderCode: string; relatedOrders: Order[]; detailHref: string; onClose: () => void }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
@@ -229,7 +229,7 @@ function RelatedOrdersModal({ orderCode, relatedOrders, onClose }: { orderCode: 
                   {relatedOrders.map((o) => (
                     <tr key={o.code}>
                       <td>
-                        <Link href="/admin/siparisler/DS260723008" style={{ color: "var(--blue)", fontWeight: 800 }} onClick={onClose}>
+                        <Link href={detailHref} style={{ color: "var(--blue)", fontWeight: 800 }} onClick={onClose}>
                           {o.code}
                         </Link>
                       </td>
@@ -295,6 +295,7 @@ function ConfirmModal({ cfg, onConfirm, onClose }: { cfg: ConfirmCfg; onConfirm:
 // ── 3-nokta bağlam menüsü ─────────────────────────────────────────
 interface CtxMenuProps {
   order: Order;
+  detailHref: string;
   isFavorite: boolean;
   isMessageClosed: boolean;
   onFavoriteToggle: () => void;
@@ -306,7 +307,7 @@ interface CtxMenuProps {
   onShowRelated: () => void;
 }
 
-function OrderContextMenu({ order, isFavorite, isMessageClosed, onFavoriteToggle, onCancelRequest, onDeleteRequest, onArchive, onCloseMessage, onShowActivity, onShowRelated }: CtxMenuProps) {
+function OrderContextMenu({ order, detailHref, isFavorite, isMessageClosed, onFavoriteToggle, onCancelRequest, onDeleteRequest, onArchive, onCloseMessage, onShowActivity, onShowRelated }: CtxMenuProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos]   = useState({ top: 0, right: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -362,10 +363,10 @@ function OrderContextMenu({ order, isFavorite, isMessageClosed, onFavoriteToggle
           style={{ position: "fixed", top: pos.top, right: pos.right, zIndex: 9999 }}>
 
           {/* Görüntüle grubu */}
-          <Link className="ctx-item" role="menuitem" href="/admin/kullanici" onClick={close}>
+          <Link className="ctx-item" role="menuitem" href={detailHref} onClick={close}>
             <CtxIcon name="user" />Müşteri Görüntüle
           </Link>
-          <Link className="ctx-item" role="menuitem" href="/admin/siparisler/DS260723008" onClick={close}>
+          <Link className="ctx-item" role="menuitem" href={detailHref} onClick={close}>
             <CtxIcon name="eye" />Görüntüle
           </Link>
           <button className="ctx-item" role="menuitem" onClick={() => act(onFavoriteToggle)}
@@ -377,7 +378,7 @@ function OrderContextMenu({ order, isFavorite, isMessageClosed, onFavoriteToggle
           <div className="ctx-separator" role="separator" />
 
           {/* İşlem grubu */}
-          <Link className="ctx-item" role="menuitem" href="/admin/siparisler/DS260723008" onClick={close}>
+          <Link className="ctx-item" role="menuitem" href={detailHref} onClick={close}>
             <CtxIcon name="truck" />Teslim Et
           </Link>
           <button className="ctx-item" role="menuitem" onClick={() => act(onCancelRequest)}>
@@ -412,7 +413,7 @@ function OrderContextMenu({ order, isFavorite, isMessageClosed, onFavoriteToggle
           <button className="ctx-item" role="menuitem" onClick={close} style={{ opacity: .5, cursor: "default" }}>
             <CtxIcon name="plus" />Ürün Ata
           </button>
-          <Link className="ctx-item" role="menuitem" href="/admin/siparisler/DS260723008?section=analyst" onClick={close}>
+          <Link className="ctx-item" role="menuitem" href={`${detailHref}?section=analyst`} onClick={close}>
             <CtxIcon name="userPlus" />Analizör Ata
           </Link>
         </div>,
@@ -424,6 +425,10 @@ function OrderContextMenu({ order, isFavorite, isMessageClosed, onFavoriteToggle
 
 // ── Ana sayfa ─────────────────────────────────────────────────────
 export default function AdminOrdersPage() {
+  return <AdminShell><SharedOrdersList /></AdminShell>;
+}
+
+export function SharedOrdersList({ basePath = "/admin/siparisler" }: { basePath?: string }) {
   const [activeTab,      setActiveTab]      = useState<TabKey>("all");
   const [query,          setQuery]          = useState("");
   const { isFav, toggle: toggleFav }         = useFavorites();
@@ -434,6 +439,7 @@ export default function AdminOrdersPage() {
   const [activityFor,    setActivityFor]    = useState<string | null>(null);
   const [relatedFor,     setRelatedFor]     = useState<string | null>(null);
   const [confirmCfg,     setConfirmCfg]     = useState<ConfirmCfg | null>(null);
+  const detailHref = `${basePath}/DS260723008`;
 
   // Siparişlere durum override'ları uygula
   const displayOrders = useMemo(() =>
@@ -476,7 +482,7 @@ export default function AdminOrdersPage() {
       id:    order.code,
       label: `${PREFIX_LABELS[order.code.slice(0, 2)] ?? "Analiz Talebi"} — ${order.code}`,
       sub:   `${order.customer} · ${order.date.split(" ")[0]}`,
-      href:  "/admin/siparisler/DS260723008",
+      href:  detailHref,
     });
   }
   function archive(code: string)      { setArchivedSet(prev  => new Set(prev).add(code)); }
@@ -489,7 +495,7 @@ export default function AdminOrdersPage() {
   }
 
   return (
-    <AdminShell>
+    <>
       <div className="orders-page admin-orders-page">
         <header className="orders-hero">
           <div>
@@ -547,7 +553,7 @@ export default function AdminOrdersPage() {
                       const [dateDay, dateTime] = order.date.split(" ");
                       return (
                         <article className="orders-row" key={order.code}>
-                          <Link className="order-row-link" href="/admin/siparisler/DS260723008"
+                          <Link className="order-row-link" href={detailHref}
                             aria-label={`${PREFIX_LABELS[order.code.slice(0, 2)] ?? "Analiz Talebi"} — ${order.code} detayını görüntüle`} />
 
                           <div className="order-identity">
@@ -578,11 +584,12 @@ export default function AdminOrdersPage() {
                           <div className="ao-cell"><strong>{order.analyst}</strong></div>
 
                           <div className="order-actions">
-                            <Link href="/admin/siparisler/DS260723008" className="context-action">
+                            <Link href={detailHref} className="context-action">
                               Detay<Icon name="arrow" size={15} />
                             </Link>
                             <OrderContextMenu
                               order={order}
+                              detailHref={detailHref}
                               isFavorite={isFav(order.code)}
                               isMessageClosed={msgClosedSet.has(order.code)}
                               onFavoriteToggle={() => toggleFavorite(order)}
@@ -607,8 +614,8 @@ export default function AdminOrdersPage() {
 
       {/* Modaller */}
       {activityFor && <ActivityModal orderCode={activityFor} onClose={() => setActivityFor(null)} />}
-      {relatedFor  && <RelatedOrdersModal orderCode={relatedFor} relatedOrders={relatedOrders} onClose={() => setRelatedFor(null)} />}
+      {relatedFor  && <RelatedOrdersModal orderCode={relatedFor} relatedOrders={relatedOrders} detailHref={detailHref} onClose={() => setRelatedFor(null)} />}
       {confirmCfg  && <ConfirmModal cfg={confirmCfg} onConfirm={executeConfirm} onClose={() => setConfirmCfg(null)} />}
-    </AdminShell>
+    </>
   );
 }

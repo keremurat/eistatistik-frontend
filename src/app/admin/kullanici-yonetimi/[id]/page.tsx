@@ -496,30 +496,34 @@ function DuzenleSection({ u }: { u: Kullanici }) {
 
 // ── Ana sayfa ─────────────────────────────────────────────────────────────────
 export default function KullaniciDetayPage({ params }: { params: Promise<{ id: string }> }) {
+  return <AdminShell><UserDetailContent params={params} /></AdminShell>;
+}
+
+export function UserDetailContent({ params, basePath = "/admin/kullanici-yonetimi" }: { params: Promise<{ id: string }>; basePath?: string }) {
   const { id }   = use(params);
   const u        = KULLANICILAR.find((k) => k.id === Number(id));
   const [section, setSection] = useState<Section>("ozet");
 
   if (!u) return (
-    <AdminShell>
+    <>
       <div className="st-page">
         <div style={{ padding: "3rem", textAlign: "center", color: "#8493a0" }}>
           Kullanıcı bulunamadı.
           <br />
-          <Link href="/admin/kullanici-yonetimi" style={{ color: "var(--blue)", fontSize: ".8rem" }}>
+          <Link href={basePath} style={{ color: "var(--blue)", fontSize: ".8rem" }}>
             Listeye dön
           </Link>
         </div>
       </div>
-    </AdminShell>
+    </>
   );
 
   const initials = u.adSoyad.split(" ").map(w => w[0]).slice(0, 2).join("");
 
   return (
-    <AdminShell>
+    <>
       <main className="detail-page">
-        <Link className="back-link" href="/admin/kullanici-yonetimi">
+        <Link className="back-link" href={basePath}>
           <Icon name="back" size={15} />Kullanıcı Listesine dön
         </Link>
 
@@ -596,6 +600,6 @@ export default function KullaniciDetayPage({ params }: { params: Promise<{ id: s
           </div>
         </div>
       </main>
-    </AdminShell>
+    </>
   );
 }

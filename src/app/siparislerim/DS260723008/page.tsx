@@ -7,6 +7,7 @@ import { NotificationMenu } from "../../components/NotificationMenu";
 import { BrandLogo } from "../../components/BrandLogo";
 import { CustomerEducationMenu } from "../../components/CustomerEducationMenu";
 import { useEffect, useRef, useState } from "react";
+import { copyText } from "../../utils/clipboard";
 
 type Section = "overview" | "files" | "payment" | "messages" | "deliveries" | "appointments" | "invoice" | "extra";
 type IconName = "arrow" | "back" | "bell" | "book" | "calendar" | "card" | "check" | "clock" | "copy" | "download" | "file" | "home" | "invoice" | "message" | "plus" | "search" | "spark" | "upload" | "video";
@@ -231,11 +232,11 @@ function Files() {
     event.target.value = "";
   }
 
-  return <div className="detail-stack"><section className="detail-panel"><PanelHeading eyebrow="DOSYA PAYLAŞIMI" title="Sipariş Kalemleri" description="Analizde kullanılacak çalışma, veri, sunum, görsel ve arşiv dosyalarını burada paylaşabilirsiniz." />
+  return <div className="detail-stack"><section className="detail-panel panel-direct" aria-label="Sipariş Kalemleri">
     <div className="file-toolbar"><div role="group" aria-label="Dosyaları filtrele"><button className={fileFilter === "all" ? "active" : ""} onClick={() => setFileFilter("all")} aria-pressed={fileFilter === "all"}>Tümü · {workFiles.length}</button><button className={fileFilter === "customer" ? "active" : ""} onClick={() => setFileFilter("customer")} aria-pressed={fileFilter === "customer"}>Benim yüklediklerim · {customerFileCount}</button><button className={fileFilter === "expert" ? "active" : ""} onClick={() => setFileFilter("expert")} aria-pressed={fileFilter === "expert"}>Uzman dosyaları · {expertFileCount}</button></div><input ref={fileInputRef} className="visually-hidden-file-input" type="file" multiple accept=".doc,.docx,.rtf,.xls,.xlsx,.csv,.ppt,.pptx,.pps,.ppsx,.sav,.zsav,.sps,.spv,.spo,.pdf,.jpg,.jpeg,.png,.gif,.webp,.svg,.mp4,.mov,.avi,.webm,.zip,.rar,.7z,.tar,.gz" onChange={handleFileSelection} /><button className="upload-button" type="button" onClick={() => fileInputRef.current?.click()}><Icon name="upload" size={16} />Dosya yükle</button></div>
     {uploadMessage && <p className={`file-upload-message ${uploadMessage.type}`} role="status">{uploadMessage.text}</p>}
     <div className="work-files">{visibleFiles.map((file, index) => <article key={`${file.owner}-${file.name}-${index}`}><FileTypeIcon filename={file.name} /><div><strong>{file.name}</strong><small>{file.meta}</small></div><button aria-label={`${file.name} dosyasını indir`}><Icon name="download" size={17} /></button></article>)}</div>
-  </section><div className="upload-zone"><Icon name="file" size={26} /><strong>Dosyaları buraya bırakın</strong><span>Office, SPSS, PDF, görsel, video veya arşiv · En fazla 25 MB</span><span className="upload-drop-btn" onClick={() => fileInputRef.current?.click()}>Dosya seç</span></div></div>;
+  </section><div className="upload-zone clickable-upload" role="button" tabIndex={0} aria-label="Dosya seç" onClick={() => fileInputRef.current?.click()} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); fileInputRef.current?.click(); } }}><Icon name="file" size={26} /><strong>Dosyaları buraya bırakın</strong><span>Office, SPSS, PDF, görsel, video veya arşiv · En fazla 25 MB</span><span className="upload-drop-btn">Dosya seç</span></div></div>;
 }
 
 function Payment({ method, onMethod }: { method: "transfer" | "card"; onMethod: (value: "transfer" | "card") => void }) {
@@ -246,11 +247,22 @@ function Payment({ method, onMethod }: { method: "transfer" | "card"; onMethod: 
   const [cardAgreementAccepted, setCardAgreementAccepted] = useState(false);
   const [transferAgreementOpen, setTransferAgreementOpen] = useState(false);
   const [transferAgreementAccepted, setTransferAgreementAccepted] = useState(false);
+  const [copiedField, setCopiedField] = useState<"iban" | "code" | null>(null);
+  const [receiptName, setReceiptName] = useState("");
+  const receiptInputRef = useRef<HTMLInputElement>(null);
   const applyDiscount = () => setDiscountState(discountCode.trim().toLocaleUpperCase("tr") === "EISTATISTIK10" ? "success" : "error");
+  async function copyBankValue(field: "iban" | "code", value: string) {
+    if (!await copyText(value)) return;
+    setCopiedField(field);
+    window.setTimeout(() => setCopiedField(current => current === field ? null : current), 1800);
+  }
 
-  return <div className="payment-layout"><section className="detail-panel payment-main"><PanelHeading eyebrow="GÜVENLİ ÖDEME" title={method === "transfer" ? "Havale / EFT ile ödeme" : "Kredi kartı ile ödeme"} description={method === "transfer" ? "Aşağıdaki banka bilgilerini kullanarak ödemenizi tamamlayın ve dekontunuzu yükleyin." : "Kart bilgilerinizi güvenli ödeme alanına girin."} />
+  return <div className="payment-layout"><section className="detail-panel payment-main panel-direct" aria-label="Ödeme">
+    <div className="payment-method-switch">
+      <div className="payment-tabs"><button className={method === "transfer" ? "active" : ""} onClick={() => onMethod("transfer")}><Icon name="invoice" size={18} /><span>Havale / EFT</span><small>Banka transferi ve manuel onay</small></button><button className={method === "card" ? "active" : ""} onClick={() => onMethod("card")}><Icon name="card" size={18} /><span>Kredi kartı</span><small>Akbank 3D Secure</small></button></div>
+    </div>
     {method === "transfer" ? <>
-      <div className="bank-box"><h3>Banka bilgileri</h3><dl><div><dt>Adı Soyadı</dt><dd>Naci MURAT</dd></div><div><dt>Banka</dt><dd>Akbank (0046) — 19 Mayıs Üniversitesi Şubesi (01389)</dd></div><div><dt>Hesap No</dt><dd><code>0014316</code></dd></div><div><dt>IBAN</dt><dd><code>TR64 0004 6013 8988 8000 0143 16</code><button><Icon name="copy" size={15} />Kopyala</button></dd></div><div><dt>Açıklama</dt><dd><code>DS260723008</code><button><Icon name="copy" size={15} />Kopyala</button></dd></div></dl><div className="receipt-upload"><Icon name="upload" size={22} /><div><strong>Dekont yükle</strong><span>PDF, JPG veya PNG · En fazla 10 MB</span></div><button>Dosya seç</button></div></div>
+      <div className="bank-box"><h3>Banka bilgileri</h3><dl><div><dt>Adı Soyadı</dt><dd>Naci MURAT</dd></div><div><dt>Banka</dt><dd>Akbank (0046) — 19 Mayıs Üniversitesi Şubesi (01389)</dd></div><div><dt>Hesap No</dt><dd><code>0014316</code></dd></div><div><dt>IBAN</dt><dd><code>TR64 0004 6013 8988 8000 0143 16</code><button type="button" className={copiedField === "iban" ? "copied" : ""} onClick={() => void copyBankValue("iban", "TR64 0004 6013 8988 8000 0143 16")}><Icon name={copiedField === "iban" ? "check" : "copy"} size={15} />{copiedField === "iban" ? "Kopyalandı" : "Kopyala"}</button></dd></div><div><dt>Açıklama</dt><dd><code>DS260723008</code><button type="button" className={copiedField === "code" ? "copied" : ""} onClick={() => void copyBankValue("code", "DS260723008")}><Icon name={copiedField === "code" ? "check" : "copy"} size={15} />{copiedField === "code" ? "Kopyalandı" : "Kopyala"}</button></dd></div></dl><input ref={receiptInputRef} className="visually-hidden-file-input" type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(event) => { setReceiptName(event.target.files?.[0]?.name ?? ""); event.target.value = ""; }} /><div className="receipt-upload clickable-upload" role="button" tabIndex={0} aria-label="Dekont dosyası seç" onClick={() => receiptInputRef.current?.click()} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); receiptInputRef.current?.click(); } }}><Icon name="upload" size={22} /><div><strong>{receiptName || "Dekont yükle"}</strong><span>{receiptName ? "Dosya seçildi · Değiştirmek için alana tıklayın" : "PDF, JPG veya PNG · En fazla 10 MB"}</span></div><button type="button" tabIndex={-1}>{receiptName ? "Değiştir" : "Dosya seç"}</button></div></div>
       <button className={`payment-contract-consent ${transferAgreementAccepted ? "accepted" : ""}`} type="button" onClick={() => setTransferAgreementOpen(true)}>
         <span>{transferAgreementAccepted ? <Icon name="check" size={15} /> : ""}</span>
         <strong><u>Sözleşmeyi</u> okudum ve kabul ediyorum.</strong>
@@ -286,10 +298,6 @@ function Payment({ method, onMethod }: { method: "transfer" | "card"; onMethod: 
       </div>}
     </div>
     <dl className="payment-total"><div className="total"><dt>Toplam</dt><dd>{discountState === "success" ? "4.500 TL" : "5.000 TL"}</dd></div></dl>
-    <div className="summary-payment-methods">
-      <p>ÖDEME YÖNTEMİ</p>
-      <div className="payment-tabs"><button className={method === "transfer" ? "active" : ""} onClick={() => onMethod("transfer")}><Icon name="invoice" size={18} /><span>Havale / EFT</span><small>Manuel onay</small></button><button className={method === "card" ? "active" : ""} onClick={() => onMethod("card")}><Icon name="card" size={18} /><span>Kredi kartı</span><small>3D Secure</small></button></div>
-    </div>
     <p>Fatura bilgilerinizi ödeme öncesinde Fatura bölümünden düzenleyebilirsiniz.</p>
   </aside>
   {cardAgreementOpen && <PaymentAgreementModal context="card" onClose={() => setCardAgreementOpen(false)} onAccept={() => { setCardAgreementAccepted(true); setCardAgreementOpen(false); }} />}
@@ -357,8 +365,7 @@ function Messages() {
     setMessage("");
   }
 
-  return <section className="detail-panel messages-panel">
-    <PanelHeading eyebrow="İLETİŞİM VE HAREKETLER" title="Sipariş yazışmaları" description="Mesajlarınız ve siparişinizdeki önemli değişiklikler tek bir kronolojide tutulur." />
+  return <section className="detail-panel messages-panel panel-direct" aria-label="Sipariş yazışmaları">
     <div className="message-guidance">
       <span><Icon name="message" size={19} /></span>
       <div><strong>Yeni analiz talepleri için ayrı talep oluşturun</strong><p>Bu alan mevcut siparişinizle ilgili soru, dosya ve bilgilendirmeler içindir.</p></div>
@@ -391,17 +398,17 @@ function Messages() {
 }
 
 function Deliveries({ onPayment }: { onPayment: () => void }) {
-  return <section className="detail-panel locked-panel"><PanelHeading eyebrow="TESLİM ALANI" title="Teslimatlar" description="Analiz raporunuz, ek dosyalarınız ve videolu anlatımınız burada yayınlanır." /><div className="locked-state"><span><Icon name="download" size={24} /></span><h3>Analiz henüz başlamadı</h3><p>Teslim dosyalarının hazırlanabilmesi için önce ödemenizi tamamlamanız gerekiyor.</p><button onClick={onPayment}>Ödemeye git <Icon name="arrow" size={16} /></button><div className="delivery-preview"><span><Icon name="file" />Analiz raporu</span><span><Icon name="file" />Sonuç tabloları</span><span><Icon name="video" />Videolu anlatım</span></div></div></section>;
+  return <section className="detail-panel locked-panel panel-direct" aria-label="Teslimatlar"><div className="locked-state"><span><Icon name="download" size={24} /></span><h3>Analiz henüz başlamadı</h3><p>Teslim dosyalarının hazırlanabilmesi için önce ödemenizi tamamlamanız gerekiyor.</p><button onClick={onPayment}>Ödemeye git <Icon name="arrow" size={16} /></button><div className="delivery-preview"><span><Icon name="file" />Analiz raporu</span><span><Icon name="file" />Sonuç tabloları</span><span><Icon name="video" />Videolu anlatım</span></div></div></section>;
 }
 
 function Appointments() {
-  return <section className="detail-panel"><PanelHeading eyebrow="GÖRÜŞMELER" title="Randevular" description="Bu siparişe ait görüşmeler dashboard takviminizde de görünür." /><div className="appointment-card"><div className="appointment-date"><strong>30</strong><span>TEM</span></div><div><span>11:00–11:30 · Google Meet</span><h3>Analiz öncesi değerlendirme</h3><p>Dr. Naci Yılmaz ile 30 dakikalık çevrim içi görüşme</p></div><button>Takvime ekle</button></div></section>;
+  return <section className="detail-panel panel-direct" aria-label="Randevular"><div className="appointment-card"><div className="appointment-date"><strong>30</strong><span>TEM</span></div><div><span>11:00–11:30 · Google Meet</span><h3>Analiz öncesi değerlendirme</h3><p>Dr. Naci Yılmaz ile 30 dakikalık çevrim içi görüşme</p></div><button>Takvime ekle</button></div></section>;
 }
 
 function Invoice({ onPayment }: { onPayment: () => void }) {
-  return <section className="detail-panel locked-panel"><PanelHeading eyebrow="FATURALANDIRMA" title="Fatura" description="Fatura bilgileriniz ve düzenlenen belgeleriniz." /><div className="invoice-settings"><div><h3>Fatura bilgileri</h3><p>Kerem Murat · Bireysel</p></div><button>Bilgileri düzenle</button></div><div className="locked-state compact"><span><Icon name="invoice" size={23} /></span><h3>Faturanız ödeme sonrasında hazırlanacak</h3><p>Ödeme tamamlandığında PDF faturanız buradan indirilebilir.</p><button onClick={onPayment}>Ödemeye git <Icon name="arrow" size={16} /></button></div></section>;
+  return <section className="detail-panel locked-panel panel-direct" aria-label="Fatura"><div className="invoice-settings"><div><h3>Fatura bilgileri</h3><p>Kerem Murat · Bireysel</p></div><button>Bilgileri düzenle</button></div><div className="locked-state compact"><span><Icon name="invoice" size={23} /></span><h3>Faturanız ödeme sonrasında hazırlanacak</h3><p>Ödeme tamamlandığında PDF faturanız buradan indirilebilir.</p><button onClick={onPayment}>Ödemeye git <Icon name="arrow" size={16} /></button></div></section>;
 }
 
 function ExtraAnalysis() {
-  return <section className="detail-panel"><PanelHeading eyebrow="TESLİM SONRASI" title="Ek analiz talebi" /><div className="extra-analysis"><Icon name="spark" size={25} /><h3>Sonuçlar için ek bir çalışmaya mı ihtiyacınız var?</h3><p>Talebinizi açıklayın ve gerekiyorsa yeni dosyalar ekleyin. Uzmanınız kapsamı değerlendirip ayrı bir teklif hazırlayacak.</p><button>Ek analiz talep et <Icon name="arrow" size={16} /></button></div></section>;
+  return <section className="detail-panel panel-direct" aria-label="Ek analiz talebi"><div className="extra-analysis"><Icon name="spark" size={25} /><h3>Sonuçlar için ek bir çalışmaya mı ihtiyacınız var?</h3><p>Talebinizi açıklayın ve gerekiyorsa yeni dosyalar ekleyin. Uzmanınız kapsamı değerlendirip ayrı bir teklif hazırlayacak.</p><button>Ek analiz talep et <Icon name="arrow" size={16} /></button></div></section>;
 }

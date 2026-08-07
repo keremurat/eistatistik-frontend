@@ -8,6 +8,7 @@ import { createPortal } from "react-dom";
 import { MaskedNum } from "../../AdminShell";
 import { DatePicker } from "../../../components/DatePicker";
 import { MessageTemplatePicker } from "../../../components/MessageTemplatePicker";
+import { copyText } from "../../../utils/clipboard";
 
 type AdminSection = "overview" | "items" | "pricing" | "payment" | "messages" | "results" | "analyst" | "delivery" | "notes";
 type IconName = "arrow" | "assign" | "back" | "card" | "chart" | "check" | "clock" | "cloudUp" | "copy" | "download" | "eye" | "file" | "heart" | "invoice" | "list" | "message" | "note" | "package" | "percent" | "plus" | "search" | "star" | "tag" | "upload" | "user" | "video" | "x";
@@ -96,14 +97,14 @@ const timelineSteps = [
 ];
 
 /* ─── Paylaşılan sipariş detay çalışma alanı ──────────────────── */
-export function SharedOrderDetail({ audience = "admin", orderCode = "PA260731006", orderTitle = "Yetişkinlerde Oral Hijyen Davranışları, Algılanan Engeller ve Motivasyon: Kesitsel Bir Anket Çalışması" }: { audience?: "admin" | "analizor"; orderCode?: string; orderTitle?: string }) {
+export function SharedOrderDetail({ audience = "admin", orderCode = "PA260731006", orderTitle = "Yetişkinlerde Oral Hijyen Davranışları, Algılanan Engeller ve Motivasyon: Kesitsel Bir Anket Çalışması" }: { audience?: "admin" | "analizor" | "asistan"; orderCode?: string; orderTitle?: string }) {
   const params  = useSearchParams();
   const initSec = (params.get("section") ?? "overview") as AdminSection;
   const [section, setSection] = useState<AdminSection>(initSec);
   const [paymentMethod, setPaymentMethod] = useState<"transfer" | "card">("transfer");
   const [servicePrice, setServicePrice] = useState("7.700,00");
   const visibleSidebarItems = audience === "analizor" ? analystSidebarItems : sidebarItems;
-  const backHref = audience === "analizor" ? "/analizor/islerim" : "/admin/siparisler";
+  const backHref = audience === "analizor" ? "/analizor/islerim" : audience === "asistan" ? "/asistan/siparisler" : "/admin/siparisler";
 
   return (
       <div className="detail-page shared-order-detail">
@@ -147,11 +148,11 @@ export function SharedOrderDetail({ audience = "admin", orderCode = "PA260731006
           <section className="detail-content">
             {section === "overview"  && <OverviewSection onSection={setSection} />}
             {section === "items"     && <FilesSection />}
-            {audience === "admin" && section === "pricing" && <PricingSection price={servicePrice} onSave={setServicePrice} />}
-            {audience === "admin" && section === "payment" && <PaymentSection method={paymentMethod} onMethod={setPaymentMethod} price={servicePrice} />}
+            {audience !== "analizor" && section === "pricing" && <PricingSection price={servicePrice} onSave={setServicePrice} />}
+            {audience !== "analizor" && section === "payment" && <PaymentSection method={paymentMethod} onMethod={setPaymentMethod} price={servicePrice} />}
             {section === "messages"  && <MessagesSection />}
             {section === "results"   && <AnalysisResultsSection />}
-            {audience === "admin" && section === "analyst" && <AnalystSection />}
+            {audience !== "analizor" && section === "analyst" && <AnalystSection />}
             {section === "delivery"  && <DeliverySection />}
             {section === "notes"   && <NotesSection />}
           </section>
@@ -259,8 +260,7 @@ function FilesSection() {
   }
   return (
     <div className="detail-stack">
-      <section className="detail-panel">
-        <PanelHeading eyebrow="DOSYA PAYLAŞIMI" title="Sipariş Kalemleri" description="Analizde kullanılacak ve teslim edilecek tüm dosyalar." />
+      <section className="detail-panel panel-direct" aria-label="Sipariş Kalemleri">
         <div className="file-toolbar">
           <div role="group">
             <button className={fileFilter==="all"      ? "active":""} onClick={()=>setFileFilter("all")}>Tümü · {workFiles.length}</button>
@@ -277,7 +277,7 @@ function FilesSection() {
           ))}
         </div>
       </section>
-      <div className="upload-zone"><Icon name="upload" size={24} /><strong>Dosyanızı buraya bırakın</strong><span>Office, SPSS, PDF, görsel, video veya arşiv · En fazla 25 MB</span></div>
+      <div className="upload-zone clickable-upload" role="button" tabIndex={0} aria-label="Dosya seç" onClick={() => fileInputRef.current?.click()} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); fileInputRef.current?.click(); } }}><Icon name="upload" size={24} /><strong>Dosyanızı buraya bırakın</strong><span>Office, SPSS, PDF, görsel, video veya arşiv · En fazla 25 MB</span><span className="upload-drop-btn">Dosya seç</span></div>
     </div>
   );
 }
@@ -293,8 +293,7 @@ function PricingSection({ price, onSave }: { price: string; onSave: (v: string) 
     setTimeout(() => setSaved(false), 2500);
   }
   return (
-    <section className="detail-panel">
-      <PanelHeading eyebrow="FİYATLANDIRMA" title="Güncel Ücret Belirle" description="Burada girdiğiniz tutar Ödeme sekmesinde müşteriye gösterilir." />
+    <section className="detail-panel panel-direct" aria-label="Güncel ücret belirle">
       <div className="pricing-body">
         <div className="pricing-row">
           <label htmlFor="service-price">Hizmet Bedeli</label>
@@ -316,10 +315,21 @@ function PricingSection({ price, onSave }: { price: string; onSave: (v: string) 
 function PaymentSection({ method, onMethod, price }: { method: "transfer" | "card"; onMethod: (v: "transfer" | "card") => void; price: string }) {
   const [approvalOpen, setApprovalOpen]   = useState(false);
   const [paymentApproved, setPaymentApproved] = useState(false);
+  const [copiedField, setCopiedField] = useState<"iban" | "code" | null>(null);
+  async function copyBankValue(field: "iban" | "code", value: string) {
+    if (!await copyText(value)) return;
+    setCopiedField(field);
+    window.setTimeout(() => setCopiedField(current => current === field ? null : current), 1800);
+  }
   return (
     <div className="payment-layout">
-      <section className="detail-panel payment-main">
-        <PanelHeading eyebrow="ÖDEME DURUMU" title={method === "transfer" ? "Havale / EFT ile ödeme" : "Kredi kartı ile ödeme"} description="Müşterinin ödeme bilgileri ve dekont durumu." />
+      <section className="detail-panel payment-main panel-direct" aria-label="Ödeme durumu">
+        <div className="payment-method-switch">
+          <div className="payment-tabs">
+            <button className={method==="transfer" ? "active":""} onClick={()=>onMethod("transfer")}><Icon name="invoice" size={18} /><span>Havale / EFT</span><small>Banka transferi ve manuel onay</small></button>
+            <button className={method==="card" ? "active":""} onClick={()=>onMethod("card")}><Icon name="card" size={18} /><span>Kredi kartı</span><small>Akbank 3D Secure</small></button>
+          </div>
+        </div>
         {method === "transfer" ? (
           <>
             <div className="bank-box">
@@ -327,8 +337,8 @@ function PaymentSection({ method, onMethod, price }: { method: "transfer" | "car
               <dl>
                 <div><dt>Adı Soyadı</dt><dd>Naci MURAT</dd></div>
                 <div><dt>Banka</dt><dd>Akbank (0046) — 19 Mayıs Üniversitesi Şubesi (01389)</dd></div>
-                <div><dt>IBAN</dt><dd><code>TR64 0004 6013 8988 8000 0143 16</code><button><Icon name="copy" size={15} />Kopyala</button></dd></div>
-                <div><dt>Açıklama</dt><dd><code>PA260731006</code><button><Icon name="copy" size={15} />Kopyala</button></dd></div>
+                <div><dt>IBAN</dt><dd><code>TR64 0004 6013 8988 8000 0143 16</code><button type="button" className={copiedField === "iban" ? "copied" : ""} onClick={() => void copyBankValue("iban", "TR64 0004 6013 8988 8000 0143 16")}><Icon name={copiedField === "iban" ? "check" : "copy"} size={15} />{copiedField === "iban" ? "Kopyalandı" : "Kopyala"}</button></dd></div>
+                <div><dt>Açıklama</dt><dd><code>PA260731006</code><button type="button" className={copiedField === "code" ? "copied" : ""} onClick={() => void copyBankValue("code", "PA260731006")}><Icon name={copiedField === "code" ? "check" : "copy"} size={15} />{copiedField === "code" ? "Kopyalandı" : "Kopyala"}</button></dd></div>
               </dl>
               <div className="receipt-upload" style={{ opacity: .6, pointerEvents: "none" }}>
                 <Icon name="upload" size={22} />
@@ -358,13 +368,6 @@ function PaymentSection({ method, onMethod, price }: { method: "transfer" | "car
           <div><dt>İndirim</dt><dd><MaskedNum>0 TL</MaskedNum></dd></div>
         </dl>
         <dl className="payment-total"><div className="total"><dt>Toplam</dt><dd><MaskedNum>{price} TL</MaskedNum></dd></div></dl>
-        <div className="summary-payment-methods">
-          <p>ÖDEME YÖNTEMİ</p>
-          <div className="payment-tabs">
-            <button className={method==="transfer" ? "active":""} onClick={()=>onMethod("transfer")}><Icon name="invoice" size={18} /><span>Havale / EFT</span><small>Manuel onay</small></button>
-            <button className={method==="card"     ? "active":""} onClick={()=>onMethod("card")}><Icon name="card" size={18} /><span>Kredi kartı</span><small>3D Secure</small></button>
-          </div>
-        </div>
       </aside>
 
       {approvalOpen && (
@@ -403,8 +406,7 @@ function MessagesSection() {
   const [sent, setSent] = useState<string[]>([]);
   function send() { const t = message.trim(); if (!t) return; setSent((c) => [...c, t]); setMessage(""); }
   return (
-    <section className="detail-panel messages-panel">
-      <PanelHeading eyebrow="İLETİŞİM VE HAREKETLER" title="Sipariş yazışmaları" description="Müşteri ve uzman arasındaki mesajlar ile sistem hareketleri." />
+    <section className="detail-panel messages-panel panel-direct" aria-label="Sipariş yazışmaları">
       <div className="message-composer">
         <label htmlFor="admin-msg">Admin Mesajı</label>
         <textarea id="admin-msg" value={message} onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => { if (e.key==="Enter" && (e.ctrlKey||e.metaKey)) send(); }} placeholder="Müşteriye veya uzmana mesaj gönderin…" />
@@ -447,8 +449,7 @@ function AnalysisResultsSection() {
     };
   }
   return (
-    <section className="detail-panel">
-      <PanelHeading eyebrow="TESLİMAT" title="Teslimat Raporları" description="Müşteriye teslim edilecek analiz dosyaları ve analizör raporu." />
+    <section className="detail-panel panel-direct" aria-label="Teslimat raporları">
 
       <div className="result-subsection">
         <div className="result-subsection-head">
@@ -457,7 +458,7 @@ function AnalysisResultsSection() {
           <button className="upload-button" style={{ minHeight: 30, fontSize: ".58rem" }} onClick={() => deliveryRef.current?.click()}><Icon name="upload" size={14} />Dosya Yükle</button>
         </div>
         {deliveryFiles.length === 0 ? (
-          <p className="result-empty-box amber">Teslimat dosyası eklenmemiştir.</p>
+          <p className="result-empty-box amber clickable-upload" role="button" tabIndex={0} onClick={() => deliveryRef.current?.click()} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); deliveryRef.current?.click(); } }}>Teslimat dosyası eklenmemiştir. Dosya seçmek için bu alana tıklayın.</p>
         ) : (
           <div className="result-file-list">
             {deliveryFiles.map((f, i) => (
@@ -474,7 +475,7 @@ function AnalysisResultsSection() {
           <button className="upload-button" style={{ minHeight: 30, fontSize: ".58rem" }} onClick={() => reportRef.current?.click()}><Icon name="upload" size={14} />Dosya Yükle</button>
         </div>
         {reportFiles.length === 0 ? (
-          <p className="result-empty-box teal">Analizör dosyası eklenmemiştir.</p>
+          <p className="result-empty-box teal clickable-upload" role="button" tabIndex={0} onClick={() => reportRef.current?.click()} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); reportRef.current?.click(); } }}>Analizör dosyası eklenmemiştir. Dosya seçmek için bu alana tıklayın.</p>
         ) : (
           <div className="result-file-list">
             {reportFiles.map((f, i) => (
@@ -930,7 +931,10 @@ function DeliverySection() {
               <p className="delivery-field-label">Teslimat Dosyaları Ekle</p>
               <input ref={fileInputRef} className="visually-hidden-file-input" type="file" multiple onChange={(e) => addFiles(e.target.files)} />
               <div
-                className={`delivery-drop-zone ${dragOver ? "drag-over" : ""}`}
+                className={`delivery-drop-zone clickable-upload ${dragOver ? "drag-over" : ""}`}
+                role="button" tabIndex={0}
+                onClick={() => fileInputRef.current?.click()}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInputRef.current?.click(); } }}
                 onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleDrop}
@@ -939,7 +943,7 @@ function DeliverySection() {
                 <Icon name="file" size={26} />
                 <strong>Dosyaları buraya bırakın</strong>
                 <span>Office, SPSS, PDF, görsel, video veya arşiv · En fazla 25 MB</span>
-                <span className="upload-drop-btn" onClick={() => fileInputRef.current?.click()}>Dosya seç</span>
+                <span className="upload-drop-btn">Dosya seç</span>
               </div>
               {files.length > 0 && (
                 <div className="delivery-file-list">
@@ -1011,7 +1015,10 @@ function DeliverySection() {
               <p className="delivery-field-label">Analiz Dosyalarını Ekle</p>
               <input ref={analystFileInputRef} className="visually-hidden-file-input" type="file" multiple onChange={(e) => addAnalystFiles(e.target.files)} />
               <div
-                className={`delivery-drop-zone ${analystDragOver ? "drag-over" : ""}`}
+                className={`delivery-drop-zone clickable-upload ${analystDragOver ? "drag-over" : ""}`}
+                role="button" tabIndex={0}
+                onClick={() => analystFileInputRef.current?.click()}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); analystFileInputRef.current?.click(); } }}
                 onDragOver={(e) => { e.preventDefault(); setAnalystDragOver(true); }}
                 onDragLeave={() => setAnalystDragOver(false)}
                 onDrop={handleAnalystDrop}
@@ -1020,7 +1027,7 @@ function DeliverySection() {
                 <Icon name="file" size={26} />
                 <strong>Dosyaları buraya bırakın</strong>
                 <span>Office, SPSS, PDF, görsel, video veya arşiv · En fazla 25 MB</span>
-                <span className="upload-drop-btn" onClick={() => analystFileInputRef.current?.click()}>Dosya seç</span>
+                <span className="upload-drop-btn">Dosya seç</span>
               </div>
               {analystFiles.length > 0 && (
                 <div className="delivery-file-list">

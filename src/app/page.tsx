@@ -14,6 +14,8 @@ const services = [
   { title: "Akademik mobil uygulama", copy: "Araştırma ve eğitim içeriğinizi hedef kitlenize özel bir dijital ürüne dönüştürün.", image: "/service-illustrations/academic-mobile-app-v2.png", type: "Dijital ürün" },
 ];
 
+const serviceLinks = ["/hizmetler/istatistiksel-analiz", "/hizmetler/power-analizi", "/giris", "/giris", "/giris", "/giris"];
+
 const faqs: Array<[string, string]> = [
   ["Hangi alanlarda analiz desteği alabilirim?", "Sağlık bilimlerinden sosyal bilimlere kadar nicel araştırmalarda yöntem seçimi, veri analizi, yorumlama ve raporlama desteği alabilirsiniz."],
   ["Dosyalarım ve araştırma verilerim güvende mi?", "Dosyalar yalnızca ilgili çalışma kapsamında yetkilendirilmiş ekip tarafından erişilen müşteri alanında tutulur."],
@@ -80,7 +82,7 @@ export default function LandingPage() {
                 <span>{service.type}</span>
                 <h3>{service.title}</h3>
                 <p>{service.copy}</p>
-                <Link href="/giris">Hizmeti inceleyin <b aria-hidden="true">→</b></Link>
+                <Link href={serviceLinks[index]}>Hizmeti inceleyin <b aria-hidden="true">→</b></Link>
               </div>
             </article>
           ))}

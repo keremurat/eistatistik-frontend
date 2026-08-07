@@ -128,9 +128,11 @@ const TOOLBAR: { icon: IconName; title: string; wrap?: [string, string] }[] = [
 type Props = {
   mode: "ekle" | "duzenle";
   initial?: Partial<Duyuru>;
+  basePath?: string;
+  embedded?: boolean;
 };
 
-export function DuyuruForm({ mode, initial = {} }: Props) {
+export function DuyuruForm({ mode, initial = {}, basePath = "/admin/duyurular", embedded = false }: Props) {
   const today = new Date();
   const todayStr = `${String(today.getDate()).padStart(2, "0")}.${String(today.getMonth() + 1).padStart(2, "0")}.${today.getFullYear()}`;
 
@@ -184,15 +186,14 @@ export function DuyuruForm({ mode, initial = {} }: Props) {
     reader.readAsDataURL(file);
   }
 
-  return (
-    <AdminShell>
+  const content = (
       <div className="st-page">
         <header className="orders-hero" style={{ marginBottom: "1rem" }}>
           <div>
             <p className="eyebrow">YÖNETİM · DUYURULAR</p>
             <h1 style={{ fontSize: "1.2rem" }}>{mode === "ekle" ? "Duyuru Ekle" : "Duyuru Düzenle"}</h1>
           </div>
-          <Link className="back-link" href="/admin/duyurular">
+          <Link className="back-link" href={basePath}>
             <Icon name="back" size={15} />Duyuru Listesine dön
           </Link>
         </header>
@@ -410,6 +411,6 @@ export function DuyuruForm({ mode, initial = {} }: Props) {
           </div>
         </section>
       </div>
-    </AdminShell>
   );
+  return embedded ? content : <AdminShell>{content}</AdminShell>;
 }

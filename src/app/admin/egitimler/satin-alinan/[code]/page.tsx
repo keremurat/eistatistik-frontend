@@ -71,6 +71,10 @@ function PanelTitle({ eyebrow, title, action }: { eyebrow: string; title: string
 }
 
 export default function AdminPurchasedEducationDetail() {
+  return <AdminShell><PurchasedEducationDetailContent /></AdminShell>;
+}
+
+export function PurchasedEducationDetailContent({ basePath = "/admin/egitimler" }: { basePath?: string }) {
   const params = useParams<{ code: string }>();
   const query = useSearchParams();
   const requested = query.get("section") as Section | null;
@@ -82,9 +86,9 @@ export default function AdminPurchasedEducationDetail() {
   const state = statusText[record.status];
   const sendMessage = () => { const clean = message.trim(); if (!clean) return; setSentMessages(current => [...current, clean]); setMessage(""); };
 
-  return <AdminShell><div className="detail-page shared-order-detail education-detail-page">
+  return <div className="detail-page shared-order-detail education-detail-page">
     <header className="detail-hero admin-detail-hero">
-      <div className="admin-hero-left"><div className="detail-title"><span className="detail-file-icon"><Icon name="book" size={21}/></span><div><div className="detail-title-topline"><Link className="back-link detail-hero-back" href="/admin/egitimler/satin-alinan"><Icon name="back" size={14}/>Eğitim kayıtlarına dön</Link><p className="eyebrow">{code} · {record.date}</p></div><h1>{record.education}</h1></div></div><div className="admin-hero-meta"><span className={`education-detail-status ${record.status}`}><i/><strong>{state.label}</strong></span><span className="admin-hero-note">{record.student} · {state.note}</span></div></div>
+      <div className="admin-hero-left"><div className="detail-title"><span className="detail-file-icon"><Icon name="book" size={21}/></span><div><div className="detail-title-topline"><Link className="back-link detail-hero-back" href={`${basePath}/satin-alinan`}><Icon name="back" size={14}/>Eğitim kayıtlarına dön</Link><p className="eyebrow">{code} · {record.date}</p></div><h1>{record.education}</h1></div></div><div className="admin-hero-meta"><span className={`education-detail-status ${record.status}`}><i/><strong>{state.label}</strong></span><span className="admin-hero-note">{record.student} · {state.note}</span></div></div>
       <div className="admin-hero-actions"><button className="admin-action-btn"><Icon name="heart" size={15}/>Favorilere Ekle</button><button className="admin-action-btn"><Icon name="percent" size={15}/>İndirim Kodu Tanımla</button><button className="admin-action-btn accent"><Icon name="assign" size={15}/>Görev Ata</button></div>
     </header>
 
@@ -112,5 +116,5 @@ export default function AdminPurchasedEducationDetail() {
         {section === "products" && <section className="detail-panel"><PanelTitle eyebrow="ÜRÜNLER" title="Eğitime ürün ata" action={<button className="admin-action-btn accent"><Icon name="products"/>Ürün ata</button>}/><div className="education-empty-state"><Icon name="products" size={28}/><strong>Atanmış ek ürün yok</strong><p>Bu eğitim kaydına doküman, mentörlük saati veya ek modül atayabilirsiniz.</p></div></section>}
       </main>
     </div>
-  </div></AdminShell>;
+  </div>;
 }

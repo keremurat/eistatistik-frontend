@@ -439,7 +439,7 @@ function TasiDropdown({ panolar, onPick, onClose, anchorRef }: {
 }
 
 // ── Ana sayfa ─────────────────────────────────────────────────────────────────
-export default function GorevListesiPage() {
+export function TaskBoardContent() {
   const [panolar,      setPanolar]      = useState<Pano[]>(INIT_PANOLAR);
   const [gorevler,     setGorevler]     = useState<Gorev[]>(INIT_GOREVLER);
   const [selected,     setSelected]     = useState<Set<number>>(new Set());
@@ -500,7 +500,7 @@ export default function GorevListesiPage() {
   const sorted = [...panolar].sort((a, b) => a.sira - b.sira);
 
   return (
-    <AdminShell>
+    <>
       <div className="gorev-liste-page">
         {/* Başlık / aksiyonlar */}
         <header className="orders-hero" style={{ alignItems: "flex-end" }}>
@@ -570,6 +570,10 @@ export default function GorevListesiPage() {
         <PanoEkleModal mevcutSira={maxSira} onClose={() => setPanoModal(false)}
           onSave={p => { addPano(p); setPanoModal(false); }} />
       )}
-    </AdminShell>
+    </>
   );
+}
+
+export default function GorevListesiPage() {
+  return <AdminShell><TaskBoardContent /></AdminShell>;
 }

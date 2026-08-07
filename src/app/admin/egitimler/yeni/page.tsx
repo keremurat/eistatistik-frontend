@@ -15,20 +15,24 @@ const courses = [
 ];
 
 export default function AdminNewEducationPage() {
+  return <AdminShell><NewEducationContent /></AdminShell>;
+}
+
+export function NewEducationContent({ basePath = "/admin/egitimler" }: { basePath?: string }) {
   const [type, setType] = useState<"self" | "live">("self");
   const [query, setQuery] = useState("");
   const filtered = useMemo(() => courses.filter(course => [course.title, course.description].some(value => value.toLocaleLowerCase("tr").includes(query.toLocaleLowerCase("tr")))), [query]);
 
-  return <AdminShell><div className="education-page admin-education-catalog">
-    <header className="education-heading"><div><p className="eyebrow">YENİ EĞİTİM SATIN AL</p><h1>Öğrenme biçimini seçin</h1><p>Müşteri eğitim kataloğundaki programları aynı akışla inceleyin ve yönetici panelinden ayrılmadan kayıt oluşturun.</p></div><Link className="education-secondary" href="/admin/egitimler/satin-alinan">Satın alınan eğitimlere dön</Link></header>
-    <nav className="education-view-tabs" aria-label="Eğitim yönetimi görünümü"><Link href="/admin/egitimler/satin-alinan">Satın alınan eğitimler</Link><Link className="active" href="/admin/egitimler/yeni">Yeni eğitim satın al</Link></nav>
+  return <div className="education-page admin-education-catalog">
+    <header className="education-heading"><div><p className="eyebrow">YENİ EĞİTİM SATIN AL</p><h1>Öğrenme biçimini seçin</h1><p>Müşteri eğitim kataloğundaki programları aynı akışla inceleyin ve panelden ayrılmadan kayıt oluşturun.</p></div><Link className="education-secondary" href={`${basePath}/satin-alinan`}>Satın alınan eğitimlere dön</Link></header>
+    <nav className="education-view-tabs" aria-label="Eğitim yönetimi görünümü"><Link href={`${basePath}/satin-alinan`}>Satın alınan eğitimler</Link><Link className="active" href={`${basePath}/yeni`}>Yeni eğitim satın al</Link></nav>
     <section className="training-type-switch">
       <button className={type === "self" ? "active" : ""} onClick={() => setType("self")}><span><EducationIcon name="play"/></span><div><strong>Kendi hızında eğitimler</strong><small>Dilediğiniz zaman başlayan, kayıt süresi boyunca erişilebilen eğitimler.</small></div><i>{courses.length} eğitim</i></button>
       <button className={type === "live" ? "active" : ""} onClick={() => setType("live")}><span><EducationIcon name="users"/></span><div><strong>Canlı eğitimler</strong><small>Uzman eğitmenlerle planlanmış çevrim içi dersler.</small></div><i>Yakında</i></button>
     </section>
     {type === "live" ? <section className="catalog-empty"><EducationIcon name="users" size={28}/><h2>Yeni canlı eğitim takvimi hazırlanıyor</h2><p>Programlar yayınlandığında bu alandan müşteri kaydı oluşturabilirsiniz.</p><button>Yeni program oluştur</button></section> : <section className="education-section catalog-section">
       <header><div><p className="eyebrow">KENDİ HIZINDA</p><h2>Satıştaki eğitimler</h2></div><label className="catalog-search"><EducationIcon name="search" size={17}/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Eğitim ara"/></label></header>
-      <div className="course-catalog-grid">{filtered.map((course, index) => <article key={course.code}><div className={`catalog-cover cover-${course.tone}`}><span>0{index + 1}</span><strong>{course.title}</strong><small>{course.level}</small></div><div className="catalog-course-body"><div className="catalog-price"><span>KENDİ HIZINDA</span><strong>{course.price}</strong></div><h3>{course.title}</h3><p>{course.description}</p><ul><li><EducationIcon name="book" size={15}/>{course.modules}</li><li><EducationIcon name="clock" size={15}/>{course.duration}</li><li><EducationIcon name="check" size={15}/>{course.access} erişim</li></ul><Link className={course.state === "owned" ? "owned" : course.state === "payment" ? "payment" : ""} href={`/admin/egitimler/satin-alinan/${course.code}`}>{course.state === "owned" ? "Kaydı görüntüle" : course.state === "payment" ? "Ödemeyi tamamla" : "Eğitimi incele"}<EducationIcon name="arrow" size={15}/></Link></div></article>)}</div>
+      <div className="course-catalog-grid">{filtered.map((course, index) => <article key={course.code}><div className={`catalog-cover cover-${course.tone}`}><span>0{index + 1}</span><strong>{course.title}</strong><small>{course.level}</small></div><div className="catalog-course-body"><div className="catalog-price"><span>KENDİ HIZINDA</span><strong>{course.price}</strong></div><h3>{course.title}</h3><p>{course.description}</p><ul><li><EducationIcon name="book" size={15}/>{course.modules}</li><li><EducationIcon name="clock" size={15}/>{course.duration}</li><li><EducationIcon name="check" size={15}/>{course.access} erişim</li></ul><Link className={course.state === "owned" ? "owned" : course.state === "payment" ? "payment" : ""} href={`${basePath}/satin-alinan/${course.code}`}>{course.state === "owned" ? "Kaydı görüntüle" : course.state === "payment" ? "Ödemeyi tamamla" : "Eğitimi incele"}<EducationIcon name="arrow" size={15}/></Link></div></article>)}</div>
     </section>}
-  </div></AdminShell>;
+  </div>;
 }
