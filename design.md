@@ -358,6 +358,48 @@ dikey/iki satırlı (`.payment-summary .payment-tabs`).
 - **Sonuna kadar okumadan kabul edilemez:** içerik kaydırıldıkça üstteki `legal-scroll-progress`
   dolar; ilerleme `>= %99` olduğunda `reachedEnd=true` ve ancak o zaman `legal-accept` etkinleşir.
 - `Escape` ve `×` / "Vazgeç" modalı kapatır; `role="dialog"` + `aria-modal="true"` zorunlu.
+
+---
+
+## 8. Landing kurum logo şeridi — `landing-logo-marquee`
+
+Kaynak: [src/app/page.tsx](src/app/page.tsx). Landing sayfasının son CTA alanı ile footer'ı
+arasında, `/public/davet` altındaki kurum logolarını kesintisiz gösteren tek yatay şerittir.
+
+```tsx
+<section className="landing-logo-marquee" aria-label="Birlikte çalıştığımız kurumlar">
+  <div className="landing-logo-marquee-track">
+    <div className="landing-logo-marquee-group">{/* logolar */}</div>
+    <div className="landing-logo-marquee-group" aria-hidden="true">{/* aynı logolar */}</div>
+  </div>
+</section>
+```
+
+Kurallar:
+- Sayfada yalnızca bir logo marquee bulunur; ikinci bir kayan metin/logo şeridi eklenmez.
+- Kesintisiz döngü için aynı logo grubu iki kez render edilir; ikinci grup ekran okuyuculardan gizlenir.
+- Logolar kendi oranları korunarak `next/image` ile gösterilir ve `grayscale(1)` filtresiyle tek gri
+  tona indirilir. Logo kartı, renkli vurgu veya kurum adı etiketi eklenmez.
+- Hareket yalnızca `transform` üzerindedir. `prefers-reduced-motion: reduce` durumunda animasyon kapanır
+  ve şerit yatay kaydırılabilir statik bir listeye döner.
+- Şerit footer'ın koyu temasına geçmeden önce açık landing zemininde kalır; kenarlıklar mevcut
+  `--line` / landing nötr skalasından gelir.
+
+### 8.1 Landing footer — `landing-footer`
+
+Landing footer koyu lacivert zemin üzerinde dört bilgi kolonundan ve ayrı bir alt bardan oluşur:
+
+1. Marka logosu + kısa açıklama.
+2. `Hızlı Erişim`: landing üst navigasyonundaki bağlantılar.
+3. `Hizmetlerimiz`: landing servis rotaları.
+4. `İletişim`: adres, telefonlar ve e-posta.
+
+Alt bar solda telif metnini, sağda Instagram ve X sosyal profil ikonlarını taşır. Sosyal
+bağlantılar yeni sekmede açılır; `aria-label`, `rel="noopener noreferrer"` ve görünür
+focus durumu zorunludur. İkonlar mevcut ikon sözleşmesine uygun `currentColor` inline SVG'dir.
+
+Masaüstünde kolonlar `minmax(250px,1.35fr) repeat(3,minmax(150px,1fr))`, mobilde tek kolon olur.
+Footer içeriği landing genişlik sözleşmesine göre `1480px` içinde merkezlenir.
 - Kayıt akışında Üyelik onaylanınca sıradaki KVKK modalı otomatik açılır; her onay ilgili
   onay kutusunu (`membershipAccepted` / `kvkkAccepted`) işaretler.
 - Ödeme akışında modal onayı ilgili `...AgreementAccepted` state'ini `true` yapar ve
