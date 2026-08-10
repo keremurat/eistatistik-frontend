@@ -4,6 +4,7 @@ import { LandingExperience } from "./components/LandingExperience";
 import { LandingFaq } from "./components/LandingFaq";
 import { LandingHeader } from "./components/LandingHeader";
 import { LandingProcess } from "./components/LandingProcess";
+import { HeroFamilyField } from "./components/HeroFamilyField";
 
 const services = [
   { title: "İstatistiksel veri analizi", copy: "Tez, makale ve araştırmalarınız için yöntem seçimi, analiz ve akademik standartlarda raporlama.", image: "/service-illustrations/statistical-analysis-v2.png", type: "Analiz ve araştırma" },
@@ -77,10 +78,10 @@ export default function LandingPage() {
       <LandingHeader />
 
       <section className="landing-hero">
-        <div className="landing-hero-fibers" aria-hidden="true"><i /><i /><i /><i /><i /></div>
+        <HeroFamilyField />
         <div className="landing-hero-content">
           <div className="landing-hero-copy">
-            <p className="landing-kicker">ANALİZ, EĞİTİM VE AKADEMİK DANIŞMANLIK</p>
+            <p className="landing-kicker">TÜRKİYE’NİN LİDER ANALİZ PLATFORMU</p>
             <h1>Araştırmanızın her adımında <span>netlik.</span></h1>
             <p>Uzman desteği, güvenli dosya paylaşımı ve şeffaf süreç yönetimi tek çalışma alanında.</p>
             <div className="landing-hero-actions">
@@ -94,7 +95,10 @@ export default function LandingPage() {
               <div className="landing-browser-screen"><iframe src="/dashboard" title="Eİstatistik çalışma alanı" tabIndex={-1} /></div>
             </div>
             <div className="landing-float-card float-meeting"><strong>14:30</strong><span>Uzman görüşmeniz</span></div>
-            <div className="landing-float-card float-progress"><span>Analiz ilerlemesi</span><strong>%82</strong><i /></div>
+            <div className="landing-float-card float-tools">
+              <span>ANALİZ ARAÇLARI</span>
+              <div>{["SPSS", "R", "Python", "STATA", "AMOS", "LISREL", "Minitab"].map((tool) => <strong key={tool}>{tool}</strong>)}</div>
+            </div>
           </div>
         </div>
       </section>

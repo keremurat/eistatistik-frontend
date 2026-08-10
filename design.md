@@ -400,6 +400,49 @@ focus durumu zorunludur. İkonlar mevcut ikon sözleşmesine uygun `currentColor
 
 Masaüstünde kolonlar `minmax(250px,1.35fr) repeat(3,minmax(150px,1fr))`, mobilde tek kolon olur.
 Footer içeriği landing genişlik sözleşmesine göre `1480px` içinde merkezlenir.
+
+### 8.2 Hero analiz araçları kartı — `float-tools`
+
+Landing hero'nun sağındaki platform önizlemesi üzerinde, kullanılan analiz yazılımlarını
+gösteren tek bir `.landing-float-card.float-tools` bulunur. Kart mevcut yüzen kart yüzeyini,
+radius ve gölgesini yeniden kullanır; yeni renk veya ikon sistemi eklemez.
+
+- Araçlar: SPSS, R, Python, STATA, AMOS, LISREL ve Minitab.
+- Masaüstünde platform görselinin sağ üstünde konumlanır.
+- Mobilde absolute konumdan çıkar, platform önizlemesinin altında statik ve yatay kaydırılabilir olur.
+- Kart dekoratif değil bilgilendiricidir; araç adları metin olarak okunabilir kalır.
+
+### 8.3 Hero ürün ailesi arka planı — `HeroFamilyField`
+
+Kaynak: [src/app/components/HeroFamilyField.tsx](src/app/components/HeroFamilyField.tsx). Landing
+hero arka planı, Eİstatistik Akademi'nin fiber akışları ile İstabot'un hareketli noktalarını
+aynı hafif canvas katmanında birleştirir.
+
+- Renkler yalnızca landing mavi/yeşil ailesinden gelir; mor/neon veya yeni vurgu rengi eklenmez.
+- Canvas `pointer-events:none` ve `aria-hidden="true"` olmalı, hero içeriğinin arkasında kalmalıdır.
+- Animasyon React state kullanmaz; canvas çizimi `requestAnimationFrame` ile doğrudan güncellenir.
+- `ResizeObserver` ile kapsayıcıya uyar, component unmount olduğunda observer ve animation frame temizlenir.
+- `prefers-reduced-motion: reduce` durumunda yalnızca tek statik kare çizilir.
+- Normal açılışta fiberler soldan sağa yaklaşık 1.6 saniyede çizilir; hareketli ışık
+  noktaları ve parçacık ağı ancak bu çizim tamamlanırken yumuşak biçimde görünür ve akmaya başlar.
+- Fiber üzerindeki hareketli öğeler büyük bulanık ışık küreleri değildir; kablonun yönüne
+  oturan kısa sinyal kapsülü, beyaz veri çekirdeği ve kontrollü ince kuyruktan oluşur.
+- Metin okunabilirliği için alan merkezde ve sol metin bölgesinde maskeyle zayıflatılır;
+  hareketli noktalar CTA ve başlık kontrastını bozamaz.
+
+### 8.4 Landing hizmet listesi — `landing-service-grid`
+
+Landing hizmetleri büyük bento blokları yerine tek kolonlu, sağ-sol dönüşümlü yatay liste
+kartlarıyla sunulur. Kart yüzeyi mevcut `landing-service-card` sınır, radius ve renklerini korur.
+
+- Masaüstünde kartlar bölüm genişliğinden daha dar tutulur; tek numaralılar sola, çift
+  numaralılar sağa yaslanır.
+- Çift numaralı kartlarda görsel sağa alınarak akış ritmi dönüşümlü hale gelir.
+- Görsel alanı kart yüksekliğini büyütmez; metin ve eylem tek bakışta taranabilir kalır.
+- Tablet görünümünde tüm kartlar bölüm genişliğini kullanır. Mobilde kompakt yatay düzen
+  korunur; çok dar ekranlarda görsel metnin üstüne geçer.
+- Hizmet sırası, metinleri ve bağlantıları değişmez.
+
 - Kayıt akışında Üyelik onaylanınca sıradaki KVKK modalı otomatik açılır; her onay ilgili
   onay kutusunu (`membershipAccepted` / `kvkkAccepted`) işaretler.
 - Ödeme akışında modal onayı ilgili `...AgreementAccepted` state'ini `true` yapar ve
