@@ -4,7 +4,7 @@ import { LandingExperience } from "./components/LandingExperience";
 import { LandingFaq } from "./components/LandingFaq";
 import { LandingHeader } from "./components/LandingHeader";
 import { LandingProcess } from "./components/LandingProcess";
-import { HeroFamilyField } from "./components/HeroFamilyField";
+import { TestimonialPhoneVideo } from "./components/TestimonialPhoneVideo";
 
 const services = [
   { title: "İstatistiksel veri analizi", copy: "Tez, makale ve araştırmalarınız için yöntem seçimi, analiz ve akademik standartlarda raporlama.", image: "/service-illustrations/statistical-analysis-v2.png", type: "Analiz ve araştırma" },
@@ -26,6 +26,15 @@ const faqs: Array<[string, string]> = [
   ["Hangi analiz türlerini yapabiliyorsunuz?", "Güvenilirlik ve geçerlilik, faktör analizi, regresyon (doğrusal/lojistik/çoklu), ANOVA, MANOVA, kümeleme, SEM/YEM, survival analizi, meta-analiz ve daha pek çok yöntem sunulmaktadır."],
   ["Analizin doğruluğu garanti ediliyor mu?", "Evet. Tüm analizler alanında uzman istatistikçiler tarafından gerçekleştirilir ve kalite kontrolden geçirilir. Teslim sonrası makul süre içinde revizyon talep etme hakkınız bulunmaktadır."],
   ["İstatistik eğitimi de veriliyor mu?", "Evet. Bireysel ve kurumsal istatistik eğitimleri düzenlenmektedir. SPSS, R, Python ve STATA için temel–orta–ileri düzey canlı eğitimler mevcuttur."],
+];
+
+const testimonials = [
+  { quote:"SPSS analizlerimi eksiksiz teslim ettiler. Danışmanım sonuçlardan çok memnun kaldı, kesinlikle tavsiye ederim.", name:"Zeynep K.", role:"Yüksek Lisans Öğrencisi", institution:"Hacettepe Üniversitesi", initials:"ZK" },
+  { quote:"Regresyon ve faktör analizimi iki günde hallettiler. Açıklamalar çok anlaşılır, tez savunmasında sıkıntı yaşamadım.", name:"Mehmet A.", role:"Doktora Adayı", institution:"İstanbul Üniversitesi", initials:"MA" },
+  { quote:"Kurumsal eğitim programı harika hazırlanmıştı. Ekibimiz SPSS'e hızlıca adapte oldu; pratik ve kaliteli içerik.", name:"Elif S.", role:"Araştırmacı", institution:"Marmara Üniversitesi", initials:"ES" },
+  { quote:"Bitirme projem için anket verilerimi yorumlamam gerekiyordu. Detaylı rapor ve yorumlu çıktılar çok işime yaradı.", name:"Burak T.", role:"Lisans Öğrencisi", institution:"Ege Üniversitesi", initials:"BT" },
+  { quote:"SEM analizini başka firmalar yapamadı; Eİstatistik birkaç günde tamamladı. Fiyat performans açısından benzersiz.", name:"Selin Ö.", role:"Yüksek Lisans Öğrencisi", institution:"ODTÜ", initials:"SÖ" },
+  { quote:"Makale için meta-analiz yaptırdım. Hakemler metodoloji konusunda hiç soru sormadı, süreç tamamen sorunsuz geçti.", name:"Ahmet D.", role:"Akademisyen", institution:"Ankara Üniversitesi", initials:"AD" },
 ];
 
 const invitedOrganizationLogos = [
@@ -78,7 +87,7 @@ export default function LandingPage() {
       <LandingHeader />
 
       <section className="landing-hero">
-        <HeroFamilyField />
+        <div className="landing-hero-fibers" aria-hidden="true"><i /><i /><i /><i /><i /></div>
         <div className="landing-hero-content">
           <div className="landing-hero-copy">
             <p className="landing-kicker">TÜRKİYE’NİN LİDER ANALİZ PLATFORMU</p>
@@ -104,16 +113,16 @@ export default function LandingPage() {
       </section>
 
       <section className="landing-proof" aria-label="Eistatistik ürün ailesi">
-        <p>Eistatistik ürün ailesi, araştırmanın her aşamasında yanınızda.</p>
+        <p>eistatistik ürün ailesi, araştırmanın her aşamasında yanınızda.</p>
         <div className="landing-family-logos">
           <a href="#services" className="landing-family-brand brand-eistatistik">
             <span className="landing-family-logo"><Image src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} /></span>
             <small>Analiz ve danışmanlık</small>
           </a>
-          <div className="landing-family-brand brand-akademi">
+          <a href="https://akademi.eistatistik.com/" target="_blank" rel="noopener noreferrer" className="landing-family-brand brand-akademi">
             <span className="landing-family-logo"><Image src="/eistatistik-akademi.png" alt="Eİstatistik Akademi" width={1321} height={331} /></span>
             <small>Uygulamalı eğitim</small>
-          </div>
+          </a>
           <a href="https://www.istabot.com/" target="_blank" rel="noreferrer" className="landing-family-brand brand-istabot">
             <span className="landing-family-logo"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></span>
             <small>Analiz asistanı</small>
@@ -146,14 +155,66 @@ export default function LandingPage() {
       <LandingProcess />
 
       <section className="landing-values">
-        <div className="landing-value-primary">
-          <p>Veriniz yalnızca bir dosya değildir.</p>
-          <h2>Araştırmanızın emeğini ciddiye alan bir çalışma alanı.</h2>
-          <Link href="/giris">Çalışma alanınızı açın <span aria-hidden="true">→</span></Link>
+        <header className="landing-trust-heading">
+          <div>
+            <span>NEDEN EİSTATİSTİK?</span>
+            <h2>Veriniz güvende. Süreç kontrolünüzde.</h2>
+          </div>
+          <div>
+            <p>Analiz hizmeti yalnızca bir sonuç dosyasından ibaret değildir. Çalışmanızın her adımı, size özel güvenli çalışma alanında uzmanınızla birlikte ilerler.</p>
+            <Link href="/giris">Çalışma alanınızı açın <span aria-hidden="true">→</span></Link>
+          </div>
+        </header>
+
+        <div className="landing-trust-list">
+          <article className="landing-trust-row">
+            <span className="landing-trust-index">01</span>
+            <div className="landing-trust-copy"><small>GÜVENLİ ÇALIŞMA ALANI</small><h3>Dosyalarınız siparişinize bağlı kalır.</h3><p>Ham veri, analiz çıktıları, raporlar ve yazışmalar tek bir çalışma alanında düzenli ve güvenli biçimde tutulur.</p></div>
+            <div className="landing-trust-visual trust-files" aria-hidden="true"><div><i>CSV</i><span><b>ham-veri.csv</b><small>2,4 MB · Yüklendi</small></span><em>✓</em></div><div><i>SPSS</i><span><b>analiz-output.spv</b><small>8,1 MB · Hazır</small></span><em>✓</em></div><strong>Dosyalar yalnızca bu siparişte görünür</strong></div>
+          </article>
+
+          <article className="landing-trust-row">
+            <span className="landing-trust-index">02</span>
+            <div className="landing-trust-copy"><small>ŞEFFAF SÜREÇ YÖNETİMİ</small><h3>Sıradaki adımı her zaman bilirsiniz.</h3><p>Talebinizin hangi aşamada olduğunu, tamamlanan işlemleri ve sizden beklenen adımları anlık olarak takip edersiniz.</p></div>
+            <div className="landing-trust-visual trust-progress" aria-hidden="true"><div><span className="done">✓</span><i /><b>Talep alındı</b></div><div><span className="done">✓</span><i /><b>Uzman atandı</b></div><div><span>03</span><i /><b>Analiz sürüyor</b></div><div><span>04</span><b>Rapor teslimi</b></div></div>
+          </article>
+
+          <article className="landing-trust-row">
+            <span className="landing-trust-index">03</span>
+            <div className="landing-trust-copy"><small>DOĞRUDAN UZMAN İLETİŞİMİ</small><h3>Çalışmanızı bilen uzmanla görüşürsünüz.</h3><p>Genel destek yanıtları yerine analizinizi gerçekleştiren uzmanla mesajlaşır, dosya paylaşır ve görüşme planlarsınız.</p></div>
+            <div className="landing-trust-visual trust-message" aria-hidden="true"><header><span>NA</span><div><b>Nazlı A. · İstatistik Uzmanı</b><small>Şu anda çevrimiçi</small></div></header><p>Değişken yapınızı kontrol ettim. Regresyon modeli için kısa bir not paylaştım.</p><footer><span>Mesajınızı yazın…</span><b>→</b></footer></div>
+          </article>
         </div>
-        <div className="landing-value security"><strong>Güvenli dosya paylaşımı</strong><p>Analiz dosyaları, sonuçlar ve yazışmalar siparişe bağlı tutulur.</p></div>
-        <div className="landing-value transparent"><strong>Şeffaf ilerleme</strong><p>Sırada ne olduğunu ve sizden ne beklendiğini her an görün.</p></div>
-        <div className="landing-value human"><strong>Gerçek uzman iletişimi</strong><p>Otomatik yanıtlar yerine çalışmanızı bilen uzmanla görüşün.</p></div>
+      </section>
+
+      <section className="landing-testimonials-shell" id="yorumlar">
+        <div className="landing-testimonials">
+          <header className="landing-testimonials-heading">
+            <span>ONLAR ANLATSIN</span>
+            <h2>Çalışmalarına eşlik ettiğimiz araştırmacılar ne söylüyor?</h2>
+            <p>Tezden makaleye, bireysel analizden kurumsal eğitime kadar farklı ihtiyaçlarla bize ulaşan kullanıcıların deneyimleri.</p>
+          </header>
+
+          <div className="landing-testimonials-layout">
+            <TestimonialPhoneVideo />
+
+            <div className="landing-testimonial-streams" aria-label="Kullanıcı yorumları">
+              {[testimonials.slice(0, 3), testimonials.slice(3)].map((row, rowIndex) => (
+                <div className={`landing-testimonial-stream stream-${rowIndex + 1}`} key={`row-${rowIndex}`}>
+                  <div className="landing-testimonial-track">
+                    {[...row, ...row].map((testimonial, index) => (
+                      <article className="landing-testimonial-card" aria-hidden={index >= row.length || undefined} key={`${testimonial.name}-${index}`}>
+                        <div className="testimonial-stars" aria-label="5 üzerinden 5 yıldız">★★★★★</div>
+                        <blockquote>“{testimonial.quote}”</blockquote>
+                        <footer><span>{testimonial.initials}</span><div><strong>{testimonial.name}</strong><small>{testimonial.role} · {testimonial.institution}</small></div></footer>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="landing-faq" id="faq">
@@ -194,6 +255,7 @@ export default function LandingPage() {
             <Link href="/egitimler/bireysel">Eğitimler</Link>
             <a href="#platform">Platform</a>
             <a href="#process">Nasıl çalışır?</a>
+            <a href="#yorumlar">Yorumlar</a>
             <a href="#faq">Merak edilenler</a>
             <a href="#faq">Blog</a>
             <Link href="/neler-yaptik/davetli-konusmalar">Neler Yaptık?</Link>

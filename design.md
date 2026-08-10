@@ -144,7 +144,11 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
 Kurallar:
 - Aktif menü öğesi `className="active"` alır.
 - Topbar grid: `auto 1fr auto` (marka / nav / aksiyonlar), `position: sticky; top: 0`.
+- Geniş landing header `1600px` üst sınır kullanır; `1681px+` görünümde orta kolon
+  `minmax(0,1fr)` olur ve menü aralıkları sıkılaşır. Sağ aksiyon grubu küçülmez veya taşmaz.
 - Marka logosu koyu sayfalarda `Siyah e-istatistik.png`, koyu zeminlerde (auth) `Beyaz…`.
+- Auth ekranında beyaz logo ve solundaki sade `auth-back-home` oku tek `auth-logo-shortcut`
+  bağlantısıdır; grubun herhangi bir yerine tıklamak landing page'e (`/`) döner.
 - Alt içerik sayfaları `back-link` ile bir üst listeye döner:
   `<Link className="back-link" href="..."><Icon name="back" size={16} />… dön</Link>`.
 
@@ -412,25 +416,7 @@ radius ve gölgesini yeniden kullanır; yeni renk veya ikon sistemi eklemez.
 - Mobilde absolute konumdan çıkar, platform önizlemesinin altında statik ve yatay kaydırılabilir olur.
 - Kart dekoratif değil bilgilendiricidir; araç adları metin olarak okunabilir kalır.
 
-### 8.3 Hero ürün ailesi arka planı — `HeroFamilyField`
-
-Kaynak: [src/app/components/HeroFamilyField.tsx](src/app/components/HeroFamilyField.tsx). Landing
-hero arka planı, Eİstatistik Akademi'nin fiber akışları ile İstabot'un hareketli noktalarını
-aynı hafif canvas katmanında birleştirir.
-
-- Renkler yalnızca landing mavi/yeşil ailesinden gelir; mor/neon veya yeni vurgu rengi eklenmez.
-- Canvas `pointer-events:none` ve `aria-hidden="true"` olmalı, hero içeriğinin arkasında kalmalıdır.
-- Animasyon React state kullanmaz; canvas çizimi `requestAnimationFrame` ile doğrudan güncellenir.
-- `ResizeObserver` ile kapsayıcıya uyar, component unmount olduğunda observer ve animation frame temizlenir.
-- `prefers-reduced-motion: reduce` durumunda yalnızca tek statik kare çizilir.
-- Normal açılışta fiberler soldan sağa yaklaşık 1.6 saniyede çizilir; hareketli ışık
-  noktaları ve parçacık ağı ancak bu çizim tamamlanırken yumuşak biçimde görünür ve akmaya başlar.
-- Fiber üzerindeki hareketli öğeler büyük bulanık ışık küreleri değildir; kablonun yönüne
-  oturan kısa sinyal kapsülü, beyaz veri çekirdeği ve kontrollü ince kuyruktan oluşur.
-- Metin okunabilirliği için alan merkezde ve sol metin bölgesinde maskeyle zayıflatılır;
-  hareketli noktalar CTA ve başlık kontrastını bozamaz.
-
-### 8.4 Landing hizmet listesi — `landing-service-grid`
+### 8.3 Landing hizmet listesi — `landing-service-grid`
 
 Landing hizmetleri büyük bento blokları yerine tek kolonlu, sağ-sol dönüşümlü yatay liste
 kartlarıyla sunulur. Kart yüzeyi mevcut `landing-service-card` sınır, radius ve renklerini korur.
@@ -442,6 +428,45 @@ kartlarıyla sunulur. Kart yüzeyi mevcut `landing-service-card` sınır, radius
 - Tablet görünümünde tüm kartlar bölüm genişliğini kullanır. Mobilde kompakt yatay düzen
   korunur; çok dar ekranlarda görsel metnin üstüne geçer.
 - Hizmet sırası, metinleri ve bağlantıları değişmez.
+
+### 8.4 Landing güven kanıtları — `landing-trust-list`
+
+"Nasıl Çalışır?" bölümünden sonra gelen alan bir hizmet listesi değil, kullanıcının
+"Neden Eİstatistik'e güvenmeliyim?" sorusunu yanıtlayan kanıt bölümüdür.
+
+- Üst başlık `.landing-trust-heading`: "Neden Eİstatistik?" etiketi, güven/süreç mesajı,
+  kısa açıklama ve çalışma alanı CTA'sı.
+- Alt akış üç `.landing-trust-row` satırından oluşur: güvenli çalışma alanı, şeffaf süreç
+  yönetimi ve doğrudan uzman iletişimi.
+- Her satır numara, kısa kanıt metni ve gerçek ürün davranışını temsil eden tek mikro arayüz
+  içerir. Mikro arayüz dekor değil; dosya durumu, sipariş adımları veya uzman mesajını gösterir.
+- Masaüstünde yatay üç kolon, tablet ve mobilde tek kolon kullanılır. Mobilde mikro arayüz
+  metinden sonra gelir ve yatay taşma oluşturmaz.
+
+### 8.5 Landing kullanıcı yorumları — `landing-testimonials-shell`
+
+Sosyal kanıt bölümü güven kanıtlarından sonra, SSS'den önce yer alır ve `id="yorumlar"`
+taşır. Üst bar ile footer hızlı erişimde bu anchor'a doğrudan bağlantı bulunur.
+
+- Koyu lacivert yüzey içinde solda 9:16 telefon çerçeveli YouTube oynatıcı, sağda iki katlı yorum akışı bulunur.
+  Üst sıra sola, alt sıra sağa kesintisiz ilerler; hover durumunda okunabilirlik için durur.
+- Telefon güncel cihaz oranına yakın uzun ve dar bir gövde kullanır. Oynatıcı bölüm en az %35 görünür
+  olduğunda sessiz biçimde otomatik başlar; kullanıcı YouTube kontrollerinden sesi açabilir.
+- Yorumlar yıldız, alıntı, baş harf avatarı, ad, rol ve kurum bilgisini koruyan kompakt yatay
+  kartlardır. Akış kenarlarında maske kullanılarak kartların sert biçimde kesilmesi önlenir.
+- Masaüstünde video ve yorum akışları yan yana, mobilde tek kolon akar. Hareket azaltma tercihi
+  bulunan kullanıcılar için animasyon devre dışı kalır ve şerit manuel kaydırılabilir olur.
+
+### 8.6 Hizmet detay hero ölçeği
+
+`analysis-hero`, `power-hero`, `validity-hero` ve `proforma-hero` masaüstünde ortak kompakt
+içerik ölçeğini kullanırken `100svh` yüksekliğinde kalır; böylece ilk açılışta sonraki bölüm
+görünmez. Başlık en fazla 5.35rem, CTA 50px, ürün görseli %94 genişliktedir. Mobil hero
+kuralları bu ortak masaüstü ölçeğinin dışında kalır.
+
+İstatistiksel Analiz sayfasındaki ikinci süreç görseli (`visual-analyse`) gerçek bir regresyon
+çıktısı dili kullanır: model durumu, güven bandı, gözlem noktaları ve R²/β/p özetleri tek panelde
+sunulur. Grafik salt dekoratif olduğundan erişilebilirlik ağacından gizlidir.
 
 - Kayıt akışında Üyelik onaylanınca sıradaki KVKK modalı otomatik açılır; her onay ilgili
   onay kutusunu (`membershipAccepted` / `kvkkAccepted`) işaretler.

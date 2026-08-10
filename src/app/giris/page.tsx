@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { findDemoAccount } from "../lib/demoAccounts";
@@ -74,9 +75,10 @@ export default function AuthPage() {
     <section className="auth-card">
       <aside className={`auth-brand-panel ${hasNavigated ? (isRegister ? "move-right" : "move-left") : isRegister ? "at-right" : ""}`}>
         <span className="auth-brand-art" aria-hidden="true" />
-        <div className="auth-logo-shortcut" aria-label="Eİstatistik">
+        <Link href="/" className="auth-logo-shortcut" aria-label="Eİstatistik landing page'e dön">
+          <span className="auth-back-home" aria-hidden="true">←</span>
           <Image className="auth-logo-white" src="/Beyaz e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority />
-        </div>
+        </Link>
         <div className="auth-brand-copy">
           <p>ANALİZ · EĞİTİM · DANIŞMANLIK</p>
           <h1>{isRegister ? <>Çalışma alanınızı<br /><em>bugün oluşturun.</em></> : <>Akademik sürecinize<br /><em>hoş geldiniz.</em></>}</h1>

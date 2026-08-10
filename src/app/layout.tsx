@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Eİstatistik | Analiz, Eğitim ve Akademik Danışmanlık",
+  title: "eistatistik | Analiz, Eğitim ve Akademik Danışmanlık",
   description: "İstatistiksel analiz, akademik danışmanlık, uzman görüşmeleri ve eğitim süreçlerinizi tek çalışma alanından yönetin.",
 };
 

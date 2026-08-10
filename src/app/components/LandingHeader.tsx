@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 export function LandingHeader() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState<"services" | "education" | "work" | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<"services" | "education" | null>(null);
   const headerRef = useRef<HTMLElement | null>(null);
   const pathname = usePathname();
 
@@ -23,7 +23,7 @@ export function LandingHeader() {
     if (pathname === "/") window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const toggleDropdown = (dropdown: "services" | "education" | "work") => {
+  const toggleDropdown = (dropdown: "services" | "education") => {
     setActiveDropdown((current) => current === dropdown ? null : dropdown);
   };
 
@@ -101,17 +101,8 @@ export function LandingHeader() {
 
           <Link href="/#platform" onClick={closeNavigation}>Platform</Link>
           <Link href="/#process" onClick={closeNavigation}>Nasıl çalışır?</Link>
+          <Link href="/#yorumlar" onClick={closeNavigation}>Yorumlar</Link>
           <Link href="/#faq" onClick={closeNavigation}>Merak edilenler</Link>
-          <Link href="/#faq" onClick={closeNavigation}>Blog</Link>
-
-          <details className="landing-nav-dropdown" open={activeDropdown === "work"}>
-            <summary onClick={(event) => { event.preventDefault(); toggleDropdown("work"); }}>Neler Yaptık?</summary>
-            <div className="landing-nav-dropdown-menu compact">
-              <Link href="/neler-yaptik/davetli-konusmalar" onClick={closeNavigation}>Davetli Konuşmalar</Link>
-              <Link href="/#platform" onClick={closeNavigation}>Referanslar</Link>
-            </div>
-          </details>
-
           <a href="mailto:destek@eistatistik.com" onClick={closeNavigation}>İletişim</a>
         </nav>
         <div className="landing-nav-actions">

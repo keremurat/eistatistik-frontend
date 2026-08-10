@@ -51,9 +51,15 @@ function StageVisual({ type }: { type: string }) {
   );
   if (type === "analyse") return (
     <div className="analysis-stage-visual visual-analyse" aria-hidden="true">
-      <div className="analysis-chart-grid"><span /><span /><span /><span /></div>
-      <div className="analysis-chart-line"><i /><i /><i /><i /><i /><i /></div>
-      <div className="analysis-result-pill"><b>p</b> &lt; .001 <span>Anlamlı</span></div>
+      <header className="analysis-regression-head"><div><small>MODEL 01</small><strong>Doğrusal regresyon</strong></div><span><i /> Model uyumu yüksek</span></header>
+      <div className="analysis-regression-plot">
+        <div className="regression-y-labels"><span>80</span><span>60</span><span>40</span><span>20</span></div>
+        <div className="regression-grid"><i /><i /><i /><i /></div>
+        <div className="regression-band" /><div className="regression-line" />
+        <div className="regression-points"><i /><i /><i /><i /><i /><i /><i /><i /><i /></div>
+        <div className="regression-x-labels"><span>Düşük</span><span>Bağımsız değişken</span><span>Yüksek</span></div>
+      </div>
+      <footer className="analysis-regression-stats"><div><small>R²</small><strong>.78</strong><span>Açıklanan varyans</span></div><div><small>β</small><strong>.64</strong><span>Pozitif etki</span></div><div><small>p</small><strong>&lt; .001</strong><span className="significant">Anlamlı</span></div></footer>
     </div>
   );
   return (
