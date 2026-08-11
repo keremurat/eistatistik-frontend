@@ -40,7 +40,7 @@ const INIT_GOREVLER: Gorev[] = [
   { id: 4,  baslik: "Rapor Güncelleme",          pano: "yapilacaklar", etiket: "Önemli",         tarih: "28.07.2026 11:10", siparisKodu: "SA260715003", musteriAdi: "SELİN ÖZTÜRK", musteriTel: "532 445 87 20", aciklama: "Müşteri raporda tablo düzenlemesi istiyor, geri bildirim beklenecek.", atanan: "SÜMEYYE İNAN", yapilanlar: [] },
   { id: 5,  baslik: "HATIRLATMA",                pano: "yapiliyor",    etiket: "Arama Talebi",   tarih: "08.06.2026 16:45", musteriAdi: "MERVE ALPAY",             musteriTel: "505 787 87 99", aciklama: "DÜZCE ÜNİ. Tıbbi Biyokimya Eylül başında webinar için aranacak.", atanan: "SÜMEYYE İNAN", yapilanlar: [] },
   { id: 6,  baslik: "Ek Analiz Ücreti Verilecek", pano: "yapiliyor",   etiket: "Önemli",         tarih: "31.07.2026 09:28", siparisKodu: "SA260301001", musteriAdi: "ENİS ULUSOY",            musteriTel: "531 308 61 21", aciklama: "", atanan: "NACİ MURAT", yapilanlar: [] },
-  { id: 7,  baslik: "BEYZA NUR CAN",             pano: "yapildi",      etiket: "Hatırlatma", tarih: "01.08.2026 18:00", siparisKodu: "TR260731004", musteriAdi: "BEYZA NUR CAN",          musteriTel: "546 673 20 76", aciklama: "Ücret belirlendiği halde müşteri ödeme yapmadı. Siparişinin ücretlendirildiği hatırlatılacak!", atanan: "EİSTATİSTİK ANALİZÖR", yapilanlar: [] },
+  { id: 7,  baslik: "BEYZA NUR CAN",             pano: "yapildi",      etiket: "Hatırlatma", tarih: "01.08.2026 18:00", siparisKodu: "TR260731004", musteriAdi: "BEYZA NUR CAN",          musteriTel: "546 673 20 76", aciklama: "Ücret belirlendiği halde müşteri ödeme yapmadı. Siparişinin ücretlendirildiği hatırlatılacak!", atanan: "eistatistik ANALİZÖR", yapilanlar: [] },
   { id: 8,  baslik: "Eğitim",                    pano: "yapildi",      etiket: "Acil",       tarih: "01.08.2026 12:38", siparisKodu: "TR260716007", musteriAdi: "GİZEM ZEVDE AYDIN",      musteriTel: "553 986 57 97", aciklama: "Tekrar aradım, tel kullanılmamakta, ödeme yapmadı. Sistemden yazmıştım dönüş yok, iptal ediyorum.", atanan: "SÜMEYYE İNAN", yapilanlar: [] },
   { id: 9,  baslik: "Eğitim",                    pano: "yapildi",      etiket: "Acil",       tarih: "01.08.2026 12:43", siparisKodu: "TR260723004", musteriAdi: "MUSTAFA ÇOBANER",        musteriTel: "541 363 07 07", aciklama: "Henüz düşünme aşamasındayım dedi. Salı günü tekrar arayacağım, netleşmiş olacak.", atanan: "SÜMEYYE İNAN", yapilanlar: [] },
   { id: 10, baslik: "Bilgilendirme",              pano: "yapildi",      etiket: "Düşük Öncelikli", tarih: "28.07.2026 10:15", siparisKodu: "SA260722001", musteriAdi: "CAN DEMİR", musteriTel: "544 231 09 88", aciklama: "Analiz tamamlandı, müşteriye bildirim gönderildi.", atanan: "NACİ MURAT", yapilanlar: [] },
@@ -54,7 +54,7 @@ const ATANABILIR: AtanabilirKullanici[] = [
   { value: "SÜMEYYE İNAN",          label: "Sümeyye İnan",          rol: "Analist"  },
   { value: "MEHMET MEŞE",           label: "Mehmet Meşe",           rol: "Analist"  },
   { value: "ALİHSAN ŞÜKÜR",         label: "Alihsan Şükür",         rol: "Analist"  },
-  { value: "EİSTATİSTİK ANALİZÖR",  label: "Eistatistik Analizör",  rol: "Analist"  },
+  { value: "eistatistik ANALİZÖR",  label: "eistatistik Analizör",  rol: "Analist"  },
   { value: "EMRE KAYA",             label: "Emre Kaya",             rol: "Asistan"  },
   { value: "DİLARA YILMAZ",         label: "Dilara Yılmaz",         rol: "Asistan"  },
 ];

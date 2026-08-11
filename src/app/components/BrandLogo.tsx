@@ -12,8 +12,8 @@ export function BrandLogo() {
   }, []);
 
   return (
-    <Link className="brand" href={href} aria-label="Eİstatistik ana sayfa">
-      <Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority />
+    <Link className="brand" href={href} aria-label="eistatistik ana sayfa">
+      <Image className="brand-logo" src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} priority />
     </Link>
   );
 }

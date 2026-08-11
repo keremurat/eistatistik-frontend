@@ -64,7 +64,7 @@ export default function MesajSablonuEklePage() {
                 id="ms-icerik"
                 value={icerik}
                 onChange={(e) => setIcerik(e.target.value)}
-                placeholder={"Sayın {musteri_adi},\n\nMesaj içeriği buraya yazılır...\n\nSaygılarımızla,\nEİstatistik Ekibi"}
+                placeholder={"Sayın {musteri_adi},\n\nMesaj içeriği buraya yazılır...\n\nSaygılarımızla,\neistatistik Ekibi"}
                 rows={12}
                 style={{ resize: "vertical", fontFamily: "inherit" }}
               />

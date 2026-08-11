@@ -850,7 +850,7 @@ function DateRangePicker({ value, onChange }: { value: { start: Date; end: Date 
 }
 
 /* ─── Teslimat İşlemleri ──────────────────────────────────────── */
-const DEFAULT_MESSAGE = "Sayın hocam istenilen analizler ekte sunulmuştur. Ek istek analizlerinizi sistem üzerinden girebilirsiniz. EİSTATİSTİK'i tercih ettiğiniz için teşekkür eder çalışmalarınızda yanınızda olduğumuzu hatırlatırız.";
+const DEFAULT_MESSAGE = "Sayın hocam istenilen analizler ekte sunulmuştur. Ek istek analizlerinizi sistem üzerinden girebilirsiniz. eistatistik'i tercih ettiğiniz için teşekkür eder çalışmalarınızda yanınızda olduğumuzu hatırlatırız.";
 
 function DeliverySection() {
   const [tab,           setTab]           = useState<"customer" | "analyst">("customer");

@@ -1,7 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { LandingFaq } from "../../components/LandingFaq";
 import { LandingHeader } from "../../components/LandingHeader";
+import { LandingFooter } from "../../components/LandingFooter";
+import { getGmailContactUrl } from "../../lib/contact";
 
 const powerSteps = [
   ["01", "Hipotezi netleştirin", "Primer çıktıyı ve araştırmada sınanacak temel hipotezi birlikte belirleyelim."],
@@ -12,11 +13,11 @@ const powerSteps = [
 ];
 
 const faqs: Array<[string, string]> = [
-  ["Power analizi süreci nasıl işliyor?", "Araştırma hipoteziniz, primer çıktınız, planlanan test ve literatür bilgileri incelenir. Uygun parametrelerle örneklem büyüklüğü hesaplanır ve raporlanır."],
-  ["Henüz verim yokken power analizi yapılabilir mi?", "Evet. A priori power analizi veri toplamadan önce yapılır. Gerekli değerler literatürden, benzer çalışmalardan veya pilot araştırmadan elde edilebilir."],
-  ["Etik kurul için uygun rapor hazırlanıyor mu?", "Evet. Hayvan deneyleri ve klinik araştırmalar dahil olmak üzere etik kurul başvurularında kullanılabilecek örneklem gerekçesi hazırlanabilir."],
-  ["Power analizi için teslim süresi nedir?", "Teslim süresi araştırma tasarımının ve hipotez sayısının kapsamına göre belirlenir. Talep aşamasında uygun teslim seçeneğini seçebilirsiniz."],
-  ["Farklı bir örneklemle yeniden hesaplama isteyebilir miyim?", "Teslim sonrasında kapsam uygunsa Ek Analiz talebi oluşturarak farklı varsayım veya senaryolar için yeniden hesaplama isteyebilirsiniz."],
+  ["Süreç Nasıl İşliyor?", "Power analizi talebinde bulunduğunuzda seçtiğiniz süreye göre ücret otomatik olarak karşınıza çıkacaktır. Ödeme yaptığınız andan itibaren seçtiğiniz süre (12 saat – 7 gün) sonucunda raporunuz sizlere iletilecektir. Raporunuzu sistem üzerinde ilgili sipariş numaranıza ait “teslimat dosyası” sekmesinden indirebilirsiniz."],
+  ["Bu Süreçte Nasıl İletişim Kurabilirim?", "Power analizi öncesi, süreç ve sonrasında bizlere dilediğiniz zaman ulaşabilirsiniz. 08508851256 numaralı hattımızı arayarak bilgi alabilir, soru sorabilir, istatistik analiz sürecinizi yöneten hocanız ile görüşebilirsiniz. Aynı zamanda siparişinize ait “yazışma” sekmesi ile hocanıza sorularınızı ileterek aktif olarak yazışma sekmesini kullanabilirsiniz."],
+  ["Benim Çalıştığım Alan İle İlgili (Tıp, Diş Hekimliği Vb.) Benim Dilimden Anlayabilecek Hocalar İle Mi Çalışacağım?", "Çalışmanız için talep oluşturduğunuzda sizlerin alanına göre hocalarımızı yönlendiriyoruz. Bu sayede alanınızdaki terimleri, yapılan analiz türlerini, kullanılan yöntemleri bilen bir istatistik uzmanı ile iletişime geçmenin konforunu yaşayabilirsiniz."],
+  ["Power Analizi İçin Teslimat Süresi Nedir?", "Süreyi tamamen siz belirliyorsunuz. 12 saat – 7 gün arasında değişen seçeneklerden size uygun olan süreyi seçebilirsiniz."],
+  ["Power Analizi Raporumu İnceledim, Farklı Bir Örnek Çalışma İle Tekrar Analiz Yapılmasını İstiyorum Ne Yapmalıyım?", "Raporunuzu incelediğinizde yeni bir hesaplama için, raporunuzun sizlere teslim edildiği andan itibaren görecek olduğunuz “ek analiz” hakkınızı kullanarak örnek yeni bir çalışma gönderebilirsiniz. Raporunuz güncellenerek sizlere tekrar iletilecektir."],
 ];
 
 export default function PowerAnalysisPage() {
@@ -84,11 +85,11 @@ export default function PowerAnalysisPage() {
         <div className="power-tool-cloud"><strong>G*Power</strong><strong>IBM SPSS SamplePower</strong><strong>PASS</strong><strong>STATA</strong><strong>R Project</strong><strong>Minitab</strong><strong>MedCalc</strong><strong>OpenEpi</strong></div>
       </section>
 
-      <section className="analysis-faq-section power-faq"><div><h2>Power analizi hakkında merak ettikleriniz.</h2><p>Araştırma tasarımınız standart örneklere uymuyorsa talebinizi iletin; yöntem ekibimiz kapsamı değerlendirsin.</p><a href="mailto:destek@eistatistik.com">destek@eistatistik.com</a></div><LandingFaq items={faqs} /></section>
+      <section className="analysis-faq-section power-faq"><div><h2>Power analizi hakkında merak ettikleriniz.</h2><p>Araştırma tasarımınız standart örneklere uymuyorsa talebinizi iletin; yöntem ekibimiz kapsamı değerlendirsin.</p><a href={getGmailContactUrl("Power Analizi")} target="_blank" rel="noopener noreferrer">info@eistatistik.com</a></div><LandingFaq items={faqs} /></section>
 
       <section className="analysis-final-cta"><div><span>ÖRNEKLEMİNİZİ BİRLİKTE PLANLAYALIM</span><h2>Araştırmanıza doğru sayıyla başlayın.</h2><p>Hipotezinizi ve çalışma planınızı iletin. Uzman ekibimiz gerekli parametreleri birlikte netleştirsin.</p></div><Link href="/giris">Power analizi talebi <span>→</span></Link></section>
 
-      <footer className="landing-footer"><Image src="/Beyaz e-istatistik.png" alt="Eİstatistik" width={230} height={54} /><div><Link href="/#services">Hizmetler</Link><Link href="/#platform">Platform</Link><a href="mailto:destek@eistatistik.com">İletişim</a><Link href="/giris">Giriş yap</Link></div><p>© 2026 Eİstatistik. Tüm hakları saklıdır.</p></footer>
+      <LandingFooter />
     </main>
   );
 }

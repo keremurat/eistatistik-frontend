@@ -3,8 +3,11 @@ import Link from "next/link";
 import { LandingExperience } from "./components/LandingExperience";
 import { LandingFaq } from "./components/LandingFaq";
 import { LandingHeader } from "./components/LandingHeader";
+import { LandingContact } from "./components/LandingContact";
 import { LandingProcess } from "./components/LandingProcess";
 import { TestimonialPhoneVideo } from "./components/TestimonialPhoneVideo";
+import { LandingFooter } from "./components/LandingFooter";
+import { GMAIL_CONTACT_URL } from "./lib/contact";
 
 const services = [
   { title: "İstatistiksel veri analizi", copy: "Tez, makale ve araştırmalarınız için yöntem seçimi, analiz ve akademik standartlarda raporlama.", image: "/service-illustrations/statistical-analysis-v2.png", type: "Analiz ve araştırma" },
@@ -15,7 +18,7 @@ const services = [
   { title: "Akademik mobil uygulama", copy: "Araştırma ve eğitim içeriğinizi hedef kitlenize özel bir dijital ürüne dönüştürün.", image: "/service-illustrations/academic-mobile-app-v2.png", type: "Dijital ürün" },
 ];
 
-const serviceLinks = ["/hizmetler/istatistiksel-analiz", "/hizmetler/power-analizi", "/giris", "/giris", "/giris", "/giris"];
+const serviceLinks = ["/hizmetler/istatistiksel-analiz", "/hizmetler/power-analizi", "/hizmetler/danismanlik", "/giris", "/giris", "/giris"];
 
 const faqs: Array<[string, string]> = [
   ["İstatistik analizi hizmeti ne kadar sürer?", "Analiz süresi veri seti büyüklüğüne ve analiz türüne göre değişir. Standart SPSS veya R analizleri genellikle 1–3 iş günü içinde teslim edilir. Acil siparişlerde 24 saat içinde teslimat seçeneği de mevcuttur."],
@@ -33,7 +36,7 @@ const testimonials = [
   { quote:"Regresyon ve faktör analizimi iki günde hallettiler. Açıklamalar çok anlaşılır, tez savunmasında sıkıntı yaşamadım.", name:"Mehmet A.", role:"Doktora Adayı", institution:"İstanbul Üniversitesi", initials:"MA" },
   { quote:"Kurumsal eğitim programı harika hazırlanmıştı. Ekibimiz SPSS'e hızlıca adapte oldu; pratik ve kaliteli içerik.", name:"Elif S.", role:"Araştırmacı", institution:"Marmara Üniversitesi", initials:"ES" },
   { quote:"Bitirme projem için anket verilerimi yorumlamam gerekiyordu. Detaylı rapor ve yorumlu çıktılar çok işime yaradı.", name:"Burak T.", role:"Lisans Öğrencisi", institution:"Ege Üniversitesi", initials:"BT" },
-  { quote:"SEM analizini başka firmalar yapamadı; Eİstatistik birkaç günde tamamladı. Fiyat performans açısından benzersiz.", name:"Selin Ö.", role:"Yüksek Lisans Öğrencisi", institution:"ODTÜ", initials:"SÖ" },
+  { quote:"SEM analizini başka firmalar yapamadı; eistatistik birkaç günde tamamladı. Fiyat performans açısından benzersiz.", name:"Selin Ö.", role:"Yüksek Lisans Öğrencisi", institution:"ODTÜ", initials:"SÖ" },
   { quote:"Makale için meta-analiz yaptırdım. Hakemler metodoloji konusunda hiç soru sormadı, süreç tamamen sorunsuz geçti.", name:"Ahmet D.", role:"Akademisyen", institution:"Ankara Üniversitesi", initials:"AD" },
 ];
 
@@ -69,18 +72,6 @@ const invitedOrganizationLogos = [
   { src: "/davet-transparent/trt.png", alt: "TRT" },
 ];
 
-function FooterSocialIcon({ name }: { name: "instagram" | "x" }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {name === "instagram" ? (
-        <><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><path d="M17.5 6.5h.01" /></>
-      ) : (
-        <><path d="M5 4l14 16" /><path d="M19 4 5 20" /></>
-      )}
-    </svg>
-  );
-}
-
 export default function LandingPage() {
   return (
     <main className="landing-page">
@@ -98,10 +89,10 @@ export default function LandingPage() {
               <a href="#platform">Platformu görün</a>
             </div>
           </div>
-          <div className="landing-hero-product" aria-label="Eİstatistik müşteri çalışma alanı önizlemesi">
+          <div className="landing-hero-product" aria-label="eistatistik müşteri çalışma alanı önizlemesi">
             <div className="landing-hero-browser">
               <div className="landing-browser-bar"><span /><span /><span /><b>app.eistatistik.com</b></div>
-              <div className="landing-browser-screen"><iframe src="/dashboard" title="Eİstatistik çalışma alanı" tabIndex={-1} /></div>
+              <div className="landing-browser-screen"><iframe src="/dashboard" title="eistatistik çalışma alanı" tabIndex={-1} /></div>
             </div>
             <div className="landing-float-card float-meeting"><strong>14:30</strong><span>Uzman görüşmeniz</span></div>
             <div className="landing-float-card float-tools">
@@ -112,15 +103,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="landing-proof" aria-label="Eistatistik ürün ailesi">
+      <section className="landing-proof" aria-label="eistatistik ürün ailesi">
         <p>eistatistik ürün ailesi, araştırmanın her aşamasında yanınızda.</p>
         <div className="landing-family-logos">
           <a href="#services" className="landing-family-brand brand-eistatistik">
-            <span className="landing-family-logo"><Image src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} /></span>
+            <span className="landing-family-logo"><Image src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} /></span>
             <small>Analiz ve danışmanlık</small>
           </a>
           <a href="https://akademi.eistatistik.com/" target="_blank" rel="noopener noreferrer" className="landing-family-brand brand-akademi">
-            <span className="landing-family-logo"><Image src="/eistatistik-akademi.png" alt="Eİstatistik Akademi" width={1321} height={331} /></span>
+            <span className="landing-family-logo"><Image src="/eistatistik-akademi.png" alt="eistatistik Akademi" width={1321} height={331} /></span>
             <small>Uygulamalı eğitim</small>
           </a>
           <a href="https://www.istabot.com/" target="_blank" rel="noreferrer" className="landing-family-brand brand-istabot">
@@ -157,7 +148,7 @@ export default function LandingPage() {
       <section className="landing-values">
         <header className="landing-trust-heading">
           <div>
-            <span>NEDEN EİSTATİSTİK?</span>
+            <span>NEDEN eistatistik?</span>
             <h2>Veriniz güvende. Süreç kontrolünüzde.</h2>
           </div>
           <div>
@@ -218,7 +209,7 @@ export default function LandingPage() {
       </section>
 
       <section className="landing-faq" id="faq">
-        <div><h2>Başlamadan önce merak ettikleriniz.</h2><p>Yanıtını bulamadığınız bir konu için ekibimizle iletişime geçebilirsiniz.</p><a href="mailto:destek@eistatistik.com">destek@eistatistik.com</a></div>
+        <div><h2>Başlamadan önce merak ettikleriniz.</h2><p>Yanıtını bulamadığınız bir konu için ekibimizle iletişime geçebilirsiniz.</p><a href={GMAIL_CONTACT_URL} target="_blank" rel="noopener noreferrer">info@eistatistik.com</a></div>
         <LandingFaq items={faqs} />
       </section>
 
@@ -241,54 +232,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="landing-footer">
-        <div className="landing-footer-grid">
-          <div className="landing-footer-brand">
-            <Image src="/Beyaz e-istatistik.png" alt="Eİstatistik" width={230} height={54} />
-            <p>İstatistiğe ihtiyaç duyan herkes için online istatistik otomasyonu.</p>
-          </div>
+      <LandingContact />
 
-          <nav className="landing-footer-column" aria-label="Hızlı erişim">
-            <h2>Hızlı Erişim</h2>
-            <Link href="/">Anasayfa</Link>
-            <a href="#services">Hizmetlerimiz</a>
-            <Link href="/egitimler/bireysel">Eğitimler</Link>
-            <a href="#platform">Platform</a>
-            <a href="#process">Nasıl çalışır?</a>
-            <a href="#yorumlar">Yorumlar</a>
-            <a href="#faq">Merak edilenler</a>
-            <a href="#faq">Blog</a>
-            <Link href="/neler-yaptik/davetli-konusmalar">Neler Yaptık?</Link>
-            <a href="mailto:info@eistatistik.com">İletişim</a>
-          </nav>
-
-          <nav className="landing-footer-column" aria-label="Hizmetlerimiz">
-            <h2>Hizmetlerimiz</h2>
-            <Link href="/hizmetler/istatistiksel-analiz">İstatistiksel Analiz</Link>
-            <Link href="/hizmetler/power-analizi">Power Analizi</Link>
-            <a href="#services">Graphical Abstract</a>
-            <a href="#services">Veri İşleme</a>
-            <Link href="/hizmetler/gecerlilik-guvenilirlik">Geçerlilik ve Güvenilirlik Analizi</Link>
-            <Link href="/hizmetler/proforma">Proforma</Link>
-            <a href="#services">Danışmanlık</a>
-          </nav>
-
-          <address className="landing-footer-column landing-footer-contact">
-            <h2>İletişim</h2>
-            <p>Körfez Mahallesi<br />19 Mayıs Kümesi<br />Küme Evleri No:188-14<br />Atakum, Samsun</p>
-            <div><a href="tel:+908508851256">0 (850) 885 12 56</a><a href="tel:+905386150444">0 (538) 615 04 44</a></div>
-            <a href="mailto:info@eistatistik.com">info@eistatistik.com</a>
-          </address>
-        </div>
-
-        <div className="landing-footer-bottom">
-          <p>© 2026 Eİstatistik. Tüm hakları saklıdır.</p>
-          <div className="landing-footer-socials" aria-label="Sosyal medya hesapları">
-            <a href="https://www.instagram.com/eistatistik/" target="_blank" rel="noopener noreferrer" aria-label="Eİstatistik Instagram hesabı"><FooterSocialIcon name="instagram" /></a>
-            <a href="https://x.com/naci_murat" target="_blank" rel="noopener noreferrer" aria-label="Naci Murat X hesabı"><FooterSocialIcon name="x" /></a>
-          </div>
-        </div>
-      </footer>
+      <LandingFooter />
     </main>
   );
 }

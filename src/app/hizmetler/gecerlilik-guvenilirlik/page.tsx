@@ -1,8 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { LandingFaq } from "../../components/LandingFaq";
 import { LandingHeader } from "../../components/LandingHeader";
+import { LandingFooter } from "../../components/LandingFooter";
+import { getGmailContactUrl } from "../../lib/contact";
 
 const analysisTypes = [
   ["İç tutarlılık", "Cronbach Alfa, Omega ve madde–toplam korelasyonlarıyla ölçeğin kendi içindeki uyumunu değerlendirin.", "α / ω"],
@@ -20,12 +21,13 @@ const process = [
 ];
 
 const faqs: Array<[string, string]> = [
-  ["Geçerlilik ve güvenilirlik arasındaki fark nedir?", "Güvenilirlik ölçümün kararlı ve tutarlı olmasını; geçerlilik ise ölçme aracının amaçlanan yapıyı gerçekten ölçmesini ifade eder. Güvenilirlik geçerlilik için gereklidir ancak tek başına yeterli değildir."],
-  ["Hazır bir ölçek kullanırken yeniden analiz gerekir mi?", "Ölçeğin farklı bir örneklem, kültür veya dilde kullanılması durumunda yapının ve güvenilirliğin yeniden incelenmesi gerekebilir. Karar araştırma bağlamına göre verilir."],
-  ["Ölçek geliştirme sürecinin hangi aşamalarında destek alabilirim?", "Madde havuzu planlama, uzman görüşü, pilot uygulama, faktör analizi, madde eleme ve nihai raporlama aşamalarında destek alabilirsiniz."],
-  ["Analiz için kaç katılımcı gerekir?", "Gerekli örneklem; madde sayısı, faktör yapısı, analiz yöntemi ve beklenen yükler gibi değişkenlere bağlıdır. Çalışmanız için ayrıca Power ve örneklem analizi yapılabilir."],
-  ["Sonuçları hangi formatlarda alacağım?", "Kapsama göre analiz raporu, faktör tabloları, uyum indeksleri, model görselleri, program çıktıları ve videolu anlatım teslim edilir."],
-  ["Teslimden sonra madde yapısını yeniden inceletebilir miyim?", "Uygun siparişlerde Ek Analiz talebi oluşturarak alternatif faktör yapıları veya farklı madde kararları için yeni değerlendirme isteyebilirsiniz."],
+  ["Süreç Nasıl İşliyor?", "Talep oluşturduğunuzda hipotezlerinizi, isteklerinizi, verilerinizi inceleyerek sizlere ulaşıyoruz. Önceliğimiz sizin isteklerinizden yola çıkarak, önerilerde bulunarak çalışmalarınızı daha güçlü hale getirebilmek için sizlerle iletişim kurarak nihai istekleri belirlemek. İstekler netleştiğinde sizlere fiyat teklifi gönderiyoruz ve kabul ettiğiniz andan itibaren süreç başlıyor. Örneğin 7 gün olarak seçtiğiniz analiz süresi için, 7 gün içinde sonuçlar sizlere iletiliyor. Sonuçları inceledikten sonra farklı bir analiz yapılmasını isterseniz “ek analiz” talebinde bulunabilirsiniz. Bu tamamen ücretsizdir."],
+  ["Bu Süreçte Nasıl İletişim Kurabilirim?", "İstatistiksel veri analizi süreci öncesi, süreç ve sonrasında bizlere dilediğiniz zaman ulaşabilirsiniz. 08508851256 numaralı hattımızı arayarak bilgi alabilir, soru sorabilir, istatistiksel veri analiz sürecinizi yöneten hocanız ile görüşebilirsiniz. Aynı zamanda siparişinize ait “yazışma” sekmesi ile hocanıza sorularınızı ileterek aktif olarak yazışma sekmesini kullanabilirsiniz."],
+  ["Benim Çalıştığım Alan İle İlgili (Tıp, Diş Hekimliği Vb.) Benim Dilimden Anlayabilecek Hocalar İle Mi Çalışacağım?", "Çalışmanız için talep oluşturduğunuzda sizlerin alanına göre hocalarımızı yönlendiriyoruz. Bu sayede alanınızdaki terimleri, yapılan analiz türlerini, kullanılan yöntemleri bilen bir istatistik uzmanı ile iletişime geçmenin konforunu yaşayabilirsiniz."],
+  ["Analizler İçin Teslimat Süresi Nedir?", "Süreyi tamamen siz belirliyorsunuz. 12 saat – 30 gün arasında değişen seçeneklerden size uygun olan süreyi seçebilirsiniz. Ortalama bir süre için 7 gün seçebilir, acil bir analiz durumunda 12 saat içinde teslimat isteyebilirsiniz."],
+  ["Sonuçları Hangi Formatta Alacağım?", "Sonuçlarınızı 3 farklı formatta alabilirsiniz.\n\n1. Tablo ve Yorum: Bu teslimat şeklinde analiz sonuçlarınız tablo, yorum ve grafikler halinde teslim edilir. Yorumlar istatistiksel olarak tüm detayları ile birlikte hazırlanır. Tablolar APA formatına uygundur. Eğer istediğiniz farklı bir tablo formatı olursa çalışmanın başında bize iletebilirsiniz.\n\n2. Tablo: Bu teslimat şeklinde analiz sonuçları tablo olarak istediğiniz formatta talep edebilirsiniz. Tabloları gördüğünde yorumları yapabilen kişiler için uygun bir formattır. Dilerseniz örnek yorumlama tablo altına eklenir.\n\n3. Program çıktısı: Bu teslimat şeklinde analizlerden elde edilen sonuçlar program çıktı dosyası veya Excel dosyası içinde teslim edilir. Program çıktısını gördüğünde tablo şekline dönüştürebilen ve yorumlayabilen kişiler için uygundur."],
+  ["Analiz Raporumu İnceledim, Birkaç Analiz Daha Yapılmasını İstiyorum Ne Yapmalıyım?", "Raporunuzu incelediğinizde eklenmesini istediğiniz yeni analizler için, raporunuzun sizlere teslim edildiği andan itibaren görecek olduğunuz “ek analiz” hakkınızı kullanarak ücretsiz olarak yeni isteklerinizi gönderebilirsiniz. Raporunuz güncellenerek sizlere tekrar iletilecektir."],
+  ["Sesli Rapor Desteği", "Veri analizi raporunuz için bizlerden sesli rapor talep edebilirsiniz. Sonuçlarınız video olarak adım adım anlatılacak ve sizler de dilediğiniz zaman video açıklamaya ulaşıyor olabileceksiniz."],
 ];
 
 export default function ValidityReliabilityPage() {
@@ -86,11 +88,11 @@ export default function ValidityReliabilityPage() {
         <div><h2>Yalnızca “güvenilir” demekle kalmayan bir rapor.</h2><p>Madde kararları, faktör yükleri, uyum indeksleri ve kullanılan yöntemin gerekçesi tek bir akademik anlatıda bir araya gelir.</p><ul><li>Analiz ve yöntem raporu</li><li>Madde ve faktör tabloları</li><li>Model görselleri</li><li>Program çıktıları</li><li>Videolu uzman anlatımı</li></ul></div>
       </section>
 
-      <section className="analysis-faq-section validity-faq"><div><h2>Ölçek analizi hakkında merak ettikleriniz.</h2><p>Ölçeğiniz geliştirme, uyarlama veya tekrar doğrulama aşamasındaysa kapsamı birlikte netleştirebiliriz.</p><a href="mailto:destek@eistatistik.com">destek@eistatistik.com</a></div><LandingFaq items={faqs} /></section>
+      <section className="analysis-faq-section validity-faq"><div><h2>Ölçek analizi hakkında merak ettikleriniz.</h2><p>Ölçeğiniz geliştirme, uyarlama veya tekrar doğrulama aşamasındaysa kapsamı birlikte netleştirebiliriz.</p><a href={getGmailContactUrl("Geçerlilik ve Güvenilirlik Analizi")} target="_blank" rel="noopener noreferrer">info@eistatistik.com</a></div><LandingFaq items={faqs} /></section>
 
       <section className="analysis-final-cta"><div><span>ÖLÇME ARACINIZI BİRLİKTE İNCELEYELİM</span><h2>Sonuçlarınızdan önce ölçümünüze güvenin.</h2><p>Ölçek formunuzu ve veri setinizi yükleyin. Uzman ekibimiz uygun analiz kapsamını sizinle paylaşsın.</p></div><Link href="/giris">Analiz talebi oluştur <span>→</span></Link></section>
 
-      <footer className="landing-footer"><Image src="/Beyaz e-istatistik.png" alt="Eİstatistik" width={230} height={54} /><div><Link href="/#services">Hizmetler</Link><Link href="/#platform">Platform</Link><a href="mailto:destek@eistatistik.com">İletişim</a><Link href="/giris">Giriş yap</Link></div><p>© 2026 Eİstatistik. Tüm hakları saklıdır.</p></footer>
+      <LandingFooter />
     </main>
   );
 }

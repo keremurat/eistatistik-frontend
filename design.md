@@ -1,4 +1,4 @@
-# Eİstatistik — Tasarım Sistemi (Kaynak: mevcut kod)
+# eistatistik — Tasarım Sistemi (Kaynak: mevcut kod)
 
 Bu belge, uygulamada **halihazırda var olan** tasarım kalıplarını sabitler. Amaç: her yeni
 sayfa/bileşen/CSS bu belgedeki token, düzen ve bileşen sözleşmelerine uysun; LLM'ler bu
@@ -115,8 +115,8 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
 <div className="app-shell">
   <a className="skip-link" href="#main-content">İçeriğe geç</a>
   <header className="topbar">
-    <Link className="brand" href="/dashboard" aria-label="Eİstatistik ana sayfa">
-      <Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik"
+    <Link className="brand" href="/dashboard" aria-label="eistatistik ana sayfa">
+      <Image className="brand-logo" src="/Siyah e-istatistik.png" alt="eistatistik"
         width={300} height={69} priority />
     </Link>
     <nav className="main-nav" aria-label="Ana navigasyon">
@@ -389,9 +389,11 @@ Kurallar:
 - Şerit footer'ın koyu temasına geçmeden önce açık landing zemininde kalır; kenarlıklar mevcut
   `--line` / landing nötr skalasından gelir.
 
-### 8.1 Landing footer — `landing-footer`
+### 8.1 Landing footer — `LandingFooter`
 
-Landing footer koyu lacivert zemin üzerinde dört bilgi kolonundan ve ayrı bir alt bardan oluşur:
+Kaynak: `src/app/components/LandingFooter.tsx`. Landing header kullanan tüm tanıtım, hizmet,
+eğitim ve referans sayfaları bu ortak bileşeni kullanır; sayfa içinde footer kopyalanmaz.
+Koyu lacivert zemin üzerinde dört bilgi kolonundan ve ayrı bir alt bardan oluşur:
 
 1. Marka logosu + kısa açıklama.
 2. `Hızlı Erişim`: landing üst navigasyonundaki bağlantılar.
@@ -432,9 +434,9 @@ kartlarıyla sunulur. Kart yüzeyi mevcut `landing-service-card` sınır, radius
 ### 8.4 Landing güven kanıtları — `landing-trust-list`
 
 "Nasıl Çalışır?" bölümünden sonra gelen alan bir hizmet listesi değil, kullanıcının
-"Neden Eİstatistik'e güvenmeliyim?" sorusunu yanıtlayan kanıt bölümüdür.
+"Neden eistatistik'e güvenmeliyim?" sorusunu yanıtlayan kanıt bölümüdür.
 
-- Üst başlık `.landing-trust-heading`: "Neden Eİstatistik?" etiketi, güven/süreç mesajı,
+- Üst başlık `.landing-trust-heading`: "Neden eistatistik?" etiketi, güven/süreç mesajı,
   kısa açıklama ve çalışma alanı CTA'sı.
 - Alt akış üç `.landing-trust-row` satırından oluşur: güvenli çalışma alanı, şeffaf süreç
   yönetimi ve doğrudan uzman iletişimi.
@@ -467,6 +469,44 @@ kuralları bu ortak masaüstü ölçeğinin dışında kalır.
 İstatistiksel Analiz sayfasındaki ikinci süreç görseli (`visual-analyse`) gerçek bir regresyon
 çıktısı dili kullanır: model durumu, güven bandı, gözlem noktaları ve R²/β/p özetleri tek panelde
 sunulur. Grafik salt dekoratif olduğundan erişilebilirlik ağacından gizlidir.
+
+Hero içindeki trend çizgisi `analysis-window-chart` sınırlarında kırpılır. Teslim Paketi kartları
+boş metin yüzeyleri değildir: rapor sayfası, XLSX hücreleri, yayın grafiği ve video oynatıcı
+önizlemeleri ilgili teslim biçiminin üstünde gösterilir.
+
+### 8.7 Danışmanlık hizmet sayfası
+
+Kaynak: `src/app/hizmetler/danismanlik/page.tsx`. Sayfa diğer hizmet detaylarıyla aynı
+`LandingHeader`, `analysis-service-page`, `analysis-hero-actions`, `analysis-trust-strip`,
+`analysis-faq-section`, `analysis-final-cta` ve `LandingFooter` sözleşmelerini kullanır.
+
+- Hero masaüstünde ilk görünür alanı dolduran asimetrik metin ve gerçek danışmanlık fotoğrafı
+  düzenidir. Fotoğraf `next/image` ile sabit oranlı, kırpılmış ve öncelikli yüklenir.
+- Uzun hizmet kapsamı tek metin akışı olarak gösterilmez. Konular araştırma tasarımı, veri ve
+  analiz, yayın ve sunum gruplarında taranabilir bir kapsam düzenine ayrılır.
+- Süreç dört kısa karar adımıyla; uzmanlık kapsamı ise tekrar eden kartlar yerine iki kolonlu
+  editoryal satırlarla anlatılır.
+- SSS başlıkları diğer analiz hizmetleriyle aynı yedi standart başlığı kullanır ve ortak
+  `LandingFaq` bileşeninden render edilir.
+- Tüm çok kolonlu yapılar `900px` altında tek kolona iner; fotoğraf ve metin taşma oluşturmaz.
+
+### 8.8 Landing iletişim bölümü
+
+Kaynak: `src/app/components/LandingContact.tsx`. Landing navigasyonu ve footer'daki
+`İletişim` bağlantıları ana sayfadaki `#iletisim` bölümüne gider. Ayrı iletişim sayfası yoktur.
+
+- İletişim bölümü kurum logo şeridinden sonra ve ortak footer'dan önce yer alır. Landing
+  akışında ikinci bir hero oluşturmaz.
+- İletişim bilgileri üç eşit kart olarak tekrarlanmaz. Çalışma saatleri koyu ana yüzeyde;
+  adres ve iletişim kanalları sağdaki iki tamamlayıcı yüzeyde gösterilir.
+- E-posta eylemi ortak Gmail şablon bağlantısını, telefonlar `tel:` bağlantısını kullanır.
+  Instagram ve X bağlantıları yeni sekmede açılır.
+- Harita, Google'da doğrulanmış Ondokuz Mayıs Üniversitesi Teknopark adresini Google Maps
+  iframe ile ekranın iki kenarına kadar tam genişlikte ve işaretli olarak gösterir. Haritanın
+  üzerinde ayrı başlık veya konum etiketi bulunmaz.
+  iframe sabit yüksekliğe, açıklayıcı `title` değerine ve `loading="lazy"` niteliğine sahiptir.
+- Bölümde otomatik animasyon yoktur. Hover ve aktif geri bildirimleri mevcut landing
+  buton geçişleriyle sınırlıdır.
 
 - Kayıt akışında Üyelik onaylanınca sıradaki KVKK modalı otomatik açılır; her onay ilgili
   onay kutusunu (`membershipAccepted` / `kvkkAccepted`) işaretler.

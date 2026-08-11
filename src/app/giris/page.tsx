@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { findDemoAccount } from "../lib/demoAccounts";
+import { GMAIL_PASSWORD_URL } from "../lib/contact";
 
 type IconName = "arrow" | "eye" | "eyeOff" | "lock" | "mail" | "shield" | "user";
 type LegalDocument = "membership" | "kvkk";
@@ -75,9 +76,9 @@ export default function AuthPage() {
     <section className="auth-card">
       <aside className={`auth-brand-panel ${hasNavigated ? (isRegister ? "move-right" : "move-left") : isRegister ? "at-right" : ""}`}>
         <span className="auth-brand-art" aria-hidden="true" />
-        <Link href="/" className="auth-logo-shortcut" aria-label="Eİstatistik landing page'e dön">
+        <Link href="/" className="auth-logo-shortcut" aria-label="eistatistik landing page'e dön">
           <span className="auth-back-home" aria-hidden="true">←</span>
-          <Image className="auth-logo-white" src="/Beyaz e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority />
+          <Image className="auth-logo-white" src="/Beyaz e-istatistik.png" alt="eistatistik" width={300} height={69} priority />
         </Link>
         <div className="auth-brand-copy">
           <p>ANALİZ · EĞİTİM · DANIŞMANLIK</p>
@@ -95,7 +96,7 @@ export default function AuthPage() {
               <AuthField name="login-email" autoComplete="section-login username" icon="mail" type="email" placeholder="E-posta adresi" value={login.email} onChange={value => { setLogin(current => ({ ...current, email: value })); setAuthError(""); }} invalid={submitted && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email)} error="Geçerli bir e-posta adresi girin." />
               <AuthField name="login-password" autoComplete="section-login current-password" icon="lock" type={showPassword ? "text" : "password"} placeholder="Şifre" value={login.password} onChange={value => { setLogin(current => ({ ...current, password: value })); setAuthError(""); }} invalid={submitted && login.password.length < 6} error="Şifreniz en az 6 karakter olmalı." action={<button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}><AuthIcon name={showPassword ? "eyeOff" : "eye"} size={16} /></button>} />
               {authError && <p className="auth-error" role="alert">{authError}</p>}
-              <div className="auth-form-options"><label><input type="checkbox" defaultChecked />Beni hatırla</label><a href="mailto:destek@eistatistik.com?subject=Şifre yenileme">Şifremi unuttum</a></div>
+              <div className="auth-form-options"><label><input type="checkbox" defaultChecked />Beni hatırla</label><a href={GMAIL_PASSWORD_URL} target="_blank" rel="noopener noreferrer">Şifremi unuttum</a></div>
               <button className="auth-primary-button" disabled={loading}>{loading ? <span className="login-loader" /> : <>Giriş yap <AuthIcon name="arrow" size={16} /></>}</button>
             </form>
             <div className="auth-form-footer">
@@ -104,7 +105,7 @@ export default function AuthPage() {
               <p className="auth-switch-copy">Hesabınız yok mu? <button onClick={() => changeMode("register")}>Hemen kaydolun</button></p>
             </div>
           </> : <>
-            <header className="auth-register-header"><h2>Hesap<br /><span>oluşturun.</span></h2><p>Birkaç adımda Eİstatistik çalışma alanınıza katılın.</p></header>
+            <header className="auth-register-header"><h2>Hesap<br /><span>oluşturun.</span></h2><p>Birkaç adımda eistatistik çalışma alanınıza katılın.</p></header>
             <form className="auth-register-form" onSubmit={handleRegister} autoComplete="on" noValidate>
               <div className="auth-field-row">
                 <AuthField name="given-name" autoComplete="section-register given-name" icon="user" placeholder="Adınızı girin" value={register.firstName} onChange={value => setRegister(current => ({ ...current, firstName: value }))} invalid={submitted && !register.firstName.trim()} />
@@ -130,7 +131,7 @@ export default function AuthPage() {
         </div>
       </section>
     </section>
-    <p className="auth-page-note">© 2026 Eİstatistik · Güvenli müşteri platformu</p>
+    <p className="auth-page-note">© 2026 eistatistik · Güvenli müşteri platformu</p>
     {legalDocument && <LegalModal key={legalDocument} document={legalDocument} onClose={() => setLegalDocument(null)} onAccept={() => {
       if (legalDocument === "membership") {
         setMembershipAccepted(true);

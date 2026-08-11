@@ -28,7 +28,7 @@ export default async function AnalystWorkDetailPage({ params }: { params: Promis
 
   return <div className="app-shell">
     <header className="topbar">
-      <Link className="brand" href="/analizor"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority /></Link>
+      <Link className="brand" href="/analizor"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} priority /></Link>
       <nav className="main-nav" aria-label="Analizör navigasyonu">
         <Link href="/analizor">Genel bakış</Link>
         <Link className="active" href="/analizor/islerim">İşlerim</Link>

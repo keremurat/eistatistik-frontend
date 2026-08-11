@@ -30,7 +30,7 @@ export function TestimonialPhoneVideo() {
         {visible ? (
           <iframe
             src="https://www.youtube-nocookie.com/embed/HN2KNjCArLA?autoplay=1&mute=1&playsinline=1&rel=0"
-            title="Eİstatistik kullanıcı deneyimi"
+            title="eistatistik kullanıcı deneyimi"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
           />

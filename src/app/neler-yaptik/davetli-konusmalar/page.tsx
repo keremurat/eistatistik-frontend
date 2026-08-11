@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { LandingHeader } from "../../components/LandingHeader";
+import { LandingFooter } from "../../components/LandingFooter";
+import { GMAIL_CONTACT_URL } from "../../lib/contact";
 
-export const metadata: Metadata = { title: "Davetli Konuşmalar | Eİstatistik" };
+export const metadata: Metadata = { title: "Davetli Konuşmalar | eistatistik" };
 
 type Reference = { name: string; logo: string };
 
@@ -34,7 +35,7 @@ export default function DavetliKonusmalarPage() {
       <LandingHeader />
 
       <section className="ny-hero">
-        <p className="analysis-eyebrow">Eİstatistik</p>
+        <p className="analysis-eyebrow">eistatistik</p>
         <h1>Neler Yaptık?</h1>
         <p className="ny-hero-sub">Davetli Konuşmalar</p>
         <p className="ny-hero-lead">Bugüne kadar birçok kurum, kuruluş ve platformda istatistik alanına yönelik bilgi ve deneyimlerimizi aktardık.</p>
@@ -54,9 +55,9 @@ export default function DavetliKonusmalarPage() {
         </div>
       </section>
 
-      <section className="analysis-final-cta"><div><span>BİRLİKTE ÇALIŞALIM</span><h2>Etkinliğinizde bizi konuk edin.</h2><p>Kurumunuz, kongreniz veya platformunuz için istatistik odaklı bir sunum planlayalım.</p></div><a href="mailto:destek@eistatistik.com">Bize ulaşın <span>→</span></a></section>
+      <section className="analysis-final-cta"><div><span>BİRLİKTE ÇALIŞALIM</span><h2>Etkinliğinizde bizi konuk edin.</h2><p>Kurumunuz, kongreniz veya platformunuz için istatistik odaklı bir sunum planlayalım.</p></div><a href={GMAIL_CONTACT_URL} target="_blank" rel="noopener noreferrer">Bize ulaşın <span>→</span></a></section>
 
-      <footer className="landing-footer"><Image src="/Beyaz e-istatistik.png" alt="Eİstatistik" width={230} height={54} /><div><Link href="/#services">Hizmetler</Link><Link href="/#platform">Platform</Link><a href="mailto:destek@eistatistik.com">İletişim</a><Link href="/giris">Giriş yap</Link></div><p>© 2026 Eİstatistik. Tüm hakları saklıdır.</p></footer>
+      <LandingFooter />
     </main>
   );
 }

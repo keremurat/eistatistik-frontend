@@ -3,7 +3,9 @@ import Link from "next/link";
 import { EduHeroVideo } from "../../components/EduHeroVideo";
 import { LandingFaq } from "../../components/LandingFaq";
 import { LandingHeader } from "../../components/LandingHeader";
+import { LandingFooter } from "../../components/LandingFooter";
 import { modules } from "./modules";
+import { GMAIL_CONTACT_URL } from "../../lib/contact";
 
 type IconName =
   | "office" | "chart" | "scale" | "power" | "layers" | "grid" | "book" | "compass"
@@ -99,13 +101,13 @@ export default function IndividualEducationPage() {
       </section>
 
       <section className="analysis-faq-section edu-faq">
-        <div><h2>Eğitimler hakkında merak ettikleriniz.</h2><p>Programlar, takvim veya kapsam hakkında sorularınız için bize ulaşın.</p><a href="mailto:destek@eistatistik.com">destek@eistatistik.com</a></div>
+        <div><h2>Eğitimler hakkında merak ettikleriniz.</h2><p>Programlar, takvim veya kapsam hakkında sorularınız için bize ulaşın.</p><a href={GMAIL_CONTACT_URL} target="_blank" rel="noopener noreferrer">info@eistatistik.com</a></div>
         <LandingFaq items={faqs} />
       </section>
 
       <section className="analysis-final-cta"><div><span>ÖĞRENMEYE BUGÜN BAŞLAYIN</span><h2>Size uygun modülle yolculuğa başlayın.</h2><p>İlgilendiğiniz modülleri seçin; uygun program ve takvimi birlikte planlayalım.</p></div><Link href="/giris">Eğitim talebi oluştur <span>→</span></Link></section>
 
-      <footer className="landing-footer"><Image src="/Beyaz e-istatistik.png" alt="Eİstatistik" width={230} height={54} /><div><Link href="/#services">Hizmetler</Link><Link href="/#platform">Platform</Link><a href="mailto:destek@eistatistik.com">İletişim</a><Link href="/giris">Giriş yap</Link></div><p>© 2026 Eİstatistik. Tüm hakları saklıdır.</p></footer>
+      <LandingFooter />
     </main>
   );
 }

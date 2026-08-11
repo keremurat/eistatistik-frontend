@@ -25,7 +25,7 @@ const ATANABILIR: AtanabilirKullanici[] = [
   { value: "SÜMEYYE İNAN",         label: "Sümeyye İnan",         rol: "Analist" },
   { value: "MEHMET MEŞE",          label: "Mehmet Meşe",          rol: "Analist" },
   { value: "ALİHSAN ŞÜKÜR",        label: "Alihsan Şükür",        rol: "Analist" },
-  { value: "EİSTATİSTİK ANALİZÖR", label: "Eistatistik Analizör", rol: "Analist" },
+  { value: "eistatistik ANALİZÖR", label: "eistatistik Analizör", rol: "Analist" },
   { value: "EMRE KAYA",            label: "Emre Kaya",            rol: "Asistan" },
   { value: "DİLARA YILMAZ",        label: "Dilara Yılmaz",        rol: "Asistan" },
 ];

@@ -115,7 +115,7 @@ function AssistantEducationMenu() {
 export function AssistantHeader() {
   const pathname = usePathname();
   return <header className="topbar">
-    <Link className="brand" href="/asistan" aria-label="Eİstatistik asistan ana sayfası"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority /></Link>
+    <Link className="brand" href="/asistan" aria-label="eistatistik asistan ana sayfası"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} priority /></Link>
     <nav className="main-nav" aria-label="Asistan navigasyonu">
       <Link className={pathname === "/asistan" ? "active" : ""} href="/asistan"><NavIcon name="home" />Anasayfa</Link>
       <AssistantOrdersMenu />
@@ -126,7 +126,7 @@ export function AssistantHeader() {
     <div className="top-actions">
       <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a>
       <NotificationMenu role="asistan" />
-      <ProfileMenu roleLabel="Asistan hesabı" ordersHref="/asistan/siparisler" ordersLabel="Siparişler" name="Eİstatistik Asistan" email="asistan@eistatistik.com" initials="EA" />
+      <ProfileMenu roleLabel="Asistan hesabı" ordersHref="/asistan/siparisler" ordersLabel="Siparişler" name="eistatistik Asistan" email="asistan@eistatistik.com" initials="EA" />
     </div>
   </header>;
 }

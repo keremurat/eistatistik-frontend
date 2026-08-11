@@ -18,9 +18,9 @@ interface CalEvent {
 
 // ── Sabitler ──────────────────────────────────────────────────────────────────
 const USERS = [
-  "EİSTATİSTİK ANALİZÖR", "KEREM MURAT", "MEHMET MEŞE", "KAAN KARAKAYA",
+  "eistatistik ANALİZÖR", "KEREM MURAT", "MEHMET MEŞE", "KAAN KARAKAYA",
   "YASİN YILDIRIM", "SÜMEYYE İNAN", "RABİA AKTAŞ", "ESRA ÖZTÜRK",
-  "Eistatistik Genel Analizör", "E YÖNETİM", "ALİİHSAN ŞÜKÜR", "FATİH AKAR", "NACİ MURAT",
+  "eistatistik Genel Analizör", "E YÖNETİM", "ALİİHSAN ŞÜKÜR", "FATİH AKAR", "NACİ MURAT",
 ];
 
 const DAYS   = ["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
@@ -39,7 +39,7 @@ const ALL_EVENTS: CalEvent[] = [
   { id:5,  dateStr:"2026-08-03", time:"09:43", code:"SA260730002", isEk:true,  type:"sa", atanan:"KEREM MURAT" },
   { id:6,  dateStr:"2026-08-03", time:"10:24", code:"SA260617010", isEk:false, type:"sa", atanan:"ALİİHSAN ŞÜKÜR" },
   { id:7,  dateStr:"2026-08-03", time:"11:45", code:"SA260721006", isEk:false, type:"sa", atanan:"SÜMEYYE İNAN" },
-  { id:8,  dateStr:"2026-08-03", time:"13:37", code:"SA260722004", isEk:false, type:"sa", atanan:"EİSTATİSTİK ANALİZÖR" },
+  { id:8,  dateStr:"2026-08-03", time:"13:37", code:"SA260722004", isEk:false, type:"sa", atanan:"eistatistik ANALİZÖR" },
   { id:9,  dateStr:"2026-08-03", time:"15:03", code:"SA260727022", isEk:false, type:"sa", atanan:"FATİH AKAR" },
   { id:10, dateStr:"2026-08-03", time:"16:21", code:"SA260713005", isEk:false, type:"sa", atanan:"ESRA ÖZTÜRK" },
   { id:11, dateStr:"2026-08-03", time:"16:43", code:"SA260713020", isEk:false, type:"sa", atanan:"RABİA AKTAŞ" },
@@ -48,7 +48,7 @@ const ALL_EVENTS: CalEvent[] = [
   { id:13, dateStr:"2026-08-04", time:"10:47", code:"SA260731002", isEk:false, type:"sa", atanan:"KEREM MURAT" },
   { id:14, dateStr:"2026-08-04", time:"11:17", code:"SA260723009", isEk:false, type:"sa", atanan:"MEHMET MEŞE" },
   { id:15, dateStr:"2026-08-04", time:"11:25", code:"SA260723020", isEk:false, type:"sa", atanan:"SÜMEYYE İNAN" },
-  { id:16, dateStr:"2026-08-04", time:"11:53", code:"SA260723003", isEk:false, type:"sa", atanan:"EİSTATİSTİK ANALİZÖR" },
+  { id:16, dateStr:"2026-08-04", time:"11:53", code:"SA260723003", isEk:false, type:"sa", atanan:"eistatistik ANALİZÖR" },
   // Aug 5
   { id:17, dateStr:"2026-08-05", time:"09:00", code:"SA260716018", isEk:true,  type:"sa", atanan:"ALİİHSAN ŞÜKÜR" },
   { id:18, dateStr:"2026-08-05", time:"10:47", code:"SA260723011", isEk:false, type:"sa", atanan:"FATİH AKAR" },
@@ -58,7 +58,7 @@ const ALL_EVENTS: CalEvent[] = [
   { id:22, dateStr:"2026-08-05", time:"14:13", code:"SA260730003", isEk:false, type:"sa", atanan:"MEHMET MEŞE" },
   { id:23, dateStr:"2026-08-05", time:"15:10", code:"SA260725003", isEk:false, type:"sa", atanan:"SÜMEYYE İNAN" },
   // Aug 6
-  { id:24, dateStr:"2026-08-06", time:"09:00", code:"SA260708004", isEk:false, type:"sa", atanan:"EİSTATİSTİK ANALİZÖR" },
+  { id:24, dateStr:"2026-08-06", time:"09:00", code:"SA260708004", isEk:false, type:"sa", atanan:"eistatistik ANALİZÖR" },
   { id:25, dateStr:"2026-08-06", time:"09:00", code:"SA260724001", isEk:false, type:"sa", atanan:"RABİA AKTAŞ" },
   { id:26, dateStr:"2026-08-06", time:"09:00", code:"SA260730007", isEk:false, type:"sa", atanan:"ALİİHSAN ŞÜKÜR" },
   { id:27, dateStr:"2026-08-06", time:"09:00", code:"SA260731015", isEk:false, type:"sa", atanan:"KEREM MURAT" },
@@ -68,7 +68,7 @@ const ALL_EVENTS: CalEvent[] = [
   { id:31, dateStr:"2026-08-06", time:"11:39", code:"SA260612011", isEk:false, type:"sa", atanan:"SÜMEYYE İNAN" },
   { id:32, dateStr:"2026-08-06", time:"14:37", code:"PA260731006", isEk:false, type:"pa", atanan:"ESRA ÖZTÜRK" },
   // Aug 7
-  { id:33, dateStr:"2026-08-07", time:"09:00", code:"SA260624016", isEk:false, type:"sa", atanan:"EİSTATİSTİK ANALİZÖR" },
+  { id:33, dateStr:"2026-08-07", time:"09:00", code:"SA260624016", isEk:false, type:"sa", atanan:"eistatistik ANALİZÖR" },
   { id:34, dateStr:"2026-08-07", time:"09:00", code:"SA260725014", isEk:false, type:"sa", atanan:"KEREM MURAT" },
   { id:35, dateStr:"2026-08-07", time:"11:38", code:"SA260801005", isEk:false, type:"sa", atanan:"RABİA AKTAŞ" },
   { id:36, dateStr:"2026-08-07", time:"12:04", code:"SA260729003", isEk:false, type:"sa", atanan:"ALİİHSAN ŞÜKÜR" },
@@ -81,7 +81,7 @@ const ALL_EVENTS: CalEvent[] = [
   // Aug 11
   { id:42, dateStr:"2026-08-11", time:"09:00", code:"SA260730008", isEk:true,  type:"sa", atanan:"NACİ MURAT" },
   { id:43, dateStr:"2026-08-11", time:"09:00", code:"SA260731011", isEk:true,  type:"sa", atanan:"SÜMEYYE İNAN" },
-  { id:44, dateStr:"2026-08-11", time:"09:00", code:"SA260731013", isEk:true,  type:"sa", atanan:"EİSTATİSTİK ANALİZÖR" },
+  { id:44, dateStr:"2026-08-11", time:"09:00", code:"SA260731013", isEk:true,  type:"sa", atanan:"eistatistik ANALİZÖR" },
   { id:45, dateStr:"2026-08-11", time:"09:00", code:"SA260731014", isEk:true,  type:"sa", atanan:"KEREM MURAT" },
   { id:46, dateStr:"2026-08-11", time:"09:00", code:"SA260802003", isEk:true,  type:"sa", atanan:"RABİA AKTAŞ" },
   { id:47, dateStr:"2026-08-11", time:"09:47", code:"SA260803004", isEk:true,  type:"sa", atanan:"ALİİHSAN ŞÜKÜR" },
@@ -109,7 +109,7 @@ const ALL_EVENTS: CalEvent[] = [
   { id:64, dateStr:"2026-08-19", time:"11:30", code:"SA260812005", isEk:false, type:"sa", atanan:"FATİH AKAR" },
   // Aug 20
   { id:65, dateStr:"2026-08-20", time:"10:15", code:"SA260813004", isEk:false, type:"sa", atanan:"RABİA AKTAŞ" },
-  { id:66, dateStr:"2026-08-20", time:"13:00", code:"SA260813007", isEk:true,  type:"sa", atanan:"EİSTATİSTİK ANALİZÖR" },
+  { id:66, dateStr:"2026-08-20", time:"13:00", code:"SA260813007", isEk:true,  type:"sa", atanan:"eistatistik ANALİZÖR" },
   // Aug 21
   { id:67, dateStr:"2026-08-21", time:"09:00", code:"SA260814005", isEk:false, type:"sa", atanan:"KEREM MURAT" },
   { id:68, dateStr:"2026-08-21", time:"14:30", code:"SA260814008", isEk:false, type:"sa", atanan:"SÜMEYYE İNAN" },
@@ -127,7 +127,7 @@ const ALL_EVENTS: CalEvent[] = [
   { id:76, dateStr:"2026-08-27", time:"09:00", code:"SA260820005", isEk:false, type:"sa", atanan:"NACİ MURAT" },
   { id:77, dateStr:"2026-08-27", time:"13:45", code:"PA260820008", isEk:false, type:"pa", atanan:"ESRA ÖZTÜRK" },
   // Aug 28
-  { id:78, dateStr:"2026-08-28", time:"09:00", code:"SA260821002", isEk:false, type:"sa", atanan:"EİSTATİSTİK ANALİZÖR" },
+  { id:78, dateStr:"2026-08-28", time:"09:00", code:"SA260821002", isEk:false, type:"sa", atanan:"eistatistik ANALİZÖR" },
   { id:79, dateStr:"2026-08-28", time:"14:30", code:"SA260821006", isEk:true,  type:"sa", atanan:"MEHMET MEŞE" },
   // Aug 31
   { id:80, dateStr:"2026-08-31", time:"09:00", code:"SA260824001", isEk:false, type:"sa", atanan:"ALİİHSAN ŞÜKÜR" },

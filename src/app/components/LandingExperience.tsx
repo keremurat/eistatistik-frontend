@@ -115,7 +115,7 @@ function SceneHeader({ active }: { active: number }) {
   return (
     <div className="product-scene-header">
       <span className="product-scene-logo">
-        <Image src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} />
+        <Image src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} />
       </span>
       <nav>
         <span className={active === 0 ? "active" : ""}>Genel bakış</span>

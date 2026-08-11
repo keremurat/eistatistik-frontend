@@ -51,8 +51,8 @@ export default function AnalystDashboardPage() {
     <div className="app-shell analyst-shell">
       <a className="skip-link" href="#analyst-main">İçeriğe geç</a>
       <header className="topbar">
-        <Link className="brand" href="/analizor" aria-label="Eİstatistik analizör ana sayfası">
-          <Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority />
+        <Link className="brand" href="/analizor" aria-label="eistatistik analizör ana sayfası">
+          <Image className="brand-logo" src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} priority />
         </Link>
         <nav className="main-nav" aria-label="Analizör navigasyonu">
           <Link className="active" href="/analizor"><Icon name="home" />Genel bakış</Link>

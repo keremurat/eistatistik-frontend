@@ -13,7 +13,7 @@ const KULLANICILAR = [
   "SÜMEYYE İNAN",
   "MEHMET MEŞE",
   "ALİHSAN ŞÜKÜR",
-  "EİSTATİSTİK ANALİZÖR",
+  "eistatistik ANALİZÖR",
   "EMRE KAYA",
   "DİLARA YILMAZ",
   "ESRA ÖZTÜRK",

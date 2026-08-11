@@ -69,8 +69,8 @@ export function LandingHeader() {
   return (
     <header ref={headerRef} className={`landing-header${scrolled ? " is-scrolled" : ""}`}>
       <div className="landing-nav-shell">
-        <Link href="/" className="landing-logo" aria-label="Eİstatistik ana sayfa">
-          <Image src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority />
+        <Link href="/" className="landing-logo" aria-label="eistatistik ana sayfa">
+          <Image src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} priority />
         </Link>
         <button className="landing-menu-button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-label="Menüyü aç veya kapat">
           <span /><span />
@@ -84,10 +84,9 @@ export function LandingHeader() {
               <Link href="/hizmetler/istatistiksel-analiz" onClick={closeNavigation}>İstatistiksel Analiz</Link>
               <Link href="/hizmetler/power-analizi" onClick={closeNavigation}>Power Analizi</Link>
               <Link href="/#services" onClick={closeNavigation}>Graphical Abstract</Link>
-              <Link href="/#services" onClick={closeNavigation}>Veri İşleme</Link>
               <Link href="/hizmetler/gecerlilik-guvenilirlik" onClick={closeNavigation}>Geçerlilik ve Güvenilirlik Analizi</Link>
               <Link href="/hizmetler/proforma" onClick={closeNavigation}>Proforma</Link>
-              <Link href="/#services" onClick={closeNavigation}>Danışmanlık</Link>
+              <Link href="/hizmetler/danismanlik" onClick={closeNavigation}>Danışmanlık</Link>
             </div>
           </details>
 
@@ -103,7 +102,7 @@ export function LandingHeader() {
           <Link href="/#process" onClick={closeNavigation}>Nasıl çalışır?</Link>
           <Link href="/#yorumlar" onClick={closeNavigation}>Yorumlar</Link>
           <Link href="/#faq" onClick={closeNavigation}>Merak edilenler</Link>
-          <a href="mailto:destek@eistatistik.com" onClick={closeNavigation}>İletişim</a>
+          <Link href="/#iletisim" onClick={closeNavigation}>İletişim</Link>
         </nav>
         <div className="landing-nav-actions">
           <Link href="/giris" className="landing-login">Giriş yap</Link>

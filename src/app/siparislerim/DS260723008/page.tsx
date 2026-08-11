@@ -272,14 +272,14 @@ function Payment({ method, onMethod }: { method: "transfer" | "card"; onMethod: 
     </> : <>
       <div className="secure-card-redirect">
         <span><Icon name="card" size={25} /></span>
-        <div><p className="eyebrow">AKBANK 3D SECURE</p><h3>Ödemeniz Akbank güvencesiyle tamamlanacak</h3><p>Sonraki ekranda 3D güvenlikli Akbank Ortak Ödeme sayfasına yönlendirileceksiniz. Gerekli ve geçerli kart bilgilerini girdikten sonra tekrar EİSTATİSTİK sistemine geri döndürüleceksiniz.</p></div>
+        <div><p className="eyebrow">AKBANK 3D SECURE</p><h3>Ödemeniz Akbank güvencesiyle tamamlanacak</h3><p>Sonraki ekranda 3D güvenlikli Akbank Ortak Ödeme sayfasına yönlendirileceksiniz. Gerekli ve geçerli kart bilgilerini girdikten sonra tekrar eistatistik sistemine geri döndürüleceksiniz.</p></div>
       </div>
       <button className={`payment-contract-consent ${cardAgreementAccepted ? "accepted" : ""}`} type="button" onClick={() => setCardAgreementOpen(true)}>
         <span>{cardAgreementAccepted ? <Icon name="check" size={15} /> : ""}</span>
         <strong><u>Sözleşmeyi</u> okudum ve kabul ediyorum.</strong>
         <i>{cardAgreementAccepted ? "Onaylandı" : "İncele"}</i>
       </button>
-      <div className="payment-privacy-note"><Icon name="card" size={17} /><span>Kart bilgileriniz EİSTATİSTİK tarafından alınmaz veya kaydedilmez.</span></div>
+      <div className="payment-privacy-note"><Icon name="card" size={17} /><span>Kart bilgileriniz eistatistik tarafından alınmaz veya kaydedilmez.</span></div>
       <button className="pay-button" disabled={!cardAgreementAccepted}>Kredi Kartı ile Ödeme Yap <Icon name="arrow" size={16} /></button>
     </>}
   </section><aside className="payment-summary">

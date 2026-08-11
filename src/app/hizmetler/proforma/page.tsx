@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { LandingFaq } from "../../components/LandingFaq";
 import { LandingHeader } from "../../components/LandingHeader";
+import { LandingFooter } from "../../components/LandingFooter";
+import { getGmailContactUrl } from "../../lib/contact";
 
 const needs = [
   ["Proje yürütücüsüne ait bilgiler", "Ad soyad ve iletişim bilgileri — faturanın kime düzenleneceğini belirler."],
@@ -18,13 +20,13 @@ const flow = [
 ];
 
 const faqs: Array<[string, string]> = [
-  ["Süreç nasıl işliyor?", "Gerekli bilgileri sistem üzerinden ilettikten sonra talebiniz alan uzmanımızca değerlendirilir. Kapsam netleştiğinde fiyat teklifi PDF olarak hazırlanır ve aynı ekrandan tarafınıza iletilir; onayınızın ardından süreç başlar."],
-  ["Bu süreçte nasıl iletişim kurabilirim?", "Talebinize özel yazışma alanını kullanabilir, ek bilgi ve belgeleri buradan paylaşabilirsiniz. Gerektiğinde sistem üzerinden çevrim içi görüşme de planlanabilir."],
-  ["Çalıştığım alanı (tıp, diş hekimliği vb.) bilen bir uzmanla mı çalışacağım?", "Evet. Tıp, diş hekimliği, sağlık, sosyal ve eğitim bilimleri gibi farklı alanlardaki çalışmalar, konu ve yöntem ihtiyacına göre o alanı bilen uzmana yönlendirilir."],
-  ["Analizler için teslim süresi nedir?", "Teslim süresi çalışmanın kapsamına ve seçtiğiniz hizmete göre belirlenir. Talep aşamasında size uygun teslim seçeneğini görebilir ve seçebilirsiniz."],
-  ["Sonuçları hangi formatta alacağım?", "Kapsama göre analiz raporu, düzenlenebilir tablolar, yayın kalitesinde grafikler, program çıktıları ve videolu anlatım çalışma alanınıza yüklenir."],
-  ["Ek analiz yaptırmak istersem ne yapmalıyım?", "Uygun siparişlerde teslim sonrasında Ek Analiz talebi açabilirsiniz. Yeni ihtiyacınızı mevcut çalışma üzerinden iletmeniz yeterlidir."],
-  ["Sesli rapor desteği alabilir miyim?", "Analiz sonuçlarınız, bulguların nasıl yorumlanacağını adım adım açıklayan videolu ve sesli uzman anlatımıyla birlikte sunulabilir. Böylece raporu kendi çalışmanıza güvenle aktarabilirsiniz."],
+  ["Süreç Nasıl İşliyor?", "Gerekli bilgileri sistem üzerinden ilettikten sonra talebiniz alan uzmanımızca değerlendirilir. Kapsam netleştiğinde fiyat teklifi PDF olarak hazırlanır ve aynı ekrandan tarafınıza iletilir; onayınızın ardından süreç başlar."],
+  ["Bu Süreçte Nasıl İletişim Kurabilirim?", "Talebinize özel yazışma alanını kullanabilir, ek bilgi ve belgeleri buradan paylaşabilirsiniz. Gerektiğinde sistem üzerinden çevrim içi görüşme de planlanabilir."],
+  ["Benim Çalıştığım Alan İle İlgili (Tıp, Diş Hekimliği Vb.) Benim Dilimden Anlayabilecek Hocalar İle Mi Çalışacağım?", "Evet. Tıp, diş hekimliği, sağlık, sosyal ve eğitim bilimleri gibi farklı alanlardaki çalışmalar, konu ve yöntem ihtiyacına göre o alanı bilen uzmana yönlendirilir."],
+  ["Analizler İçin Teslimat Süresi Nedir?", "Teslim süresi çalışmanın kapsamına ve seçtiğiniz hizmete göre belirlenir. Talep aşamasında size uygun teslim seçeneğini görebilir ve seçebilirsiniz."],
+  ["Sonuçları Hangi Formatta Alacağım?", "Kapsama göre analiz raporu, düzenlenebilir tablolar, yayın kalitesinde grafikler, program çıktıları ve videolu anlatım çalışma alanınıza yüklenir."],
+  ["Analiz Raporumu İnceledim, Birkaç Analiz Daha Yapılmasını İstiyorum Ne Yapmalıyım?", "Uygun siparişlerde teslim sonrasında Ek Analiz talebi açabilirsiniz. Yeni ihtiyacınızı mevcut çalışma üzerinden iletmeniz yeterlidir."],
+  ["Sesli Rapor Desteği", "Analiz sonuçlarınız, bulguların nasıl yorumlanacağını adım adım açıklayan videolu ve sesli uzman anlatımıyla birlikte sunulabilir. Böylece raporu kendi çalışmanıza güvenle aktarabilirsiniz."],
 ];
 
 export default function ProformaPage() {
@@ -50,7 +52,7 @@ export default function ProformaPage() {
             <div className="proforma-doc-bar"><i /><i /><i /><b>Proforma fatura</b></div>
             <div className="proforma-doc-body">
               <div className="proforma-doc-head">
-                <Image src="/Siyah e-istatistik.png" alt="Eİstatistik" width={150} height={35} />
+                <Image src="/Siyah e-istatistik.png" alt="eistatistik" width={150} height={35} />
                 <span>PROFORMA FATURA</span>
               </div>
               <div className="proforma-doc-meta">
@@ -93,13 +95,13 @@ export default function ProformaPage() {
       </section>
 
       <section className="analysis-faq-section proforma-faq">
-        <div><h2>Proforma hakkında merak ettikleriniz.</h2><p>Başvuru biriminizin farklı bir bilgi talebi varsa iletin; uzman ekibimiz süreci sizinle birlikte netleştirsin.</p><a href="mailto:destek@eistatistik.com">destek@eistatistik.com</a></div>
+        <div><h2>Proforma hakkında merak ettikleriniz.</h2><p>Başvuru biriminizin farklı bir bilgi talebi varsa iletin; uzman ekibimiz süreci sizinle birlikte netleştirsin.</p><a href={getGmailContactUrl("Proforma")} target="_blank" rel="noopener noreferrer">info@eistatistik.com</a></div>
         <LandingFaq items={faqs} />
       </section>
 
       <section className="analysis-final-cta"><div><span>PROFORMANIZI BİRLİKTE HAZIRLAYALIM</span><h2>Başvuru sürecinize doğru belgeyle başlayın.</h2><p>Proje bilgilerinizi iletin. Uzman ekibimiz kapsamı değerlendirip fiyat teklifinizi hazırlasın.</p></div><Link href="/giris">Proforma talebi oluştur <span>→</span></Link></section>
 
-      <footer className="landing-footer"><Image src="/Beyaz e-istatistik.png" alt="Eİstatistik" width={230} height={54} /><div><Link href="/#services">Hizmetler</Link><Link href="/#platform">Platform</Link><a href="mailto:destek@eistatistik.com">İletişim</a><Link href="/giris">Giriş yap</Link></div><p>© 2026 Eİstatistik. Tüm hakları saklıdır.</p></footer>
+      <LandingFooter />
     </main>
   );
 }

@@ -71,7 +71,7 @@ export default function AnalystMeetingsPage() {
   return <div className="app-shell">
     <a className="skip-link" href="#analyst-meetings">İçeriğe geç</a>
     <header className="topbar">
-      <Link className="brand" href="/analizor"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority /></Link>
+      <Link className="brand" href="/analizor"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} priority /></Link>
       <nav className="main-nav" aria-label="Analizör navigasyonu">
         <Link href="/analizor"><Icon name="home" />Genel bakış</Link>
         <Link href="/analizor/islerim"><Icon name="tasks" />İşlerim</Link>

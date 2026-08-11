@@ -107,7 +107,7 @@ function EditForm() {
 
               <div className="edu-row-3">
                 <div className="form-field">
-                  <label htmlFor="ef-eiurl">Eğitim EİSTATİSTİK URL</label>
+                  <label htmlFor="ef-eiurl">Eğitim eistatistik URL</label>
                   <input id="ef-eiurl" value={eiUrl} onChange={(e) => setEiUrl(e.target.value)} placeholder="https://eistatistik.com/…" />
                 </div>
                 <div className="form-field">

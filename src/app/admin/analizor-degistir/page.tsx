@@ -7,11 +7,11 @@ const analysts = [
   "NACİ MURAT",
   "ALİİHSAN ŞÜKÜR",
   "MEHMET MEŞE",
-  "EİSTATİSTİK ANALİZÖR",
+  "eistatistik ANALİZÖR",
   "RABİA AKTAŞ",
   "FATİH AKAR",
   "KAAN KARAKAYA",
-  "Eistatistik Genel Analizör",
+  "eistatistik Genel Analizör",
   "YASİN YILDIRIM",
   "ERTUĞRUL 2 GÜMÜŞSU",
 ];

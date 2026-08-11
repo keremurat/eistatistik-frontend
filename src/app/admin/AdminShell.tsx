@@ -187,7 +187,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="app-shell">
       <a className="skip-link" href="#admin-main">İçeriğe geç</a>
       <header className="topbar">
-        <Link className="brand" href="/admin" aria-label="Eİstatistik yönetim ana sayfa"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="Eİstatistik" width={300} height={69} priority /></Link>
+        <Link className="brand" href="/admin" aria-label="eistatistik yönetim ana sayfa"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} priority /></Link>
         <nav className="admin-nav" aria-label="Yönetici navigasyonu" ref={navRef}>
           <Link className={pathname === "/admin" ? "active" : ""} href="/admin"><AdminIcon name="home" />Anasayfa</Link>
           {menus.map((menu) => {
