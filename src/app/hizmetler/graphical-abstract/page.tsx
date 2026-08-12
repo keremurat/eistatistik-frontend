@@ -45,7 +45,7 @@ export default function GraphicalAbstractPage() {
           <div className="graphical-monitor">
             <div className="graphical-monitor-bar"><i /><i /><i /><b>Graphical Abstract · Tanıtım</b></div>
             <div className="graphical-video-wrap">
-              <iframe src="https://www.youtube.com/embed/gwgd7eehFc0?rel=0&modestbranding=1" title="Graphical Abstract hizmeti tanıtım videosu" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
+              <iframe src="https://www.youtube.com/embed/gwgd7eehFc0?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1" title="Graphical Abstract hizmeti tanıtım videosu" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
             </div>
           </div>
           <div className="graphical-monitor-neck" /><div className="graphical-monitor-base" />

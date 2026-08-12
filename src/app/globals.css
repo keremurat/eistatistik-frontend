@@ -3549,7 +3549,7 @@ button:focus-visible,a:focus-visible { outline:3px solid #69b9dc; outline-offset
 .proforma-float span{color:#7c8f9b;font-size:.58rem;font-weight:750;letter-spacing:.04em}
 .proforma-float strong{color:#102d49;font-size:.9rem}
 .proforma-float small{color:#7fb0cb;font-size:.58rem}
-.proforma-float.response{left:-26px;top:15%}
+.proforma-float.response{right:-18px;top:24%}
 .proforma-float.delivery{right:-22px;bottom:12%}
 .proforma-needs{padding:clamp(6rem,10vw,10rem) max(4vw,calc((100vw - 1480px)/2));background:#fff}
 .proforma-needs>header{max-width:900px}
@@ -3573,7 +3573,7 @@ button:focus-visible,a:focus-visible { outline:3px solid #69b9dc; outline-offset
 .proforma-flow-list p{max-width:700px;margin:.6rem 0 0;color:#60798a;font-size:.76rem;line-height:1.65}
 @media(max-width:1180px){.proforma-hero{grid-template-columns:1fr 1.08fr;gap:3rem}.proforma-hero-copy h1{font-size:clamp(3.2rem,6vw,5rem)}.proforma-flow{grid-template-columns:.85fr 1.15fr;gap:4rem}}
 @media(max-width:900px){.proforma-hero{min-height:auto;padding-top:7.2rem;grid-template-columns:1fr}.proforma-hero-copy{max-width:720px}.proforma-hero-visual{width:min(720px,96%);margin:1rem auto 0}.proforma-need-list{grid-template-columns:1fr}.proforma-need-list article,.proforma-need-list article:last-child{grid-column:auto}.proforma-flow{grid-template-columns:1fr}.proforma-flow-intro{position:static}}
-@media(max-width:620px){.proforma-hero{padding:6.2rem 1.15rem 4.5rem}.proforma-hero-copy h1{font-size:clamp(3rem,14vw,4.2rem)}.proforma-doc{transform:none}.proforma-float.response{left:-6px;top:10%}.proforma-float.delivery{display:none}.proforma-needs,.proforma-flow{padding-left:1.15rem;padding-right:1.15rem}.proforma-need-list article{padding:1.5rem 0;grid-template-columns:48px 1fr}.proforma-flow-list article{grid-template-columns:48px 1fr}}
+@media(max-width:620px){.proforma-hero{padding:6.2rem 1.15rem 4.5rem}.proforma-hero-copy h1{font-size:clamp(3rem,14vw,4.2rem)}.proforma-doc{transform:none}.proforma-float.response{right:-6px;top:24%}.proforma-float.delivery{display:none}.proforma-needs,.proforma-flow{padding-left:1.15rem;padding-right:1.15rem}.proforma-need-list article{padding:1.5rem 0;grid-template-columns:48px 1fr}.proforma-flow-list article{grid-template-columns:48px 1fr}}
 
 /* Graphical Abstract — hizmet detay sayfası */
 .graphical-service-page{background:#fff}
