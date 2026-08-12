@@ -76,7 +76,22 @@ belgenin dışına çıkıp yeni görsel dil, yeni class sistemi veya paralel bi
 
 ### Ölçü sabitleri
 - `topbar` yüksekliği: **72px**. Sticky paneller/sidebar: **`top: 88px`**.
-- İçerik genişlikleri: detay sayfası `min(1380px, 100% - 3rem)`; talep sayfası benzer merkezli.
+- Giriş sonrası rol ekranlarında içerik genişliği sabit bir `max-width` ile sınırlandırılmaz.
+  `dashboard`, `orders-page`, `detail-page`, `request-page`, `education-page`, `admin-dash` ve
+  asistan içerik kabukları `calc(100% - clamp(2rem, 3vw, 3.5rem))` kullanır. Böylece geniş
+  ekranlardaki ölü yan alanlar çalışma alanına katılırken güvenli kenar boşluğu korunur. Landing
+  sayfalarının kendi içerik genişliği sözleşmeleri bu kuralın dışındadır.
+- Giriş sonrası liste ve katalog ekranlarının ana sayfa başlığı yalnızca `h1` içerir. Başlığın
+  üzerinde tekrar eden eyebrow ve altında açıklama paragrafı gösterilmez; sağdaki işlevsel
+  aksiyonlar veya özet sayaçları korunabilir. Bu sadeleştirme yalnızca sayfa seviyesindeki
+  hero/heading alanına uygulanır, panel ve kart başlıklarındaki bağlamsal etiketleri kaldırmaz.
+  Eğitimlerim ve Eğitim Kataloğu ekranlarında bu başlık üst bara yakın, `.7rem` sayfa üst
+  boşluğu ve kompakt `82px` başlık yüksekliğiyle hizalanır; eğitim detay akışları etkilenmez.
+- Hizmet seçim ekranında başlık ile altı hizmet kartı ilk viewportu oluşturur. Yönlendirme
+  paneli kaldırılmaz; ilk bakışta görünmez ve kullanıcı sayfayı aşağı kaydırdığında açığa çıkar.
+- Graphical Abstract landing detayı eğitim sayfası kalıbını kullanmaz; diğer hizmet detayları
+  gibi hero, güven şeridi, hizmet kapsamı, süreç, SSS ve CTA akışına sahiptir. Hero'nun sağında
+  YouTube videosu doğrudan oynatılabilen masaüstü monitör çerçevesinde gösterilir.
 - Kırılım noktaları globals.css'te tanımlı; yeni responsive kural eklerken mevcut
   `@media` bloklarının mantığını izle (kartlar 3→2→1 kolon, sidebar yatay kaydırmaya döner).
 
@@ -315,6 +330,10 @@ onay kutucuğu (`span`, onaylıysa `check` + yeşil) + `<strong>` (altı çizili
 (Kredi kartı · 3D Secure). Aktif buton `.active` → dolu lacivert. Özet içindeki varyant
 dikey/iki satırlı (`.payment-summary .payment-tabs`).
 
+Eğitim satın alma ödeme ekranı da ödeme yöntemini özet panelinde değil, ana ödeme panelinin
+başındaki aynı `.payment-method-switch > .payment-tabs` yapısıyla seçtirir. Buton sırası,
+aktif durum, Havale/EFT ve Akbank 3D Secure metinleri sipariş detayıyla aynıdır.
+
 ### 6.1 İndirim kodu (`.discount-entry`)
 - Tetik `.discount-trigger` (`% · İndirim kodu gir · +/−`), `aria-expanded` ile açılır.
 - Açık form `.discount-form`: `label`+`input` (BÜYÜK harf) + "Uygula" butonu; girdi boşken buton pasif.
@@ -507,6 +526,56 @@ Kaynak: `src/app/components/LandingContact.tsx`. Landing navigasyonu ve footer'd
   iframe sabit yüksekliğe, açıklayıcı `title` değerine ve `loading="lazy"` niteliğine sahiptir.
 - Bölümde otomatik animasyon yoktur. Hover ve aktif geri bildirimleri mevcut landing
   buton geçişleriyle sınırlıdır.
+
+### 8.9 Hizmet seçimi ve tek sayfa analiz talebi
+
+Kaynaklar: `src/app/hizmetler/page.tsx` ve `src/app/yeni-analiz-talebi/page.tsx`. Giriş sonrası
+genel `Hizmetler` / `Yeni analiz talebi` eylemleri önce `/hizmetler` kataloğunu açar. Kullanıcı
+bir hizmet seçince `service` sorgu değeriyle tek sayfa forma geçer; belirli hizmet kartları
+aynı sorgu değeriyle forma doğrudan bağlanabilir.
+
+- Stepper, ileri/geri adımları ve ayrı onay ekranı bulunmaz.
+- Form hero'su tek büyük `Yeni analiz talebi` başlığını kullanır; aynı metni tekrarlayan küçük
+  eyebrow etiketi veya başlık altında açıklama metni gösterilmez.
+- Ana düzen geniş masaüstünde mevcut `request-form-layout` kalıbını üç işlevsel bölgeye yayar:
+  solda form, ortada eklenen dosyaların dikey listesi, en sağda talep özeti bulunur. Sayfa yatay
+  alanın tamamına yakınını kullanır. Dar masaüstünde özet ve dosyalar sağ sütunda üst üste,
+  mobilde formun altında doğal akışta gösterilir.
+- `801px` ve üzerindeki ekranlarda form, üst barın altında tek viewport içine sığar ve sayfa
+  dikey kaydırma üretmez. Alanlar kompaktlaşır; eklenen dosyalar panel içinde kaydırılır.
+  Mobilde erişilebilirlik için doğal sayfa kaydırması korunur.
+- Tek viewport sıkılığı metni küçülterek sağlanmaz: form etiketleri en az `.72rem`, alan ve
+  özet değerleri `.7rem` civarında tutulur; yardımcı metinler `.58rem` altına düşmez.
+- Form hizmet, çalışma başlığı, teslim türü, teslim süresi, çalışma açıklaması ve isteğe bağlı
+  dosyaları tek akışta toplar. Zorunlu alanlar dolmadan gönderim etkinleşmez.
+- Katalogda seçilen hizmet formda kilitli, salt okunur bir satır olarak gösterilir; form
+  içinden değiştirilemez. Farklı hizmet için kullanıcı `/hizmetler` kataloğuna döner.
+- `Teslim türü` ve `Teslim zamanı` alanları tarayıcının yerel select görünümünü değil, sistemin
+  mevcut `cs-trigger` / `cs-panel` / `cs-option` dropdown kalıbını kullanır. Panel form düzenini
+  büyütmeden üstte açılır; dışarı tıklama ve `Escape` ile kapanır.
+- Power analizi talebinde teslim türü seçilemez ve `Standart` olarak kilitli gösterilir. Alanın
+  altında `Sipariş Görüşmesinde detaylı bilgi aktarılacaktır.` bilgi notu yer alır; teslim zamanı
+  diğer analiz talepleriyle aynı seçenek listesini kullanır.
+- Online mentörlük talebinde teslim türü `Standart` olarak kilitlidir. `Teslim zamanı` alanı
+  `Mentörlük saati` adını alır ve 30 dakika, 1 saat, 2 saat, 3 saat ve 12 saat seçeneklerini
+  fiyat metni olmadan gösterir. Sabit fiyat yalnızca en sağdaki talep özetine anlık yansır.
+  Kilitli teslim türü alanı ile mentörlük saati dropdown'u aynı genişlik ve yüksekliği kullanır.
+- Graphical Abstract talebi açıldığında teslim türü `PowerPoint`, teslim zamanı ise yalnızca
+  `7 iş günü` seçeneğiyle önceden doldurulur. Bu hizmette ayrıntılı teslim günü açıklaması gösterilmez.
+- Proforma Fatura talebi açıldığında teslim türünde yalnızca `Proforma Fatura Gönderimi`, teslim
+  süresinde yalnızca `12 saat` bulunur ve iki değer de başlangıçta seçili gelir.
+- Akademik mobil uygulama talebinde iş başlığının hemen altında zorunlu platform seçimi bulunur;
+  seçenekler `İOS (Iphone/Ipad)`, `Android` ve `Cross-Platform` değerleridir. Teslim türü bu
+  hizmete özel olarak ihtiyaç analizi ve tasarım, mobil uygulama, akademik dokümantasyon, mağaza
+  yayınlama ve tam araştırma paketi seçeneklerini; teslim zamanı ise 3 iş gününden 6 aya uzanan
+  hizmete özel süre listesini kullanır. Platform seçimi talep özetinde ayrıca gösterilir.
+- Dosya yükleme mevcut `request-upload`, `request-file-list` ve `RequestFileIcon` kalıplarını
+  değil, sipariş kalemlerindeki kanonik `upload-zone clickable-upload` yapısını;
+  sağdaki bağımsız `request-file-panel` içindeki `request-file-list` ve `RequestFileIcon` ile
+  birlikte kullanır. Dosya başına üst sınır 25 MB'dir.
+- Online mentörlük dışındaki hizmetlerde gerçek fiyat verisi bulunmadığı için sahte tutar
+  gösterilmez. Bu hizmetlerde özet, ücretin uzman kapsam incelemesinden sonra bildirileceğini açıklar.
+- Başarılı gönderim mevcut `request-success` kalıbıyla aynı sayfada gösterilir.
 
 - Kayıt akışında Üyelik onaylanınca sıradaki KVKK modalı otomatik açılır; her onay ilgili
   onay kutusunu (`membershipAccepted` / `kvkkAccepted`) işaretler.

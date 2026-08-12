@@ -39,7 +39,7 @@ export function LandingFooter() {
           <h2>Hizmetlerimiz</h2>
           <Link href="/hizmetler/istatistiksel-analiz">İstatistiksel Analiz</Link>
           <Link href="/hizmetler/power-analizi">Power Analizi</Link>
-          <Link href="/#services">Graphical Abstract</Link>
+          <Link href="/hizmetler/graphical-abstract">Graphical Abstract</Link>
           <Link href="/hizmetler/gecerlilik-guvenilirlik">Geçerlilik ve Güvenilirlik Analizi</Link>
           <Link href="/hizmetler/proforma">Proforma</Link>
           <Link href="/hizmetler/danismanlik">Danışmanlık</Link>

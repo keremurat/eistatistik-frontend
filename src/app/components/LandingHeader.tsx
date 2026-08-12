@@ -83,7 +83,7 @@ export function LandingHeader() {
             <div className="landing-nav-dropdown-menu">
               <Link href="/hizmetler/istatistiksel-analiz" onClick={closeNavigation}>İstatistiksel Analiz</Link>
               <Link href="/hizmetler/power-analizi" onClick={closeNavigation}>Power Analizi</Link>
-              <Link href="/#services" onClick={closeNavigation}>Graphical Abstract</Link>
+              <Link href="/hizmetler/graphical-abstract" onClick={closeNavigation}>Graphical Abstract</Link>
               <Link href="/hizmetler/gecerlilik-guvenilirlik" onClick={closeNavigation}>Geçerlilik ve Güvenilirlik Analizi</Link>
               <Link href="/hizmetler/proforma" onClick={closeNavigation}>Proforma</Link>
               <Link href="/hizmetler/danismanlik" onClick={closeNavigation}>Danışmanlık</Link>

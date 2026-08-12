@@ -120,7 +120,7 @@ export default function DashboardPage() {
           <Link className="active" href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
           <Link href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
           <CustomerEducationMenu />
-          <a href="#"><Icon name="spark" size={17} />Hizmetler</a>
+          <Link href="/hizmetler"><Icon name="spark" size={17} />Hizmetler</Link>
         </nav>
         <div className="top-actions">
           <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç">
@@ -143,7 +143,7 @@ export default function DashboardPage() {
             <div><strong>1</strong><span>bekleyen işlem</span></div>
             <div><strong>2</strong><span>yaklaşan görüşme</span></div>
           </div>
-          <Link className="primary-button" href="/yeni-analiz-talebi"><Icon name="plus" size={18} />Yeni analiz talebi</Link>
+          <Link className="primary-button" href="/hizmetler"><Icon name="plus" size={18} />Yeni analiz talebi</Link>
         </section>
 
         <section className="focus-grid">

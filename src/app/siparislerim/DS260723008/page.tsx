@@ -118,7 +118,7 @@ export default function OrderDetailPage() {
         <nav className="main-nav">
           <Link href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
           <Link className="active" href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
-          <CustomerEducationMenu /><Link href="/yeni-analiz-talebi"><Icon name="spark" size={17} />Hizmetler</Link>
+          <CustomerEducationMenu /><Link href="/hizmetler"><Icon name="spark" size={17} />Hizmetler</Link>
         </nav>
         <div className="top-actions"><a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a><NotificationMenu role="musteri" /><ProfileMenu /></div>
       </header>
@@ -369,7 +369,7 @@ function Messages() {
     <div className="message-guidance">
       <span><Icon name="message" size={19} /></span>
       <div><strong>Yeni analiz talepleri için ayrı talep oluşturun</strong><p>Bu alan mevcut siparişinizle ilgili soru, dosya ve bilgilendirmeler içindir.</p></div>
-      <Link href="/yeni-analiz-talebi">Yeni analiz talebi <Icon name="arrow" size={14} /></Link>
+      <Link href="/hizmetler">Yeni analiz talebi <Icon name="arrow" size={14} /></Link>
     </div>
     <div className="message-composer">
       <label htmlFor="order-message">Mesajınız</label>

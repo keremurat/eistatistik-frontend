@@ -92,7 +92,7 @@ export default function OrdersPage() {
           <Link href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
           <Link className="active" href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
           <CustomerEducationMenu />
-          <a href="#"><Icon name="spark" size={17} />Hizmetler</a>
+          <Link href="/hizmetler"><Icon name="spark" size={17} />Hizmetler</Link>
         </nav>
         <div className="top-actions">
           <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç">
@@ -106,7 +106,7 @@ export default function OrdersPage() {
       <main id="orders-content" className="orders-page">
         <header className="orders-hero">
           <div><p className="eyebrow">ÇALIŞMA ALANINIZ</p><h1>Siparişlerim</h1><p>Analiz taleplerinizi, görüşmelerinizi ve teslimlerinizi tek yerden takip edin.</p></div>
-          <Link className="orders-create" href="/yeni-analiz-talebi"><Icon name="plus" size={18} />Yeni analiz talebi</Link>
+          <Link className="orders-create" href="/hizmetler"><Icon name="plus" size={18} />Yeni analiz talebi</Link>
         </header>
 
         <nav className="order-tabs" aria-label="Sipariş durumları">

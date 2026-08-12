@@ -59,7 +59,7 @@ export function EducationShell({ children }: { children: React.ReactNode }) {
           <Link href="/dashboard"><EducationIcon name="home" size={17} />Genel bakış</Link>
           <Link href="/siparislerim"><EducationIcon name="file" size={17} />Siparişlerim</Link>
           <CustomerEducationMenu />
-          <Link href="/yeni-analiz-talebi"><EducationIcon name="spark" size={17} />Hizmetler</Link>
+          <Link href="/hizmetler"><EducationIcon name="spark" size={17} />Hizmetler</Link>
         </>}
       </nav>
       <div className="top-actions">

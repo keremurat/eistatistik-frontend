@@ -18,7 +18,7 @@ const services = [
   { title: "Akademik mobil uygulama", copy: "Araştırma ve eğitim içeriğinizi hedef kitlenize özel bir dijital ürüne dönüştürün.", image: "/service-illustrations/academic-mobile-app-v2.png", type: "Dijital ürün" },
 ];
 
-const serviceLinks = ["/hizmetler/istatistiksel-analiz", "/hizmetler/power-analizi", "/hizmetler/danismanlik", "/giris", "/giris", "/giris"];
+const serviceLinks = ["/hizmetler/istatistiksel-analiz", "/hizmetler/power-analizi", "/hizmetler/danismanlik", "/hizmetler/graphical-abstract", "/giris", "/giris"];
 
 const faqs: Array<[string, string]> = [
   ["İstatistik analizi hizmeti ne kadar sürer?", "Analiz süresi veri seti büyüklüğüne ve analiz türüne göre değişir. Standart SPSS veya R analizleri genellikle 1–3 iş günü içinde teslim edilir. Acil siparişlerde 24 saat içinde teslimat seçeneği de mevcuttur."],
