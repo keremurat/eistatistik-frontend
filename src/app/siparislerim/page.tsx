@@ -135,7 +135,6 @@ export default function OrdersPage() {
           </div>
         )}
       </main>
-      <button className="support-button" aria-label="Destek"><Icon name="message" /><span>Destek</span></button>
     </div>
   );
 }

@@ -62,7 +62,6 @@ export default function ServicesPage() {
 
         <section className="guidance-panel"><span className="guidance-icon"><Icon name="message" size={23} /></span><div><p className="eyebrow light">KARAR VEREMEDİNİZ Mİ?</p><h2>Çalışmanızı kısaca anlatın, doğru hizmeti birlikte belirleyelim.</h2><p>Ekibimiz talebinizi inceleyip sizi uygun hizmete yönlendirsin.</p></div><Link href="/yeni-analiz-talebi?service=mentoring">Yönlendirme iste <Icon name="arrow" size={16} /></Link></section>
       </main>
-      <button className="support-button" aria-label="Destek"><Icon name="message" /><span>Destek</span></button>
     </div>
   );
 }

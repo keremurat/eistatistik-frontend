@@ -337,7 +337,6 @@ export default function NewRequestPage() {
           </>
         )}
       </main>
-      <button className="support-button" aria-label="Destek"><Icon name="message" /><span>Destek</span></button>
     </div>
   );
 }

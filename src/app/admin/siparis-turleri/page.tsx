@@ -1,85 +1,68 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { AdminShell } from "../AdminShell";
+import { readServiceTypes, ServiceType } from "./serviceTypeData";
 
-type IconName = "plus";
+type IconName = "plus" | "search" | "edit";
 
 function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, React.ReactNode> = {
     plus: <path d="M12 5v14M5 12h14" />,
+    search: <><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></>,
+    edit: <><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z" /></>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
 
-type ServiceStatus = "aktif" | "pasif";
-type ServiceType = {
-  code: string; title: string; description: string; order: number; status: ServiceStatus;
-};
-
-const serviceTypes: ServiceType[] = [
-  { code: "SA",  title: "İstatistiksel Veri Analizi",       description: "",                              order: 1,  status: "aktif" },
-  { code: "KPA", title: "Kampanyalı Power Analizi",         description: "3 Power analizi tek fiyat",    order: 2,  status: "pasif" },
-  { code: "KDS", title: "Kampanya Online Danışmanlık",      description: "",                              order: 2,  status: "pasif" },
-  { code: "PA",  title: "Power Analizi",                    description: "",                              order: 2,  status: "aktif" },
-  { code: "ODP", title: "Kampanyalı Online Mentörlük",      description: "3 saatlik mentörlük tek fiyat",order: 2,  status: "pasif" },
-  { code: "DS",  title: "Online Mentörlük",                 description: "",                              order: 3,  status: "aktif" },
-  { code: "GA",  title: "Graphical Abstract",               description: "",                              order: 6,  status: "aktif" },
-  { code: "RV",  title: "Geçerlilik Analizi",               description: "",                              order: 7,  status: "pasif" },
-  { code: "PR",  title: "Proforma Fatura",                  description: "",                              order: 8,  status: "aktif" },
-  { code: "HP",  title: "Patoloji İnceleme",                description: "İnceleme yapıyoruz",           order: 9,  status: "pasif" },
-  { code: "APP", title: "Akademik Mobil Uygulama",          description: "",                              order: 9,  status: "aktif" },
-  { code: "RE",  title: "Raporlama",                        description: "",                              order: 10, status: "pasif" },
-  { code: "DP",  title: "Veri İşleme",                     description: "",                              order: 11, status: "pasif" },
-  { code: "IDP", title: "İstatistiksel Danışmanlık Paketi", description: "",                              order: 12, status: "pasif" },
-];
-
 export default function SiparisTurleriPage() {
+  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
+  const [query, setQuery] = useState("");
+
+  useEffect(() => setServiceTypes(readServiceTypes()), []);
+
+  const filtered = useMemo(() => {
+    const normalized = query.trim().toLocaleLowerCase("tr-TR");
+    if (!normalized) return serviceTypes;
+    return serviceTypes.filter((type) => `${type.code} ${type.title} ${type.description}`.toLocaleLowerCase("tr-TR").includes(normalized));
+  }, [query, serviceTypes]);
+
   return (
     <AdminShell>
-      <div className="st-page">
+      <div className="st-page service-types-page">
         <header className="orders-hero">
-          <div>
-            <p className="eyebrow">YÖNETİM</p>
-            <h1>Sipariş Türleri</h1>
-            <p>Sistemdeki hizmet türlerini, ücretlendirme ve teslimat yapılarını yönetin.</p>
-          </div>
-          <Link className="orders-create" href="/admin/siparis-turleri/ekle">
-            <Icon name="plus" size={17} />Ekle
-          </Link>
+          <div><h1>Sipariş Türleri</h1></div>
+          <Link className="orders-create" href="/admin/siparis-turleri/ekle"><Icon name="plus" size={17} />Yeni sipariş türü</Link>
         </header>
 
         <section className="detail-panel st-list-panel">
+          <div className="service-types-toolbar">
+            <span>{serviceTypes.length} hizmet türü</span>
+            <label className="service-types-search">
+              <Icon name="search" size={16} />
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Kod, başlık veya açıklama ara" aria-label="Sipariş türlerinde ara" />
+            </label>
+          </div>
           <div className="ur-table-wrap">
-            <table className="ur-table st-table">
-              <thead>
-                <tr>
-                  <th>Kod</th>
-                  <th>Sipariş Türü</th>
-                  <th>Açıklama</th>
-                  <th>Sıralama</th>
-                  <th>Durum</th>
-                </tr>
-              </thead>
+            <table className="ur-table st-table service-types-table">
+              <thead><tr><th>Sıra</th><th>Kod</th><th>Sipariş türü</th><th>Açıklama</th><th>Durum</th><th><span className="sr-only">İşlemler</span></th></tr></thead>
               <tbody>
-                {serviceTypes.map((st) => (
-                  <tr key={st.code} className="st-row">
-                    <td className="st-code">{st.code}</td>
-                    <td className={st.status === "aktif" ? "st-title-cell active" : "st-title-cell"}>
-                      {st.title}
-                    </td>
-                    <td className="st-desc-cell">{st.description}</td>
-                    <td className="st-order-cell">{st.order}</td>
-                    <td>
-                      <span className={`st-badge ${st.status}`}>
-                        {st.status === "aktif" ? "Aktif" : "Pasif"}
-                      </span>
-                    </td>
+                {filtered.map((type) => (
+                  <tr key={type.id}>
+                    <td><span className="service-type-order">{type.order}</span></td>
+                    <td><span className="st-code service-type-code">{type.code}</span></td>
+                    <td className="st-title-cell">{type.title}</td>
+                    <td className="st-desc-cell">{type.description || "—"}</td>
+                    <td><span className={`st-badge ${type.status}`}><i />{type.status === "aktif" ? "Aktif" : "Pasif"}</span></td>
+                    <td><button className="service-type-edit" type="button" aria-label={`${type.title} hizmetini düzenle`}><Icon name="edit" size={15} /></button></td>
                   </tr>
                 ))}
+                {filtered.length === 0 && <tr><td className="ur-empty" colSpan={6}>Aramanızla eşleşen hizmet türü bulunamadı.</td></tr>}
               </tbody>
             </table>
           </div>
+          <footer className="service-types-count">{filtered.length} kayıt gösteriliyor</footer>
         </section>
       </div>
     </AdminShell>

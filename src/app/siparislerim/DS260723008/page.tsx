@@ -149,7 +149,6 @@ export default function OrderDetailPage() {
           </section>
         </div>
       </main>
-      <button className="support-button"><Icon name="message" /><span>Destek</span></button>
     </div>
   );
 }

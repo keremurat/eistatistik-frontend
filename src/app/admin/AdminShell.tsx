@@ -110,6 +110,51 @@ function FavoritesMenu() {
 
 type MenuKey = "orders" | "education" | "manage";
 type MenuItemDef = { label: string; href: string; subItems?: { label: string; href: string }[] };
+type ManagementGroup = { label: string; items: { label: string; href: string; icon: AdminIconName }[] };
+
+const managementGroups: ManagementGroup[] = [
+  { label: "Sipariş Ayarları", items: [
+    { label: "Favori Kategorileri", href: "/admin/favori-kategorileri", icon: "star" },
+    { label: "Sipariş Türleri", href: "/admin/siparis-turleri", icon: "orders" },
+    { label: "Sipariş Analizör Değiştir", href: "/admin/analizor-degistir", icon: "manage" },
+    { label: "Mesaj Şablonları", href: "/admin/mesaj-sablonlari", icon: "message" },
+  ] },
+  { label: "Eğitim Talepleri", items: [
+    { label: "Eğitim Listesi", href: "/admin/egitim-talepleri/egitim-listesi", icon: "education" },
+    { label: "Modül Listesi", href: "/admin/egitim-talepleri/modul-listesi", icon: "manage" },
+    { label: "Ders Listesi", href: "/admin/egitim-talepleri/ders-listesi", icon: "education" },
+    { label: "Mentörlük Ayarı", href: "/admin/egitim-talepleri/mentorluk-ayari", icon: "manage" },
+    { label: "İndirim Kodları", href: "/admin/indirim-kodlari", icon: "star" },
+    { label: "Rol Yönetimi", href: "/admin/rol-yonetimi", icon: "manage" },
+  ] },
+  { label: "Kullanıcı Yönetimi", items: [
+    { label: "Kullanıcılar", href: "/admin/kullanici-yonetimi", icon: "manage" },
+    { label: "Toplu Mesaj Gönder", href: "/admin/toplu-mesaj", icon: "message" },
+    { label: "Randevular", href: "/admin/randevular", icon: "calendar" },
+    { label: "Rehber Adımları", href: "/admin/rehber-adimlari", icon: "education" },
+    { label: "Duyurular", href: "/admin/duyurular", icon: "message" },
+  ] },
+  { label: "Abonelik", items: [
+    { label: "Abonelikler", href: "/admin/abonelikler", icon: "manage" },
+    { label: "Plan Ayarları", href: "/admin/plan-ayarlari", icon: "manage" },
+    { label: "Bültenler", href: "/admin/bultenler", icon: "message" },
+    { label: "İçerikler", href: "/admin/icerikler", icon: "orders" },
+    { label: "Bülten Önizleme", href: "/admin/bulten-onizleme", icon: "eye" },
+    { label: "Hizmetler", href: "/admin/hizmetler", icon: "orders" },
+  ] },
+  { label: "Şablon Ayarları", items: [
+    { label: "Analiz Şablonları", href: "/admin/analiz-sablonlari", icon: "manage" },
+    { label: "Şablon Görünümü", href: "/admin/sablon-gorunumu", icon: "eye" },
+  ] },
+  { label: "Görev İşlemleri", items: [
+    { label: "Görev Listesi (Kart)", href: "/admin/gorev-isleri/gorev-listesi-kart", icon: "orders" },
+    { label: "Görev Listesi", href: "/admin/gorev-isleri/gorev-listesi", icon: "manage" },
+    { label: "Arşiv", href: "/admin/gorev-isleri/arsiv", icon: "inbox" },
+  ] },
+  { label: "Site Ayarları", items: [
+    { label: "Anasayfa Ayarları", href: "/admin/anasayfa-ayarlari", icon: "manage" },
+  ] },
+];
 const adminMenus: { key: MenuKey; label: string; icon: AdminIconName; items: MenuItemDef[] }[] = [
   { key: "orders", label: "Sipariş Yönetimi", icon: "orders", items: [
     { label: "Mevcut Siparişler / Analizler", href: "/admin/siparisler" },
@@ -224,7 +269,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <nav className="admin-nav" aria-label={isEditor ? "Editör navigasyonu" : "Yönetici navigasyonu"} ref={navRef}>
           <Link className={pathname === homeHref ? "active" : ""} href={homeHref}><AdminIcon name="home" />Anasayfa</Link>
           {menus.map((menu) => {
-            const menuActive = menu.items.some((item) => {
+            const menuActive = (menu.key === "manage" && !isEditor && managementGroups.some(group => group.items.some(item => pathname.startsWith(item.href)))) || menu.items.some((item) => {
               if (item.href !== "#" && pathname.startsWith(item.href)) return true;
               return item.subItems?.some((s) => s.href !== "#" && pathname.startsWith(s.href)) ?? false;
             });
@@ -244,7 +289,12 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 <AdminIcon name={menu.icon} />{menu.label}<span className="nav-caret">⌄</span>
               </button>
               {openMenu === menu.key && (
-                <div className="admin-menu" role="menu">
+                menu.key === "manage" && !isEditor ? <div className="admin-menu admin-management-menu" role="menu" aria-label="Yönetim bölümleri">
+                  {managementGroups.map((group) => <section className="admin-management-group" key={group.label}>
+                    <h2>{group.label}</h2>
+                    <div>{group.items.map((item) => <Link key={item.label} role="menuitem" href={item.href} onClick={() => setOpenMenu(null)}><AdminIcon name={item.icon} size={16} /><span>{item.label}</span></Link>)}</div>
+                  </section>)}
+                </div> : <div className="admin-menu" role="menu">
                   {menu.items.map((item) => {
                     if (item.subItems) {
                       return (
@@ -298,7 +348,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <main id="admin-main" className="admin-dash" data-hidden={dataHidden ? "true" : undefined}>
         <DataHiddenContext.Provider value={dataHidden}>{children}</DataHiddenContext.Provider>
       </main>
-      <button className="support-button" aria-label="Destek"><AdminIcon name="message" /><span>Destek</span></button>
     </div>
     </FavoritesProvider>
   );

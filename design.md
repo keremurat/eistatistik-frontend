@@ -22,6 +22,15 @@ belgenin dışına çıkıp yeni görsel dil, yeni class sistemi veya paralel bi
 - Okuma sırası: filtreler, altı özet metrik, sipariş hacmi ve durum, gelir, hizmet ve teslimat, ekip performansı, son siparişler.
 - Masaüstünde içerik ekran genişliğini kullanır; 1000 px altında ikili grafikler tek kolona, 760 px altında metrikler iki kolona ve filtreler dikey akışa geçer.
 
+## Rehber adımları yönetimi
+
+- `/admin/rehber-adimlari` yönetim listesidir; mevcut `orders-hero`, `detail-panel` ve `ur-table` kalıplarını kullanır. Boş durumda tablo başlıkları korunur ve panel içinde yönlendirici bir boş durum gösterilir.
+- `/admin/rehber-adimlari/ekle` iki kolonlu yönetim formudur. Ana kolonda başlık, metin düzenleyici ve görsel yükleme; sağdaki yapışkan kolonda kaydetme, durum/sıra ve hedefleme ayarları bulunur.
+- Metin araç çubuğu tarayıcıya ait zengin metin kontrolü üretmez; mevcut buton, input ve yüzey token'larıyla seçili metne biçim işaretleri ekler. Yazı tipi, boyut ve yön seçimleri `SystemDropdown` kullanır.
+- Görseller sürükle-bırak veya dosya seçimiyle eklenir; seçilen görseller yükleme alanında dosya adı ve kaldırma aksiyonuyla listelenir.
+- Rehber adımı kayıtları tarayıcı depolamasında saklanır. Form hataları uyarı penceresiyle değil, alanların yanında ve aksiyon panelinde satır içi gösterilir.
+- 980 px altında form tek kolona iner; aksiyon ve hedefleme panelleri normal belge akışına katılır.
+
 ## 0. Bağlayıcı kurallar (ZORUNLU)
 
 1. **Yeni görsel kalıp üretme.** UI/CSS gerektiren her işte önce buradaki bir kalıbı ara ve
@@ -32,7 +41,7 @@ belgenin dışına çıkıp yeni görsel dil, yeni class sistemi veya paralel bi
 3. **Bu dosyada tanımlı bileşenlerin yapısını (JSX iskeleti + class adları) koru.** Profil
    dropdown, sipariş detay düzeni, ödeme sekmesi ve sözleşme modalı §4–§7'deki iskeletlere
    birebir uymak zorundadır.
-4. **Global uygulama iskeletini (`app-shell` → `topbar` → `main` → `support-button`) her
+4. **Global uygulama iskeletini (`app-shell` → `topbar` → `main`) her
    sayfada aynı kur.** §3'e bak.
 5. **İkonlar** yalnızca §2'deki inline-SVG `Icon` kalıbıyla çizilir. İkon kütüphanesi ekleme,
    `<img>` ile ikon getirme.
@@ -138,6 +147,83 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
 
 ## 3. Uygulama iskeleti (her sayfada aynı)
 
+### Yönetim mega menüsü
+
+- Yönetici üst barındaki `Yönetim` açılır alanı tek sütunlu, iç içe flyout kullanmaz. İçerik;
+  Sipariş Ayarları, Eğitim Talepleri, Kullanıcı Yönetimi, Abonelik, Şablon Ayarları,
+  Görev İşlemleri ve Site Ayarları başlıkları altında üç sütunlu `.admin-management-menu`
+  ızgarasında gösterilir.
+- Mevcut rotalar doğrudan bağlanır; henüz ekranı teslim edilmemiş öğeler menüde planlanan rota
+  ile görünür. Menü mevcut `--line`, `--navy`, `--muted`, `--surface` tokenlarını ve yönetici
+  üst barının hover/Escape/dışarı çıkınca kapanma davranışını korur.
+- Yönetim panelinin kendi içinde dikey scroll oluşmaz. Yoğun içerik kompakt grup ve satır
+  ölçüleriyle yerleştirilir. Açılma konumu, hareketi ve kapanma davranışı üst bardaki diğer
+  `.admin-menu` dropdownlarıyla aynıdır; yalnızca panel genişliği ve kategorili iç düzeni
+  farklıdır. 980px altında iki, 680px altında tek sütuna iner.
+
+### Sipariş analizörü değiştirme
+
+- `/admin/analizor-degistir` ekranı yönetici kabuğu içinde, ekran genişliğini kullanan iki kolonlu
+  bir çalışma alanıdır. Sol ana kolonda kaynak ve hedef analizör panelleri sıralanır; sağdaki
+  `.analyst-transfer-summary` seçim özeti masaüstünde `top:88px` konumunda sticky kalır.
+- Kaynak ve hedef seçimleri yalnızca ortak `SystemDropdown` bileşenini kullanır. Kaynak seçilmeden
+  hedef kontrolü pasiftir; hedef seçeneklerinden seçili kaynak çıkarılır ve kaynak değiştiğinde
+  geçersiz hedef seçimi temizlenir.
+- Her analizör adıyla birlikte aktif sipariş adedi gösterilir. Özet kartı kaynak, hedef, aktarılacak
+  sipariş ve hedefin mevcut sipariş sayılarını aynı veri kapsamından okur.
+- Aktarım geri alınamaz bir yönetim işlemidir. Birincil aksiyon, iki analizör seçilene ve kullanıcı
+  açık onay kutusunu işaretleyene kadar pasif kalır. İşlem sonrası sayfa içinde başarı bildirimi
+  gösterilir; tarayıcı `alert` kullanılmaz.
+- Paneller `.detail-panel`, renkler tasarım tokenları, küçük durum/uyarı alanları mevcut bilgi kutusu
+  yaklaşımını kullanır. 920px altında özet ana akışın altına iner ve sticky davranış bırakılır.
+
+### Favori kategorileri yönetimi
+
+- `/admin/favori-kategorileri` yönetim listesi, giriş sonrası sade sayfa başlığı + sağ birincil
+  aksiyon + ortak `.detail-panel` / `.ur-table` düzenini kullanır. Veri olmadığında tablo başlığı
+  korunur; gövdede ikon, kısa açıklama ve tek metin bağlantısından oluşan kompakt empty state yer alır.
+- `/admin/favori-kategorileri/ekle` ekranı tek `.detail-panel` içinde canlı önizleme, kategori adı,
+  sıra, semantik renk paleti ve inline-SVG ikon seçicisini taşır. Seçiciler yeni bir görsel dil
+  üretmez; mevcut form alanı, focus halkası, küçük ikon kutusu ve `settings-actions` kalıplarını
+  kullanır. Renk seçimi yalnızca kategori tanımlama verisidir ve mevcut yardımcı renk paletiyle
+  sınırlandırılır.
+- Kategori ikonları iki ekranın da kullandığı tek tipli inline-SVG bileşeninden çizilir. Liste ve
+  form arasında ikon geometrisi değişmez. Demo akışında kayıtlar tarayıcı depolamasında saklanır;
+  kaydetme sonrası listeye dönülür ve sıra değerine göre gösterilir.
+
+### Sipariş / hizmet türleri yönetimi
+
+- `/admin/siparis-turleri` ekranı ortak sade `orders-hero`, birincil ekleme aksiyonu ve
+  `.detail-panel` içindeki `.ur-table` yapısını kullanır. Toolbar araması kategori adı, kod ve
+  açıklamayı aynı anda süzer; sıra, kod, başlık, açıklama ve durum tek tabloda okunur.
+- `/admin/siparis-turleri/ekle` ekranı ana form ile sticky müşteri önizlemesini iki kolonda
+  düzenler. Temel bilgiler, içerik, teslimat ayarları ve görsel/fiyat ayarları ayrı
+  `.detail-panel` bölümleridir; ancak tek form ve tek kaydetme eylemi olarak çalışır.
+- Teslimat zamanı ve teslimat türü satırları etiket + değer çiftleridir. Satırlar aynı panel
+  içinde eklenip kaldırılır; native dropdown kullanılmaz. Durum seçimi ortak `SystemDropdown`
+  bileşenidir. Önizleme başlık, kod, açıklama ve logo URL değişikliklerini anlık yansıtır.
+- Yeni türler demo akışında tarayıcı depolamasına kaydedilir, ardından liste ekranında mevcut
+  sistem türleriyle birlikte sıra değerine göre gösterilir.
+
+### Randevu yönetimi
+
+- `/admin/randevular` yönetim ekranı ortak sade `orders-hero`, birincil ekleme aksiyonu ve
+  `.detail-panel` yüzeyini kullanır. Yaklaşan ve geçmiş kayıtlar mevcut `order-tabs` davranışıyla
+  ayrılır; sekme sayaçları aynı veri kümesinden hesaplanır.
+- Randevu satırları tarih/saat, başlık, müşteri, atanan ekip üyesi ve durum bilgisini tek bakışta
+  gösterir. Veri olmayan sekmede büyük boş bir tablo yerine mevcut kompakt empty-state yaklaşımı
+  kullanılır.
+- `/admin/randevular/ekle` tek formdur. Ana form ile sağdaki `.appointment-actions` işlem paneli
+  iki kolonda düzenlenir; işlem paneli masaüstünde `top:88px` konumunda sticky kalır.
+- Müşteri ve atanan seçimi yalnızca ortak `SystemDropdown`; başlangıç ve bitiş seçimleri ortak
+  `DatePicker` + `TimePicker` bileşenlerini kullanır. Tarayıcıya ait native select, tarih veya saat
+  arayüzü kullanılmaz.
+- Başlangıç bitişten önce olmalıdır. Zorunlu alan ve tarih sırası hataları sayfa içinde gösterilir;
+  tarayıcı `alert` kullanılmaz. Demo akışında kayıtlar tarayıcı depolamasında saklanır ve kayıt
+  sonrası randevu listesine dönülür.
+- 900px altında form tek kolona düşer; işlem paneli sticky davranışını bırakıp formun altında
+  doğal akışa girer.
+
 ### Sistem dropdown sözleşmesi
 
 - Form, filtre ve sıralama seçimlerinde tarayıcının native `<select>` arayüzü kullanılmaz.
@@ -173,7 +259,6 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
     </div>
   </header>
   <main id="main-content" className="...">{/* sayfa içeriği */}</main>
-  <button className="support-button" aria-label="Destek"><Icon name="message" /><span>Destek</span></button>
 </div>
 ```
 
@@ -210,6 +295,8 @@ Kurallar:
 - Yönetici/editör ortak takviminde `.cal-sidebar`, masaüstünde `position:sticky; top:88px`
   kullanır; takvim içeriği kaydırılırken renk göstergesi ve kullanıcı filtresi görünür kalır.
   `900px` altında grid tek kolona düşer ve kenar paneli doğal akışa döner.
+- Giriş yapılmış sistem kabuklarında sağ altta yüzen genel bir `Destek` butonu gösterilmez.
+  Destek iletişimi ayrı sayfa veya bağlamsal işlem üzerinden sağlanır.
 
 ---
 
@@ -825,3 +912,17 @@ Sayfalama yoktur; tab seçimi ve arama satır sayısını yönetir.
    sonra kodla. Kod ve belge tutarlı kalmalı.
 5. Erişilebilirlik mevcut seviyede korunur: `aria-*`, `role`, skip-link, focus/Escape/dış-tıklama
    davranışları eklenen her etkileşimde sürdürülür.
+
+### 8.1 Anasayfa ayarları — `/admin/anasayfa-ayarlari`
+
+Landing içeriği yönetimi, diğer yönetim formları gibi `AdminShell` ve `.st-page` içinde kurulur.
+Uzun form tek bir sınırsız yüzey değildir: her içerik ailesi mevcut `.detail-panel`,
+`.service-form-section-heading`, `.settings-panel-body`, `.form-field` ve `.form-grid` kalıplarıyla
+ayrılır. Masaüstünde sağdaki `.home-settings-summary` kayıt/önizleme paneli `sticky` kalır; mobilde
+formun üstüne taşınır ve sabitlenmez. Tekrarlanabilir satırlar `.home-settings-repeat` içinde çizilir;
+silme işlemi yalnızca ikonlu küçük destructive butonla yapılır.
+
+Hizmet kartları bu ekranda ikinci kez düzenlenmez; ilgili panel yalnızca `/admin/siparis-turleri`
+ekranına yönlendirir. Açılır alanların tamamı sistemin `SystemDropdown` bileşenini kullanır. Ayarlar
+prototip aşamasında `localStorage` üzerinde saklanır; kaydetme sonucu form içinde bildirilir, tarayıcı
+`alert` kullanılmaz. Önizleme landing sayfasını yeni sekmede açar.

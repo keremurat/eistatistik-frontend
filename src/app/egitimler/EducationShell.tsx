@@ -73,6 +73,5 @@ export function EducationShell({ children }: { children: React.ReactNode }) {
       </div>
     </header>
     <main id="main-content" className="education-page">{children}</main>
-    <button className="support-button" aria-label="Destek"><EducationIcon name="message" /><span>Destek</span></button>
   </div>;
 }
