@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AdminShell } from "../../AdminShell";
+import { SystemDropdown } from "../../../components/SystemDropdown";
 
 type EducationStatus = "pending" | "active" | "cancelled";
 type StatusFilter = "all" | EducationStatus;
@@ -154,7 +155,7 @@ export function PurchasedEducationsContent({ basePath = "/admin/egitimler" }: { 
 
       <section className="orders-toolbar admin-education-toolbar" aria-label="Eğitim kayıtlarını filtrele">
         <label className="orders-search"><span aria-hidden="true">⌕</span><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Sipariş kodu, kursiyer veya eğitim ara…" /></label>
-        <label className="admin-education-select"><span>Eğitim</span><select value={education} onChange={event => setEducation(event.target.value)}><option value="all">Tüm eğitimler</option>{educationOptions.map(option => <option key={option}>{option}</option>)}</select></label>
+        <label className="admin-education-select"><span>Eğitim</span><SystemDropdown ariaLabel="Eğitim filtresi" value={education} onChange={setEducation} options={[{ value: "all", label: "Tüm eğitimler" }, ...educationOptions.map(option => ({ value: option, label: option }))]} /></label>
         <span className="result-count">{visibleRecords.length} kayıt gösteriliyor</span>
       </section>
 

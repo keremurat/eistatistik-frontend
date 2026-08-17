@@ -55,7 +55,7 @@ function Icon({ name, size = 17 }: { name: string; size?: number }) {
     invoice: <><path d="M6 2h9l4 4v16H6zM14 2v5h5M9 12h7M9 16h7"/></>,
     check: <><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 12 3 3 5-6"/></>,
     back: <path d="m15 18-6-6 6-6"/>,
-    heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/>,
+    star: <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>,
     percent: <><path d="m19 5-14 14"/><circle cx="7" cy="7" r="2"/><circle cx="17" cy="17" r="2"/></>,
     assign: <><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M18 8v6M15 11h6"/></>,
     activity: <path d="M3 12h4l2-5 4 10 2-5h6"/>,
@@ -89,7 +89,7 @@ export function PurchasedEducationDetailContent({ basePath = "/admin/egitimler" 
   return <div className="detail-page shared-order-detail education-detail-page">
     <header className="detail-hero admin-detail-hero">
       <div className="admin-hero-left"><div className="detail-title"><span className="detail-file-icon"><Icon name="book" size={21}/></span><div><div className="detail-title-topline"><Link className="back-link detail-hero-back" href={`${basePath}/satin-alinan`}><Icon name="back" size={14}/>Eğitim kayıtlarına dön</Link><p className="eyebrow">{code} · {record.date}</p></div><h1>{record.education}</h1></div></div><div className="admin-hero-meta"><span className={`education-detail-status ${record.status}`}><i/><strong>{state.label}</strong></span><span className="admin-hero-note">{record.student} · {state.note}</span></div></div>
-      <div className="admin-hero-actions"><button className="admin-action-btn"><Icon name="heart" size={15}/>Favorilere Ekle</button><button className="admin-action-btn"><Icon name="percent" size={15}/>İndirim Kodu Tanımla</button><button className="admin-action-btn accent"><Icon name="assign" size={15}/>Görev Ata</button></div>
+      <div className="admin-hero-actions"><button className="admin-action-btn"><Icon name="star" size={15}/>Favorilere Ekle</button><button className="admin-action-btn"><Icon name="percent" size={15}/>İndirim Kodu Tanımla</button><button className="admin-action-btn accent"><Icon name="assign" size={15}/>Görev Ata</button></div>
     </header>
 
     <div className="detail-workspace"><aside className="detail-sidebar"><p>EĞİTİM MENÜSÜ</p><nav>{sidebar.map(item => <button key={item.key} className={section === item.key ? "active" : ""} onClick={() => setSection(item.key)}><Icon name={item.icon}/>{item.label}<span/></button>)}</nav></aside>

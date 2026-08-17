@@ -8,7 +8,7 @@ import { useFavorites } from "../FavoritesContext";
 
 // ── Tipler ────────────────────────────────────────────────────────
 type IconName    = "arrow" | "file" | "plus" | "search" | "user";
-type CtxIconName = "activity" | "archive" | "bookmark" | "bookmarkFill" | "eye" | "folder" | "messageOff" | "plus" | "trash" | "truck" | "user" | "userPlus" | "x";
+type CtxIconName = "activity" | "archive" | "star" | "starFill" | "eye" | "folder" | "messageOff" | "plus" | "trash" | "truck" | "user" | "userPlus" | "x";
 type StatusGroup = "action" | "active" | "completed" | "cancelled";
 type TabKey      = "all" | StatusGroup;
 type StatusKey   = "siparis-verildi" | "yapiliyor" | "yapildi" | "ek-ucret" | "ek-yapiliyor" | "teslim" | "iptal";
@@ -41,8 +41,8 @@ function CtxIcon({ name }: { name: CtxIconName }) {
   const paths: Record<CtxIconName, React.ReactNode> = {
     activity:     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
     archive:      <><rect x="2" y="3" width="20" height="4" rx="1" /><path d="M4 7v11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V7" /><path d="M10 12h4" /></>,
-    bookmark:     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />,
-    bookmarkFill: <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />,
+    star:         <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />,
+    starFill:     <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />,
     eye:          <><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" /></>,
     folder:       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />,
     messageOff:   <><path d="M21 12a8 8 0 0 1-9 8 9 9 0 0 1-4-.9L3 21l1.9-5A9 9 0 1 1 21 12Z" /><path d="m9 9 6 6M15 9l-6 6" /></>,
@@ -53,7 +53,7 @@ function CtxIcon({ name }: { name: CtxIconName }) {
     userPlus:     <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" /></>,
     x:            <><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>,
   };
-  const filled = name === "bookmarkFill";
+  const filled = name === "starFill";
   return <svg width={16} height={16} viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
 
@@ -110,6 +110,78 @@ const allOrders: Order[] = Array.from({ length: 46 }, (_, i) => {
   };
 });
 
+const analystOptions = Array.from(new Set(allOrders.map((order) => order.analyst)))
+  .sort((a, b) => {
+    if (a === "—") return 1;
+    if (b === "—") return -1;
+    return a.localeCompare(b, "tr");
+  });
+
+function orderTimestamp(date: string) {
+  const [datePart, timePart] = date.split(" ");
+  const [day, month, year] = datePart.split(".").map(Number);
+  const [hour, minute] = timePart.split(":").map(Number);
+  return new Date(year, month - 1, day, hour, minute).getTime();
+}
+
+function AnalystFilterDropdown({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const selectedLabel = value === "all" ? "Tümü" : value === "—" ? "Atanmamış" : value;
+
+  useEffect(() => {
+    function closeOutside(event: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(event.target as Node)) setOpen(false);
+    }
+    function closeEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", closeOutside);
+    document.addEventListener("keydown", closeEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeOutside);
+      document.removeEventListener("keydown", closeEscape);
+    };
+  }, []);
+
+  const options = ["all", ...analystOptions];
+
+  return (
+    <div className="cs-wrap orders-analyst-filter" ref={wrapRef}>
+      <button
+        type="button"
+        className={`cs-trigger${open ? " open" : ""}`}
+        aria-label={`Analizöre göre filtrele: ${selectedLabel}`}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <span className="orders-analyst-filter-label"><small>Analizör</small><strong>{selectedLabel}</strong></span>
+        <span className="cs-arrow" aria-hidden="true">▾</span>
+      </button>
+      {open && (
+        <div className="cs-panel" role="listbox" aria-label="Analizör seçenekleri">
+          {options.map((option) => {
+            const label = option === "all" ? "Tümü" : option === "—" ? "Atanmamış" : option;
+            return (
+              <button
+                type="button"
+                role="option"
+                aria-selected={value === option}
+                className={`cs-option${value === option ? " active" : ""}`}
+                key={option}
+                onClick={() => { onChange(option); setOpen(false); }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const tabs: { key: TabKey; label: string }[] = [
   { key: "all", label: "Tümü" }, { key: "action", label: "Bekleyen" },
   { key: "active", label: "Aktif" }, { key: "completed", label: "Teslim edilen" },
@@ -122,6 +194,8 @@ const groupDefs: { key: StatusGroup; eyebrow: string; title: string; subdued?: b
   { key: "completed", eyebrow: "ARŞİV",      title: "Teslim edilenler / Arşiv", subdued: true },
   { key: "cancelled", eyebrow: "İPTAL",      title: "İptal edilenler",          subdued: true },
 ];
+
+type VisibleOrderGroup = { key: StatusGroup | "all"; eyebrow: string; title: string; subdued?: boolean };
 
 const ACTIVITY_ROWS: ActivityRow[] = [
   { v: 1, time: "31/07/2026 16:26", actor: "KEREM MURAT(customer)", code: "—",           title: "Kerem Murat Deneme", status: "{}",        ilkUcret: "0", sonUcret: "0", odemeDurumu: "false", odemeZamani: "—", teslimatZamani: "—", teslimatTipi: "2", musteriId: "1",   analizorId: "6050", parentId: "—", kuponId: "—", kuponZamani: "—" },
@@ -371,7 +445,7 @@ function OrderContextMenu({ order, detailHref, isFavorite, isMessageClosed, onFa
           </Link>
           <button className="ctx-item" role="menuitem" onClick={() => act(onFavoriteToggle)}
             style={isFavorite ? { color: "#b66d2e" } : undefined}>
-            <CtxIcon name={isFavorite ? "bookmarkFill" : "bookmark"} />
+            <CtxIcon name={isFavorite ? "starFill" : "star"} />
             {isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
           </button>
 
@@ -431,6 +505,7 @@ export default function AdminOrdersPage() {
 export function SharedOrdersList({ basePath = "/admin/siparisler" }: { basePath?: string }) {
   const [activeTab,      setActiveTab]      = useState<TabKey>("all");
   const [query,          setQuery]          = useState("");
+  const [analystFilter,  setAnalystFilter]  = useState("all");
   const { isFav, toggle: toggleFav }         = useFavorites();
   const [cancelledSet,   setCancelledSet]   = useState<Set<string>>(new Set());
   const [deletedSet,     setDeletedSet]     = useState<Set<string>>(new Set());
@@ -440,6 +515,7 @@ export function SharedOrdersList({ basePath = "/admin/siparisler" }: { basePath?
   const [relatedFor,     setRelatedFor]     = useState<string | null>(null);
   const [confirmCfg,     setConfirmCfg]     = useState<ConfirmCfg | null>(null);
   const detailHref = `${basePath}/DS260723008`;
+  const showAnalystFilter = basePath.startsWith("/admin/");
 
   // Siparişlere durum override'ları uygula
   const displayOrders = useMemo(() =>
@@ -452,22 +528,31 @@ export function SharedOrdersList({ basePath = "/admin/siparisler" }: { basePath?
       }),
   [cancelledSet, deletedSet, archivedSet]);
 
+  const analystFilteredOrders = useMemo(
+    () => analystFilter === "all" ? displayOrders : displayOrders.filter((order) => order.analyst === analystFilter),
+    [analystFilter, displayOrders],
+  );
+
   const counts = useMemo(() => ({
-    all:       displayOrders.length,
-    action:    displayOrders.filter(o => statusMap[o.statusKey].group === "action").length,
-    active:    displayOrders.filter(o => statusMap[o.statusKey].group === "active").length,
-    completed: displayOrders.filter(o => statusMap[o.statusKey].group === "completed").length,
-    cancelled: displayOrders.filter(o => statusMap[o.statusKey].group === "cancelled").length,
-  }), [displayOrders]);
+    all:       analystFilteredOrders.length,
+    action:    analystFilteredOrders.filter(o => statusMap[o.statusKey].group === "action").length,
+    active:    analystFilteredOrders.filter(o => statusMap[o.statusKey].group === "active").length,
+    completed: analystFilteredOrders.filter(o => statusMap[o.statusKey].group === "completed").length,
+    cancelled: analystFilteredOrders.filter(o => statusMap[o.statusKey].group === "cancelled").length,
+  }), [analystFilteredOrders]);
 
   const filtered = useMemo(() => {
     const q = query.toLocaleLowerCase("tr").trim();
-    return displayOrders.filter(o => {
+    return analystFilteredOrders.filter(o => {
       if (activeTab !== "all" && statusMap[o.statusKey].group !== activeTab) return false;
       if (q && !`${o.code} ${o.customer} ${o.analyst}`.toLocaleLowerCase("tr").includes(q)) return false;
       return true;
-    });
-  }, [activeTab, query, displayOrders]);
+    }).sort((a, b) => orderTimestamp(b.date) - orderTimestamp(a.date));
+  }, [activeTab, query, analystFilteredOrders]);
+
+  const visibleGroups: VisibleOrderGroup[] = activeTab === "all"
+    ? [{ key: "all", eyebrow: "", title: "" }]
+    : groupDefs;
 
   // İlişkili siparişler — aynı müşterinin diğer siparişleri
   const relatedOrders = useMemo(() => {
@@ -521,6 +606,7 @@ export function SharedOrdersList({ basePath = "/admin/siparisler" }: { basePath?
             <input value={query} onChange={(e) => setQuery(e.target.value)}
               placeholder="Sipariş kodu, müşteri veya analizör ara…" aria-label="Siparişlerde ara" />
           </label>
+          {showAnalystFilter && <AnalystFilterDropdown value={analystFilter} onChange={setAnalystFilter} />}
           <span className="result-count">{filtered.length} sipariş gösteriliyor</span>
         </section>
 
@@ -533,18 +619,18 @@ export function SharedOrdersList({ basePath = "/admin/siparisler" }: { basePath?
           </section>
         ) : (
           <div className="order-groups admin-orders">
-            {groupDefs.map((group) => {
-              const groupOrders = filtered.filter(o => statusMap[o.statusKey].group === group.key);
+            {visibleGroups.map((group) => {
+              const groupOrders = group.key === "all" ? filtered : filtered.filter(o => statusMap[o.statusKey].group === group.key);
               if (groupOrders.length === 0) return null;
               return (
-                <section key={group.key} className={`order-group ${group.subdued ? "subdued" : ""}`}>
-                  <header>
+                <section key={group.key} className={`order-group ${group.subdued ? "subdued" : ""} ${group.key === "all" ? "ungrouped" : ""}`}>
+                  {group.key !== "all" && <header>
                     <div><p className="eyebrow">{group.eyebrow}</p><h2>{group.title}</h2></div>
                     <span>{groupOrders.length} sipariş</span>
-                  </header>
+                  </header>}
                   <div className="orders-table admin-orders-table">
                     <div className="orders-table-head">
-                      <span>Sipariş</span><span>Tarih</span><span>Durum</span>
+                      <span>Sipariş</span><span>Son güncelleme</span><span>Durum</span>
                       <span>Teslimat</span><span>Kalan</span><span>Müşteri</span>
                       <span>Analizör</span><span>İşlem</span>
                     </div>

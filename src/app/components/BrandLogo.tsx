@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+const subscribeToRole = () => () => undefined;
 
 export function BrandLogo() {
-  const [href, setHref] = useState("/dashboard");
-
-  useEffect(() => {
-    if (localStorage.getItem("eistatistik_role") === "admin") setHref("/admin");
-  }, []);
+  const role = useSyncExternalStore(subscribeToRole, () => localStorage.getItem("eistatistik_role"), () => "musteri");
+  const href = role === "admin" ? "/admin" : role === "editor" ? "/editor" : "/dashboard";
 
   return (
     <Link className="brand" href={href} aria-label="eistatistik ana sayfa">

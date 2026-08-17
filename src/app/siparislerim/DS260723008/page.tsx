@@ -43,8 +43,8 @@ const navItems: { key: Section; label: string; icon: IconName }[] = [
   { key: "payment", label: "Ödeme", icon: "card" },
   { key: "messages", label: "Yazışmalar", icon: "message" },
   { key: "deliveries", label: "Teslimatlar", icon: "download" },
-  { key: "appointments", label: "Randevular", icon: "calendar" },
-  { key: "invoice", label: "Fatura", icon: "invoice" },
+  { key: "appointments", label: "Görüşmeler", icon: "calendar" },
+  { key: "invoice", label: "Proforma Faturanız", icon: "invoice" },
 ];
 
 type FileKind = "excel" | "word" | "powerpoint" | "spss" | "pdf" | "image" | "video" | "archive" | "generic";
@@ -402,11 +402,12 @@ function Deliveries({ onPayment }: { onPayment: () => void }) {
 }
 
 function Appointments() {
-  return <section className="detail-panel panel-direct" aria-label="Randevular"><div className="appointment-card"><div className="appointment-date"><strong>30</strong><span>TEM</span></div><div><span>11:00–11:30 · Google Meet</span><h3>Analiz öncesi değerlendirme</h3><p>Dr. Naci Yılmaz ile 30 dakikalık çevrim içi görüşme</p></div><button>Takvime ekle</button></div></section>;
+  return <section className="detail-panel panel-direct appointments-panel" aria-label="Görüşmeler"><PanelHeading eyebrow="GÖRÜŞMELER" title="Planlanan görüşmeler" description="Siparişiniz için uzmanınızla planlanan çevrim içi görüşmeler." /><div className="appointment-list"><article className="appointment-card"><div className="appointment-date"><strong>30</strong><span>TEM</span></div><div><span>11:00 · 30 dakika · Google Meet</span><h3>Analiz öncesi değerlendirme</h3><p>Dr. Naci Yılmaz ile çevrim içi görüşme</p></div><button>Takvime ekle</button></article></div></section>;
 }
 
 function Invoice({ onPayment }: { onPayment: () => void }) {
-  return <section className="detail-panel locked-panel panel-direct" aria-label="Fatura"><div className="invoice-settings"><div><h3>Fatura bilgileri</h3><p>Kerem Murat · Bireysel</p></div><button>Bilgileri düzenle</button></div><div className="locked-state compact"><span><Icon name="invoice" size={23} /></span><h3>Faturanız ödeme sonrasında hazırlanacak</h3><p>Ödeme tamamlandığında PDF faturanız buradan indirilebilir.</p><button onClick={onPayment}>Ödemeye git <Icon name="arrow" size={16} /></button></div></section>;
+  const delivered = true;
+  return <section className="detail-panel panel-direct" aria-label="Proforma faturanız"><PanelHeading eyebrow="PROFORMA FATURANIZ" title="Proforma fatura" description="Kurum ve bütçe onay süreçlerinde kullanabileceğiniz teslim edilmiş belgeniz." />{delivered ? <div className="result-file-list customer-proforma-file"><div className="result-file-row"><FileTypeIcon filename="Proforma Fatura.pdf" /><div><strong>Proforma Fatura.pdf</strong><small>PDF belge · Teslim edildi</small></div><button aria-label="Proforma faturayı indir"><Icon name="download" size={16} /></button></div></div> : <div className="locked-state compact"><span><Icon name="invoice" size={23} /></span><h3>Proforma faturanız ödeme sonrasında hazırlanacak</h3><p>Ödeme tamamlandığında PDF belgeniz buradan indirilebilir.</p><button onClick={onPayment}>Ödemeye git <Icon name="arrow" size={16} /></button></div>}</section>;
 }
 
 function ExtraAnalysis() {

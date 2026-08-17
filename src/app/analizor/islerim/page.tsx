@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { NotificationMenu } from "../../components/NotificationMenu";
 import { ProfileMenu } from "../../components/ProfileMenu";
 import { CustomerEducationMenu } from "../../components/CustomerEducationMenu";
+import { SystemDropdown } from "../../components/SystemDropdown";
 
 type WorkStatus = "new" | "active" | "waiting" | "delivery" | "completed";
 type WorkFilter = "all" | WorkStatus;
@@ -92,7 +93,7 @@ export default function AnalystWorksPage() {
 
       <section className="orders-toolbar" aria-label="İş arama ve sıralama">
         <label className="orders-search"><Icon name="search" /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="İş, sipariş kodu veya müşteri ara…" /></label>
-        <label className="sort-control"><span>Sırala</span><select value={sort} onChange={event => setSort(event.target.value)}><option value="urgent">En yakın teslim</option><option value="progress">İlerleme durumu</option></select></label>
+        <label className="sort-control"><span>Sırala</span><SystemDropdown ariaLabel="İşleri sırala" value={sort} onChange={setSort} options={[{ value: "urgent", label: "En yakın teslim" }, { value: "progress", label: "İlerleme durumu" }]} /></label>
         <span className="result-count">{visibleWorks.length} iş gösteriliyor</span>
       </section>
 

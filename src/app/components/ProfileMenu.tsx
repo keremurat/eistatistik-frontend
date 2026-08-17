@@ -68,7 +68,7 @@ export function ProfileMenu({ roleLabel = "Müşteri hesabı", ordersHref = "/si
           <nav aria-label="Profil işlemleri">
             <Link href="/ayarlar" role="menuitem" onClick={() => setOpen(false)}><ProfileMenuIcon name="settings" /><span>Ayarlar</span></Link>
             <Link href={ordersHref} role="menuitem" onClick={() => setOpen(false)}><ProfileMenuIcon name="orders" /><span>{ordersLabel}</span></Link>
-            <Link className="logout" href="/" role="menuitem" onClick={() => { localStorage.removeItem("eistatistik_role"); setOpen(false); }}><ProfileMenuIcon name="logout" /><span>Çıkış yap</span></Link>
+            <Link className="logout" href="/giris" role="menuitem" onClick={() => { localStorage.removeItem("eistatistik_role"); setOpen(false); }}><ProfileMenuIcon name="logout" /><span>Çıkış yap</span></Link>
           </nav>
         </div>
       )}

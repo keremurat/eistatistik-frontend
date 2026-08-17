@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 
 const MONTHS = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
@@ -21,9 +21,41 @@ export function DatePicker({ id, value, onChange, required, placeholder = "GG.AA
   const [view,   setView]  = useState({ year: today.getFullYear(), month: today.getMonth() });
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const placementRef = useRef<"above" | "below">("below");
+
+  const updatePosition = useCallback((choosePlacement = false) => {
+    if (!inputRef.current) return;
+
+    const rect = inputRef.current.getBoundingClientRect();
+    const panelHeight = 290;
+    const panelWidth = 272;
+    const gap = 6;
+    const viewportPadding = 8;
+
+    if (choosePlacement) {
+      const spaceBelow = window.innerHeight - rect.bottom - viewportPadding;
+      const spaceAbove = rect.top - viewportPadding;
+      placementRef.current = spaceBelow < panelHeight && spaceAbove > spaceBelow ? "above" : "below";
+    }
+
+    const top = placementRef.current === "above"
+      ? rect.top - panelHeight - gap
+      : rect.bottom + gap;
+    const maxLeft = Math.max(viewportPadding, window.innerWidth - panelWidth - viewportPadding);
+    const left = Math.min(Math.max(viewportPadding, rect.left), maxLeft);
+
+    setPos({ top, left });
+  }, []);
 
   useEffect(() => {
     if (!open) return;
+    let frame = 0;
+
+    function syncPosition() {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => updatePosition());
+    }
+
     function onDown(e: MouseEvent) {
       if (inputRef.current?.contains(e.target as Node)) return;
       if (panelRef.current?.contains(e.target as Node)) return;
@@ -32,18 +64,21 @@ export function DatePicker({ id, value, onChange, required, placeholder = "GG.AA
     function onKey(e: KeyboardEvent) { if (e.key === "Escape") setOpen(false); }
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown",   onKey);
+    window.addEventListener("scroll", syncPosition, true);
+    window.addEventListener("resize", syncPosition);
+    syncPosition();
     return () => {
+      cancelAnimationFrame(frame);
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown",   onKey);
+      window.removeEventListener("scroll", syncPosition, true);
+      window.removeEventListener("resize", syncPosition);
     };
-  }, [open]);
+  }, [open, updatePosition]);
 
   function openCalendar() {
     if (!inputRef.current) return;
-    const r       = inputRef.current.getBoundingClientRect();
-    const PANEL_H = 290;
-    const top     = window.innerHeight - r.bottom - 8 < PANEL_H ? r.top - PANEL_H - 4 : r.bottom + 6;
-    setPos({ top, left: r.left });
+    if (!open) updatePosition(true);
     if (value) {
       const parts = value.split(".");
       if (parts.length === 3) {
@@ -132,7 +167,6 @@ export function DatePicker({ id, value, onChange, required, placeholder = "GG.AA
         className={`dc-input${value ? " has-value" : ""}`}
         aria-required={required}
         aria-haspopup="dialog"
-        aria-expanded={open}
       />
       {open && typeof document !== "undefined" && createPortal(calendarPanel, document.body)}
     </>

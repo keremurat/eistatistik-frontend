@@ -7,6 +7,7 @@ import { ProfileMenu } from "../components/ProfileMenu";
 import { NotificationMenu } from "../components/NotificationMenu";
 import { BrandLogo } from "../components/BrandLogo";
 import { CustomerEducationMenu } from "../components/CustomerEducationMenu";
+import { SystemDropdown } from "../components/SystemDropdown";
 
 type IconName = "arrow" | "bell" | "book" | "calendar" | "chevron" | "clock" | "file" | "home" | "message" | "more" | "plus" | "search" | "spark";
 type OrderStatus = "action" | "active" | "completed" | "cancelled";
@@ -15,6 +16,7 @@ type Order = {
   code: string;
   title: string;
   created: string;
+  updatedAt: number;
   status: OrderStatus;
   statusLabel: string;
   detail: string;
@@ -42,14 +44,14 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
 }
 
 const orders: Order[] = [
-  { code: "DS260723008", title: "Güç analizi danışmanlığı", created: "23 Temmuz 2026", status: "action" as const, statusLabel: "Onayınız bekleniyor", detail: "Ücret teklifi hazır", delivery: "12 saat", action: "Teklifi incele" },
-  { code: "SA260723002", title: "Yüksek lisans tezi veri analizi", created: "23 Temmuz 2026", status: "active" as const, statusLabel: "Ek analiz görüşmesi", detail: "Bugün · 14:30", delivery: "2 iş günü", action: "Görüşmeye katıl" },
-  { code: "SA260721001", title: "Regresyon analizi ve sonuç raporu", created: "21 Temmuz 2026", status: "active" as const, statusLabel: "Analiz hazırlanıyor", detail: "Son güncelleme 18 dk. önce", delivery: "3 iş günü", action: "Süreci görüntüle" },
-  { code: "PA260723007", title: "Örneklem büyüklüğü ve power analizi", created: "23 Temmuz 2026", status: "completed" as const, statusLabel: "Teslim edildi", detail: "23 Temmuz · 23:04", delivery: "12 saat", action: "Dosyaları aç" },
-  { code: "PR260723006", title: "Proforma fatura talebi", created: "23 Temmuz 2026", status: "completed" as const, statusLabel: "Teslim edildi", detail: "23 Temmuz · 23:01", delivery: "12 saat", action: "Belgeyi aç" },
-  { code: "SA260721005", title: "Ölçek geçerlilik ve güvenilirlik analizi", created: "21 Temmuz 2026", status: "completed" as const, statusLabel: "Teslim edildi", detail: "22 Temmuz · 14:25", delivery: "24 saat", action: "Dosyaları aç" },
-  { code: "SA260721003", title: "Normallik ve korelasyon analizi", created: "21 Temmuz 2026", status: "completed" as const, statusLabel: "Teslim edildi", detail: "22 Temmuz · 11:42", delivery: "2 iş günü", action: "Dosyaları aç" },
-  { code: "SA260719004", title: "Akademik çalışma veri düzenleme", created: "19 Temmuz 2026", status: "completed" as const, statusLabel: "Teslim edildi", detail: "20 Temmuz · 16:10", delivery: "24 saat", action: "Dosyaları aç" },
+  { code: "DS260723008", title: "Güç analizi danışmanlığı", created: "23 Temmuz 2026", updatedAt: Date.parse("2026-07-24T09:10:00"), status: "action" as const, statusLabel: "Onayınız bekleniyor", detail: "Ücret teklifi hazır", delivery: "12 saat", action: "Teklifi incele" },
+  { code: "SA260723002", title: "Yüksek lisans tezi veri analizi", created: "23 Temmuz 2026", updatedAt: Date.parse("2026-07-24T14:30:00"), status: "active" as const, statusLabel: "Ek analiz görüşmesi", detail: "Bugün · 14:30", delivery: "2 iş günü", action: "Görüşmeye katıl" },
+  { code: "SA260721001", title: "Regresyon analizi ve sonuç raporu", created: "21 Temmuz 2026", updatedAt: Date.parse("2026-07-24T15:42:00"), status: "active" as const, statusLabel: "Analiz hazırlanıyor", detail: "Son güncelleme 18 dk. önce", delivery: "3 iş günü", action: "Süreci görüntüle" },
+  { code: "PA260723007", title: "Örneklem büyüklüğü ve power analizi", created: "23 Temmuz 2026", updatedAt: Date.parse("2026-07-23T23:04:00"), status: "completed" as const, statusLabel: "Teslim edildi", detail: "23 Temmuz · 23:04", delivery: "12 saat", action: "Dosyaları aç" },
+  { code: "PR260723006", title: "Proforma fatura talebi", created: "23 Temmuz 2026", updatedAt: Date.parse("2026-07-23T23:01:00"), status: "completed" as const, statusLabel: "Teslim edildi", detail: "23 Temmuz · 23:01", delivery: "12 saat", action: "Belgeyi aç" },
+  { code: "SA260721005", title: "Ölçek geçerlilik ve güvenilirlik analizi", created: "21 Temmuz 2026", updatedAt: Date.parse("2026-07-22T14:25:00"), status: "completed" as const, statusLabel: "Teslim edildi", detail: "22 Temmuz · 14:25", delivery: "24 saat", action: "Dosyaları aç" },
+  { code: "SA260721003", title: "Normallik ve korelasyon analizi", created: "21 Temmuz 2026", updatedAt: Date.parse("2026-07-22T11:42:00"), status: "completed" as const, statusLabel: "Teslim edildi", detail: "22 Temmuz · 11:42", delivery: "2 iş günü", action: "Dosyaları aç" },
+  { code: "SA260719004", title: "Akademik çalışma veri düzenleme", created: "19 Temmuz 2026", updatedAt: Date.parse("2026-07-20T16:10:00"), status: "completed" as const, statusLabel: "Teslim edildi", detail: "20 Temmuz · 16:10", delivery: "24 saat", action: "Dosyaları aç" },
 ];
 
 const tabs: { key: Tab; label: string }[] = [
@@ -76,12 +78,13 @@ export default function OrdersPage() {
       (activeTab === "all" || order.status === activeTab) &&
       `${order.title} ${order.code}`.toLocaleLowerCase("tr").includes(normalized)
     );
-    return sort === "oldest" ? [...result].reverse() : result;
+    return [...result].sort((a, b) => sort === "oldest" ? a.updatedAt - b.updatedAt : b.updatedAt - a.updatedAt);
   }, [activeTab, query, sort]);
 
   const actionOrders = filteredOrders.filter(order => order.status === "action");
   const activeOrders = filteredOrders.filter(order => order.status === "active");
   const completedOrders = filteredOrders.filter(order => order.status === "completed");
+  const cancelledOrders = filteredOrders.filter(order => order.status === "cancelled");
 
   return (
     <div className="app-shell">
@@ -115,7 +118,7 @@ export default function OrdersPage() {
 
         <section className="orders-toolbar" aria-label="Sipariş arama ve sıralama">
           <label className="orders-search"><Icon name="search" size={18} /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Sipariş adı veya kodu ara…" aria-label="Siparişlerde ara" /></label>
-          <label className="sort-control"><span>Sırala</span><select value={sort} onChange={event => setSort(event.target.value)}><option value="newest">En yeni</option><option value="oldest">En eski</option></select></label>
+          <label className="sort-control"><span>Son güncelleme</span><SystemDropdown ariaLabel="Siparişleri sırala" value={sort} onChange={setSort} options={[{ value: "newest", label: "En güncel" }, { value: "oldest", label: "En eski" }]} /></label>
           <span className="result-count">{filteredOrders.length} sipariş gösteriliyor</span>
         </section>
 
@@ -123,9 +126,12 @@ export default function OrdersPage() {
           <section className="orders-empty"><span><Icon name="search" size={25} /></span><h2>Sipariş bulunamadı</h2><p>Arama kelimenizi veya seçtiğiniz filtreyi değiştirin.</p><button onClick={() => { setQuery(""); setActiveTab("all"); }}>Filtreleri temizle</button></section>
         ) : (
           <div className="order-groups">
-            {actionOrders.length > 0 && <OrderGroup title="Sizden işlem bekleyen" eyebrow="ÖNCELİKLİ" orders={actionOrders} />}
-            {activeOrders.length > 0 && <OrderGroup title="Aktif analizler" eyebrow="DEVAM EDEN" orders={activeOrders} />}
-            {completedOrders.length > 0 && <OrderGroup title="Teslim edilenler" eyebrow="ARŞİV" orders={completedOrders} subdued />}
+            {activeTab === "all" ? <OrderGroup title="" eyebrow="" orders={filteredOrders} ungrouped /> : <>
+              {actionOrders.length > 0 && <OrderGroup title="Sizden işlem bekleyen" eyebrow="ÖNCELİKLİ" orders={actionOrders} />}
+              {activeOrders.length > 0 && <OrderGroup title="Aktif analizler" eyebrow="DEVAM EDEN" orders={activeOrders} />}
+              {completedOrders.length > 0 && <OrderGroup title="Teslim edilenler" eyebrow="ARŞİV" orders={completedOrders} subdued />}
+              {cancelledOrders.length > 0 && <OrderGroup title="İptal edilenler" eyebrow="İPTAL" orders={cancelledOrders} subdued />}
+            </>}
           </div>
         )}
       </main>
@@ -134,10 +140,10 @@ export default function OrdersPage() {
   );
 }
 
-function OrderGroup({ title, eyebrow, orders: groupOrders, subdued = false }: { title: string; eyebrow: string; orders: Order[]; subdued?: boolean }) {
+function OrderGroup({ title, eyebrow, orders: groupOrders, subdued = false, ungrouped = false }: { title: string; eyebrow: string; orders: Order[]; subdued?: boolean; ungrouped?: boolean }) {
   return (
-    <section className={`order-group ${subdued ? "subdued" : ""}`}>
-      <header><div><p className="eyebrow">{eyebrow}</p><h2>{title}</h2></div><span>{groupOrders.length} sipariş</span></header>
+    <section className={`order-group ${subdued ? "subdued" : ""} ${ungrouped ? "ungrouped" : ""}`}>
+      {!ungrouped && <header><div><p className="eyebrow">{eyebrow}</p><h2>{title}</h2></div><span>{groupOrders.length} sipariş</span></header>}
       <div className="orders-table">
         <div className="orders-table-head"><span>Sipariş</span><span>Durum</span><span>Seçilen teslimat</span><span>İşlem</span></div>
         {groupOrders.map(order => (

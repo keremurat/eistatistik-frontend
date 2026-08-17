@@ -4,6 +4,7 @@ import Link from "next/link";
 import { use, useState } from "react";
 import { AdminShell } from "../../AdminShell";
 import { KULLANICILAR, Kullanici, KullaniciRol } from "../data";
+import { SystemDropdown } from "../../../components/SystemDropdown";
 
 type Section = "ozet" | "siparisler" | "egitimler" | "aktivite" | "cari" | "duzenle";
 
@@ -362,9 +363,7 @@ function DuzenleSection({ u }: { u: Kullanici }) {
             </div>
             <div className="form-field">
               <label>Rol</label>
-              <select value={rol} onChange={(e) => setRol(e.target.value as KullaniciRol)}>
-                {ROLLER.map((r) => <option key={r}>{r}</option>)}
-              </select>
+              <SystemDropdown ariaLabel="Kullanıcı rolü" value={rol} onChange={(value) => setRol(value as KullaniciRol)} options={ROLLER.map(item => ({ value: item, label: item }))} />
             </div>
           </div>
           <div className="edu-row-2">

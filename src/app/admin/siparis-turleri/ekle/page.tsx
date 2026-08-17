@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { AdminShell } from "../../AdminShell";
+import { SystemDropdown } from "../../../components/SystemDropdown";
 
 type IconName = "back" | "check" | "save";
 
@@ -87,10 +88,7 @@ export default function SiparisTuruEklePage() {
               <div className="form-grid">
                 <div className="form-field">
                   <label>Durum</label>
-                  <select value={durum} onChange={(e) => setDurum(e.target.value)} className="st-select">
-                    <option value="aktif">Aktif</option>
-                    <option value="pasif">Pasif</option>
-                  </select>
+                  <SystemDropdown value={durum} onChange={setDurum} ariaLabel="Durum" options={[{ value: "aktif", label: "Aktif" }, { value: "pasif", label: "Pasif" }]} />
                 </div>
                 <div className="form-field">
                   <label>Yardım Videosu</label>

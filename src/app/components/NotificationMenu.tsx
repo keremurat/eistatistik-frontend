@@ -26,7 +26,7 @@ type NotificationItem = {
   read: boolean;
 };
 
-export type NotificationRole = "musteri" | "analizor" | "asistan" | "admin";
+export type NotificationRole = "musteri" | "analizor" | "asistan" | "editor" | "admin";
 
 type NotificationConfig = {
   items: NotificationItem[];
@@ -70,6 +70,10 @@ const notificationConfigs: Record<NotificationRole, NotificationConfig> = {
       { id: "admin-takvim", icon: "calendar", title: "Takvim ataması güncellendi", meta: "Analizör görüşmesi · Dün", href: "/admin/takvim", read: true },
     ],
   },
+  editor: {
+    allHref: "/editor",
+    items: [],
+  },
 };
 
 export function NotificationMenu({ role = "musteri" }: { role?: NotificationRole }) {
@@ -78,6 +82,7 @@ export function NotificationMenu({ role = "musteri" }: { role?: NotificationRole
     musteri: [],
     analizor: [],
     asistan: [],
+    editor: [],
     admin: [],
   });
   const menuRef = useRef<HTMLDivElement>(null);

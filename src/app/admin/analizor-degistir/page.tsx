@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AdminShell } from "../AdminShell";
+import { SystemDropdown } from "../../components/SystemDropdown";
 
 const analysts = [
   "NACİ MURAT",
@@ -112,17 +113,7 @@ export default function AnalizorDegistirPage() {
 
             {/* Sağ — hedef analizör + aktar */}
             <div className="adc-to-wrap">
-              <select
-                className="adc-select"
-                value={toAnalyst}
-                onChange={(e) => setToAnalyst(e.target.value)}
-                aria-label="Hedef analizör seç"
-              >
-                <option value="">Analizör Seçiniz</option>
-                {targetList.map((a) => (
-                  <option key={a} value={a}>{a}</option>
-                ))}
-              </select>
+              <SystemDropdown value={toAnalyst} onChange={setToAnalyst} placeholder="Analizör Seçiniz" ariaLabel="Hedef analizör seç" options={targetList.map(item => ({ value: item, label: item }))} />
 
               <button
                 className={`adc-transfer-btn${status === "done" ? " done" : ""}${!canTransfer ? " disabled" : ""}`}

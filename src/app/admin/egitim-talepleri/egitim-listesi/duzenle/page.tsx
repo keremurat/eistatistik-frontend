@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { AdminShell } from "../../../AdminShell";
 import { trainings, EgitimTur, EsnekKota, EgitimDurum, Sertifika } from "../data";
 import { DatePicker } from "../../../../components/DatePicker";
+import { SystemDropdown } from "../../../../components/SystemDropdown";
 
 type IconName = "back" | "check";
 function Icon({ name, size = 17 }: { name: IconName; size?: number }) {
@@ -159,10 +160,7 @@ function EditForm() {
                 </div>
                 <div className="form-field">
                   <label htmlFor="ef-esnek">Kota Esnekliği</label>
-                  <select id="ef-esnek" value={esnekKota} onChange={(e) => setEsnekKota(e.target.value as EsnekKota)}>
-                    <option value="Esnek Değil">Esnek Değil</option>
-                    <option value="Esnek">Esnek</option>
-                  </select>
+                  <SystemDropdown ariaLabel="Kota esnekliği" value={esnekKota} onChange={(value) => setEsnekKota(value as EsnekKota)} options={[{ value: "Esnek Değil", label: "Esnek Değil" }, { value: "Esnek", label: "Esnek" }]} />
                 </div>
               </div>
 
@@ -200,10 +198,7 @@ function EditForm() {
               <div className="edu-row-4">
                 <div className="form-field">
                   <label htmlFor="ef-tur">Tür</label>
-                  <select id="ef-tur" value={tur} onChange={(e) => setTur(e.target.value as EgitimTur)}>
-                    <option value="Online">Online</option>
-                    <option value="Offline">Offline</option>
-                  </select>
+                  <SystemDropdown ariaLabel="Eğitim türü" value={tur} onChange={(value) => setTur(value as EgitimTur)} options={[{ value: "Online", label: "Online" }, { value: "Offline", label: "Offline" }]} />
                 </div>
                 <div className="form-field">
                   <label htmlFor="ef-erisim">Erişim Zamanı (Ay)</label>
@@ -212,17 +207,11 @@ function EditForm() {
                 </div>
                 <div className="form-field">
                   <label htmlFor="ef-durum">Yayın Durumu</label>
-                  <select id="ef-durum" value={durum} onChange={(e) => setDurum(e.target.value as EgitimDurum)}>
-                    <option value="Aktif">Aktif</option>
-                    <option value="Pasif">Pasif</option>
-                  </select>
+                  <SystemDropdown ariaLabel="Yayın durumu" value={durum} onChange={(value) => setDurum(value as EgitimDurum)} options={[{ value: "Aktif", label: "Aktif" }, { value: "Pasif", label: "Pasif" }]} />
                 </div>
                 <div className="form-field">
                   <label htmlFor="ef-sertifika">Sertifikalı mı?</label>
-                  <select id="ef-sertifika" value={sertifika} onChange={(e) => setSertifika(e.target.value as Sertifika)}>
-                    <option value="Sertifikasız">Sertifikasız</option>
-                    <option value="Sertifikalı">Sertifikalı</option>
-                  </select>
+                  <SystemDropdown ariaLabel="Sertifika durumu" value={sertifika} onChange={(value) => setSertifika(value as Sertifika)} options={[{ value: "Sertifikasız", label: "Sertifikasız" }, { value: "Sertifikalı", label: "Sertifikalı" }]} />
                 </div>
               </div>
 

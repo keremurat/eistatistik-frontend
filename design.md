@@ -12,6 +12,16 @@ belgenin dışına çıkıp yeni görsel dil, yeni class sistemi veya paralel bi
 
 ---
 
+## Yönetici analitik paneli
+
+- Yönetici ana ekranında mevcut `daily-brief` Günaydın kartı korunur. Önceki ciro, iş planları, teslimat, kullanıcı, ödeme ve eski son sipariş kartları kullanılmaz; `.admin-analytics` doğrudan Günaydın kartının devamında yer alır.
+- Yönetici `daily-brief` kartının sağ aksiyon alanı `.admin-brief-actions` ile dikey iki bağlantı taşır: birincil `Sipariş Yönetimi`, ikincil `Yaklaşan görüşmeler`. İkincil bağlantı `/admin/takvim` rotasına gider ve koyu kart üzerinde şeffaf/çerçeveli görünerek birincil aksiyonla yarışmaz.
+- Yönetici analitik grafiklerindeki gerçek veri öğeleri hover ve klavye focus durumunda `.chart-tooltip` bilgi kutusu gösterir. Sütunda dönem ve sipariş sayısı, alan grafiğinde dönem ve gelir, halka diliminde kategori ve adet, analizör çubuğunda kişi/seri ve sipariş sayısı okunur. Tooltip yalnızca etkileşim sırasında görünür ve filtrelenmiş güncel veriyi kullanır.
+- Filtre sırası tarih aralığı, analizör ve sipariş türüdür. Seçimler tek veri kapsamıdır; bütün KPI, grafik ve son siparişler aynı kapsama göre güncellenir.
+- Analitik kartlar mevcut 14-16 px radius, `--line`, `--navy`, `--blue` ve açık yüzey yaklaşımını sürdürür. Grafikler bağımlılıksız SVG bileşenleridir.
+- Okuma sırası: filtreler, altı özet metrik, sipariş hacmi ve durum, gelir, hizmet ve teslimat, ekip performansı, son siparişler.
+- Masaüstünde içerik ekran genişliğini kullanır; 1000 px altında ikili grafikler tek kolona, 760 px altında metrikler iki kolona ve filtreler dikey akışa geçer.
+
 ## 0. Bağlayıcı kurallar (ZORUNLU)
 
 1. **Yeni görsel kalıp üretme.** UI/CSS gerektiren her işte önce buradaki bir kalıbı ara ve
@@ -119,12 +129,23 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   yuvarlak uç/köşe, `aria-hidden="true"`.
 - İkon rengi daima `currentColor` (üst elementin `color`'undan gelir).
 - Yeni ikon gerektiğinde **mevcut path setinden** kopyala; aynı path'i yeniden çizme.
+- Favori aksiyonları her yerde üst bardaki favori menüsüyle aynı yıldız ikonunu kullanır;
+  kalp veya yer imi ikonu kullanılmaz. Aktif durumda aynı yıldız dolu gösterilir.
 - Renkli/PNG dosya ikonları (Excel, SPSS, PDF…) yalnızca dosya-tipi göstermek için
   `/icons/*.png` + `next/image` ile kullanılır (bkz. `FileTypeIcon` / `RequestFileIcon`).
 
 ---
 
 ## 3. Uygulama iskeleti (her sayfada aynı)
+
+### Sistem dropdown sözleşmesi
+
+- Form, filtre ve sıralama seçimlerinde tarayıcının native `<select>` arayüzü kullanılmaz.
+- Ortak `SystemDropdown` bileşeni ve mevcut `.cs-wrap`, `.cs-trigger`, `.cs-panel`,
+  `.cs-option` sınıfları kullanılır. Panel `document.body` altında portal olarak açılır; böylece
+  tablo, kart ve overflow alanlarında kesilmez ve sayfa kaydırılırken tetikleyiciye bağlı kalır.
+- Seçim değeri ve sayfanın filtre/form mantığı değişmez; bu kural yalnızca görsel ve etkileşim
+  tutarlılığı sağlar.
 
 ```tsx
 <div className="app-shell">
@@ -166,6 +187,29 @@ Kurallar:
   bağlantısıdır; grubun herhangi bir yerine tıklamak landing page'e (`/`) döner.
 - Alt içerik sayfaları `back-link` ile bir üst listeye döner:
   `<Link className="back-link" href="..."><Icon name="back" size={16} />… dön</Link>`.
+- `editor` rolü girişten sonra bağımsız `/editor` çalışma alanına yönlenir; yönetici rotasına
+  düşmez. Editör kabuğu ortak `app-shell`, `topbar`, `BrandLogo`, `NotificationMenu` ve
+  `ProfileMenu` bileşenlerini kullanır.
+- Editör rotaları yeni ve paralel ekranlar üretmez; mevcut sipariş, eğitim, içerik, kullanıcı,
+  duyuru, görev ve takvim ekranlarını `/editor/*` altında yeniden kullanır. `AdminShell`,
+  `usePathname()` ile editör kipini belirler; editör menüsünde rol yönetimi, proje muhasebesi,
+  toplu mesaj ve analizör değiştirme gibi yöneticiye özel bağlantılar gösterilmez.
+- Rol anasayfalarında üst `daily-brief` kartından sonraki operasyon akışı mevcut asistan
+  kalıbını (`assistant-workspace` → öncelik listesi + iş planları, ardından
+  `assistant-queue-strip`) yeniden kullanır. Rol bazında yalnızca metin, sayaç ve hedef rotalar
+  değişir; yeni kart ya da paralel CSS dili oluşturulmaz.
+- Editör anasayfasında `editor-home-fold`, masaüstünde üst `daily-brief` ile ilk
+  `assistant-workspace` bölümünü tek görünür alana sığdırır. Sıkılaştırma yalnızca dikey
+  padding, satır yüksekliği ve aralıklar üzerinden yapılır; operasyon kartı kalan viewport
+  yüksekliğine esnetilmez, içeriği kadar yüksek kalır.
+- Tüm giriş yapılmış rol kabuklarında üst bar aynı genişlik yönetimini kullanır: orta kolon
+  `minmax(0,1fr)`, sağ aksiyonlar `flex-shrink:0`, İstabot alanı 96px ve navigasyon iç
+  padding'leri akışkan/kompakttır. `801–1500px` arasında uzun profil metni gizlenir; avatar,
+  profil menüsü ve rolün tüm navigasyon bağlantıları korunur. Orta navigasyon sağ aksiyon
+  kolonunun altına giremez.
+- Yönetici/editör ortak takviminde `.cal-sidebar`, masaüstünde `position:sticky; top:88px`
+  kullanır; takvim içeriği kaydırılırken renk göstergesi ve kullanıcı filtresi görünür kalır.
+  `900px` altında grid tek kolona düşer ve kenar paneli doğal akışa döner.
 
 ---
 
@@ -296,6 +340,43 @@ Birden çok panel dikeyde `.detail-stack` (gap:1rem) ile dizilir.
 - **Kilitli durum** (ödeme öncesi teslim/fatura): `.locked-panel` içinde `.locked-state`
   (ikon + h3 + açıklama + "Ödemeye git" butonu). Kompakt varyant `.locked-state.compact`.
 - **Dosya satırı:** `FileTypeIcon` (uzantıya göre PNG ikon) + ad/meta + indir butonu.
+
+**Proforma Faturanız:** Yönetici sipariş detayında `messages` sonrasında ayrı bir `proforma`
+sekmesidir. İçerik `.detail-stack` içinde aynı `.detail-panel`, `.detail-panel-heading` ve
+`.result-file-row` kalıplarını kullanır. İlk panel teslim edilen proforma PDF'yi, teslim mesajını
+ve indirme aksiyonunu gösterir. Devamındaki paneller ek analiz ve analizör raporlarını aynı dosya
+satırı düzeninde gösterir; dosya yoksa sade `.proforma-report-empty` durum satırı kullanılır.
+Mavi teslimat, amber ek analiz ve yeşil analizör ayrımı yalnızca sol vurgu çizgisi, durum noktası
+ve küçük rozet üzerinde kullanılır; yeni kart veya paralel renk sistemi oluşturulmaz.
+
+**Görüşmeler / Randevu:** Yönetici, editör ve asistan sipariş detayında `appointments`
+bölümü `Randevu` etiketiyle yer alır. Bu bölüm müşteriyle yapılacak siparişe bağlı çevrim içi
+görüşmeleri listeler; yetkili kullanıcı aynı panel içinde tarih, saat, süre, kanal ve başlık seçerek
+yeni görüşme oluşturabilir. Müşteri sipariş detayında aynı kayıtlar salt okunur `Görüşmeler`
+sekmesinde görünür. Müşteri menüsündeki belge sekmesi `Fatura` değil `Proforma Faturanız` olarak
+adlandırılır ve teslim edilen PDF'yi mevcut dosya satırı kalıbıyla sunar.
+
+### 5.1 Yönetici özel ayarları
+
+Yönetici sipariş detayında `Sipariş Ayrıntıları` bağlantısının hemen altında `Özel Ayarlar`
+bulunur. Bu bölüm yalnızca `audience="admin"` için gösterilir; analizör, asistan ve editörün
+paylaşılan detay menüsüne eklenmez. İçerik yeni bir sayfa değildir, mevcut `detail-content`
+alanında `detail-stack` ve `detail-panel` kalıplarıyla açılır.
+
+- Sipariş bilgileri: çalışma türü ve sipariş durumu.
+- Fatura durumu: oluşturulmamış/oluşturulmuş durum özeti.
+- Teslimat ayarları: teslimat şekli, süresi ve `DatePicker` ile özel teslim tarihi.
+- Portal tabanlı `DatePicker`, açıldığı inputun üst/alt yerleşimini açılış anında belirler ve
+  pencere ya da iç panel kaydırmalarında konumunu `requestAnimationFrame` ile yeniden hesaplar.
+  Böylece takvim scroll sırasında alanından kopmaz; hareket boyunca aynı tarafta bağlı kalır.
+- Proforma fatura: oluşturma tercihi, iş tanımı, adet, birim fiyat ve KDV özeti.
+- İstatistiksel analiz sertifikası: sertifika tercihi ve kimlik/tarih alanları.
+- Bağlantılı sipariş: sistemin standart açılır seçim kalıbıyla ilişkili sipariş seçimi.
+
+Bu bölümdeki bütün açılır seçimler `.cs-wrap`, `.cs-trigger`, `.cs-panel`, `.cs-option`; tarihler
+ise ortak `DatePicker` bileşenini kullanır. Native `select`, native date picker veya paralel dropdown
+görsel dili kullanılmaz. Bölüme özgü `.special-settings-*` sınıfları yalnızca panel içi hizalama,
+özet ve durum satırlarını düzenler; renk, radius ve gölge mevcut tokenlardan gelir.
 
 ---
 
@@ -646,6 +727,34 @@ fark, veri yoğun "yönetim" düzeni ve custom SVG grafiklerdir.
   orijinal veriler geri gelir.
 - **Alt sayfalar** `AdminShell` içinde kurulur. Üst kısımda `.admin-breadcrumb` (Anasayfa · bölüm · **sayfa**).
 - Veriler şimdilik statik/mock; gerçek sistemde backend'den beslenmeli.
+- **Grafik etkileşimi:** sütun, alan, halka ve analizör çubukları fare/klavye odağında mevcut
+  etiketi ve değeri küçük bilgi kartında gösterir. Halka grafiklerde aktif dilimin kategori adı,
+  adedi ve toplam içindeki yüzdesi halkanın merkezindeki toplam bilgisinin yerini geçici olarak alır;
+  Halka çevresi SVG sınırından `3px` içeride tutulur; hover sırasında stroke kalınlığı değişmez ve
+  böylece hiçbir kenar kırpılmaz. Aktif dilim en son boyanıp yalnızca hafif renk vurgusu alır, diğer
+  dilimler sınırlı oranda geri çekilir.
+  Halka grafiklerde ayrıca yüzen tooltip kullanılmaz; kategori, adet ve yüzde merkezde okunur. Odak
+  ayrılınca merkez ve dilimler toplam görünümüne döner. Aylık gelir çizgisi veri noktalarını değiştirmeden
+  kübik Bézier geçişleriyle yumuşatılır; sol eksende sıfırdan başlayan, okunabilir aralıklara
+  yuvarlanmış Türkçe sayı formatlı `TL` değerleri gösterilir. Eksen metinleri esneyen SVG'nin
+  içinde tutulmaz; sistem fontunun oranlarını koruyan mutlak konumlu HTML etiketleridir. Y ekseni
+  geniş ekranda büyümeyen sabit `82px` kolondur; değerler sola hizalanır, çizim bu kolonun hemen
+  ardından başlar ve kartın sağ iç kenarına kadar uzanır.
+- Teslim Süresi Analizi'ndeki tek değerli radial halka statik bir özet görselidir; hover/focus sırasında
+  tooltip ya da yüzen kart açmaz. Performans yüzdesi yalnızca halkanın merkezinde okunur.
+- Analitik panelin `Son siparişler` bölümü bağımsız HTML tablo dili kullanmaz. Diğer rollerle aynı
+  `.orders-table`, `.orders-table-head`, `.orders-row`, `.order-identity`, `.order-state` ve
+  `.context-action` kalıbını yeniden kullanır; yalnızca yöneticiye gerekli müşteri, hizmet ve tutar
+  kolonları `.analytics-recent-orders` grid modifier'ıyla eklenir.
+- Sütun ve alan grafiklerinin tooltip'i kartın içinde bütünüyle görünür kalır: ilk iki veri noktasında
+  sağa, son iki veri noktasında sola açılır; orta noktalarda veri üzerinde merkezlenir. Grafik kartının
+  `overflow` sınırında yarım görünmesine izin verilmez.
+- Aylık gelir alan grafiğinde aktif dönemi işaretlemek için eğri üzerinde nokta kullanılmaz; hover/focus
+  edilen ay, yalnızca ilgili veri noktasından grafiğin sıfır tabanına kadar uzanan ince ve kesik dikey
+  kılavuz çizgisiyle belirtilir. Kılavuz ile tooltip, sert belirme yerine 240–300ms `cubic-bezier`
+  giriş kullanır; halka vurguları da aynı yumuşak hareket eğrisini izler. Ay etiketleri metin
+  genişliğine göre `space-between` ile dağıtılmaz; her biri ilgili veri noktasının yüzde konumuna
+  mutlak yerleştirilir, böylece kılavuz çizgisi ve etiket merkezi tam hizalanır.
 
 ### 7.6.1 Mevcut Siparişler / Analizler — `/admin/siparisler`
 
@@ -654,6 +763,21 @@ Kaynak: [src/app/admin/siparisler/page.tsx](src/app/admin/siparisler/page.tsx).
 kart-grup yapısı. Tek fark: her satırda müşteri, analizör bilgisi de gösterilir ve grid 5 sütundur.
 
 **Düzen (müşteri §4'teki `orders-page` kalıbı yeniden kullanılır):**
+
+`orders-page` kullanan müşteri, analizör, asistan, editör ve yönetici sipariş listelerinde üst bar
+ile ana başlık arasında ikinci bir geniş boşluk bırakılmaz. Ortak sayfa üst padding'i `.45rem`,
+`.orders-hero` minimum yüksekliği `68px`'dir; başlık ve aksiyon ilk görünür alana yukarıdan yerleşir.
+
+`Tümü` filtresinde durum bazlı `order-group` başlıkları gösterilmez; bütün kayıtlar tek sipariş tablosunda
+birleşir ve satırdaki `order-state` alanı durumu taşır. Durum sekmelerinden biri seçildiğinde yalnızca o
+durumdaki kayıtlar gösterilir. Tüm sipariş listeleri varsayılan olarak son güncellenme zamanı azalan
+sırada (en güncel üstte) çizilir; müşteri ekranındaki eski/yeni sıralaması da aynı güncellenme alanını kullanır.
+Yönetici sipariş listesinin ortak `.orders-toolbar` alanında, aramanın yanında sistemin standart
+`.cs-wrap` → `.cs-trigger` → `.cs-panel` → `.cs-option` açılır seçim kalıbını kullanan bir `Analizör`
+filtresi bulunur. `.orders-analyst-filter` yalnızca toolbar genişliğini ve 38px kontrol yüksekliğini
+ayarlar. Seçim listeyi ve durum sekmelerindeki sayaçları aynı veri kapsamına göre daraltır; editör ve
+asistan rotalarında bu yönetici filtresi gösterilmez.
+
 ```
 .orders-page.admin-orders-page
 ├─ nav.admin-breadcrumb

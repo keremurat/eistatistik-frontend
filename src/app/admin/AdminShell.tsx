@@ -110,7 +110,7 @@ function FavoritesMenu() {
 
 type MenuKey = "orders" | "education" | "manage";
 type MenuItemDef = { label: string; href: string; subItems?: { label: string; href: string }[] };
-const menus: { key: MenuKey; label: string; icon: AdminIconName; items: MenuItemDef[] }[] = [
+const adminMenus: { key: MenuKey; label: string; icon: AdminIconName; items: MenuItemDef[] }[] = [
   { key: "orders", label: "Sipariş Yönetimi", icon: "orders", items: [
     { label: "Mevcut Siparişler / Analizler", href: "/admin/siparisler" },
     { label: "Yeni Analiz Talebi Oluştur", href: "/admin/yeni-analiz-talebi" },
@@ -148,6 +148,35 @@ const menus: { key: MenuKey; label: string; icon: AdminIconName; items: MenuItem
   ] },
 ];
 
+const editorMenus: typeof adminMenus = [
+  { key: "orders", label: "Sipariş Yönetimi", icon: "orders", items: [
+    { label: "Mevcut Siparişler / Analizler", href: "/editor/siparisler" },
+    { label: "Yeni Analiz Talebi Oluştur", href: "/editor/yeni-analiz-talebi" },
+  ] },
+  { key: "education", label: "Eğitimler", icon: "education", items: [
+    { label: "Satın Alınan Eğitimler", href: "/editor/egitimler/satin-alinan" },
+    { label: "Yeni Eğitim Satın Al", href: "/editor/egitimler/yeni" },
+  ] },
+  { key: "manage", label: "Yönetim", icon: "manage", items: [
+    { label: "Eğitim Talepleri", href: "#", subItems: [
+      { label: "Eğitim Listesi", href: "/editor/egitim-talepleri/egitim-listesi" },
+      { label: "Modül Listesi", href: "/editor/egitim-talepleri/modul-listesi" },
+      { label: "Ders Listesi", href: "/editor/egitim-talepleri/ders-listesi" },
+      { label: "Mentörlük Ayarı", href: "/editor/egitim-talepleri/mentorluk-ayari" },
+    ] },
+    { label: "İndirim Kodları", href: "/editor/indirim-kodlari" },
+    { label: "Kullanıcı Yönetimi", href: "#", subItems: [
+      { label: "Kullanıcılar", href: "/editor/kullanici-yonetimi" },
+    ] },
+    { label: "Duyurular", href: "/editor/duyurular" },
+    { label: "Görev İşlemleri", href: "#", subItems: [
+      { label: "Görev Listesi (Kart)", href: "/editor/gorev-isleri/gorev-listesi-kart" },
+      { label: "Görev Listesi", href: "/editor/gorev-isleri/gorev-listesi" },
+      { label: "Arşiv", href: "/editor/gorev-isleri/arsiv" },
+    ] },
+  ] },
+];
+
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const [openMenu, setOpenMenu]       = useState<MenuKey | null>(null);
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
@@ -156,6 +185,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const menuCloseTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
   const subCloseTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pathname = usePathname();
+  const isEditor = pathname.startsWith("/editor");
+  const menus = isEditor ? editorMenus : adminMenus;
+  const homeHref = isEditor ? "/editor" : "/admin";
+  const calendarHref = isEditor ? "/editor/takvim" : "/admin/takvim";
 
   useEffect(() => {
     function closeAll() { setOpenMenu(null); setOpenSubMenu(null); }
@@ -184,12 +217,12 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <FavoritesProvider>
-    <div className="app-shell">
+    <div className={`app-shell${isEditor ? " editor-shell" : ""}`}>
       <a className="skip-link" href="#admin-main">İçeriğe geç</a>
       <header className="topbar">
-        <Link className="brand" href="/admin" aria-label="eistatistik yönetim ana sayfa"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} priority /></Link>
-        <nav className="admin-nav" aria-label="Yönetici navigasyonu" ref={navRef}>
-          <Link className={pathname === "/admin" ? "active" : ""} href="/admin"><AdminIcon name="home" />Anasayfa</Link>
+        <Link className="brand" href={homeHref} aria-label={`eistatistik ${isEditor ? "editör" : "yönetim"} ana sayfa`}><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} priority /></Link>
+        <nav className="admin-nav" aria-label={isEditor ? "Editör navigasyonu" : "Yönetici navigasyonu"} ref={navRef}>
+          <Link className={pathname === homeHref ? "active" : ""} href={homeHref}><AdminIcon name="home" />Anasayfa</Link>
           {menus.map((menu) => {
             const menuActive = menu.items.some((item) => {
               if (item.href !== "#" && pathname.startsWith(item.href)) return true;
@@ -250,7 +283,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </div>
             );
           })}
-          <Link className={pathname === "/admin/takvim" ? "active" : ""} href="/admin/takvim"><AdminIcon name="calendar" />Takvim</Link>
+          <Link className={pathname === calendarHref ? "active" : ""} href={calendarHref}><AdminIcon name="calendar" />Takvim</Link>
         </nav>
         <div className="top-actions">
           <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a>
@@ -258,8 +291,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <AdminIcon name={dataHidden ? "eyeOff" : "eye"} size={20} />
           </button>
           <FavoritesMenu />
-          <NotificationMenu role="admin" />
-          <ProfileMenu roleLabel="Yönetici" ordersHref="/admin/siparisler" ordersLabel="Sipariş Yönetimi" />
+          <NotificationMenu role={isEditor ? "editor" : "admin"} />
+          <ProfileMenu roleLabel={isEditor ? "Editör hesabı" : "Yönetici"} ordersHref={isEditor ? "/editor/siparisler" : "/admin/siparisler"} ordersLabel="Sipariş Yönetimi" name={isEditor ? "eistatistik Editör" : undefined} email={isEditor ? "editor@eistatistik.com" : undefined} initials={isEditor ? "EE" : undefined} />
         </div>
       </header>
       <main id="admin-main" className="admin-dash" data-hidden={dataHidden ? "true" : undefined}>

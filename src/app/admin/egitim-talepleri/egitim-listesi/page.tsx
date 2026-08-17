@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { AdminShell } from "../../AdminShell";
 import { trainings, mockCustomers } from "./data";
+import { SystemDropdown } from "../../../components/SystemDropdown";
 
 type IconName = "plus" | "dots" | "edit" | "trash" | "users";
 function Icon({ name, size = 17 }: { name: IconName; size?: number }) {
@@ -177,26 +178,14 @@ export function EducationListContent({ basePath = "/admin/egitim-talepleri/egiti
                   <th><input className="edu-filter-input" value={fAdi}      onChange={(e) => { setFAdi(e.target.value); setPage(1); }}      placeholder="Ara…" /></th>
                   <th><input className="edu-filter-input" value={fAciklama} onChange={(e) => { setFAciklama(e.target.value); setPage(1); }} placeholder="Ara…" /></th>
                   <th>
-                    <select className="edu-filter-select" value={fTur} onChange={(e) => { setFTur(e.target.value); setPage(1); }}>
-                      <option value="">Eğitim Türü</option>
-                      <option value="Online">Online</option>
-                      <option value="Offline">Offline</option>
-                    </select>
+                    <SystemDropdown className="edu-filter-select" ariaLabel="Eğitim türü filtresi" placeholder="Eğitim Türü" value={fTur} onChange={(value) => { setFTur(value); setPage(1); }} options={[{ value: "", label: "Eğitim Türü" }, { value: "Online", label: "Online" }, { value: "Offline", label: "Offline" }]} />
                   </th>
                   <th><input className="edu-filter-input" value={fKota} onChange={(e) => { setFKota(e.target.value); setPage(1); }} placeholder="Ara…" /></th>
                   <th>
-                    <select className="edu-filter-select" value={fEsnek} onChange={(e) => { setFEsnek(e.target.value); setPage(1); }}>
-                      <option value="">Esnek Kota</option>
-                      <option value="Esnek">Esnek</option>
-                      <option value="Esnek Değil">Esnek Değil</option>
-                    </select>
+                    <SystemDropdown className="edu-filter-select" ariaLabel="Esnek kota filtresi" placeholder="Esnek Kota" value={fEsnek} onChange={(value) => { setFEsnek(value); setPage(1); }} options={[{ value: "", label: "Esnek Kota" }, { value: "Esnek", label: "Esnek" }, { value: "Esnek Değil", label: "Esnek Değil" }]} />
                   </th>
                   <th>
-                    <select className="edu-filter-select" value={fDurum} onChange={(e) => { setFDurum(e.target.value); setPage(1); }}>
-                      <option value="">Durum</option>
-                      <option value="Aktif">Aktif</option>
-                      <option value="Pasif">Pasif</option>
-                    </select>
+                    <SystemDropdown className="edu-filter-select" ariaLabel="Durum filtresi" placeholder="Durum" value={fDurum} onChange={(value) => { setFDurum(value); setPage(1); }} options={[{ value: "", label: "Durum" }, { value: "Aktif", label: "Aktif" }, { value: "Pasif", label: "Pasif" }]} />
                   </th>
                   <th></th>
                   <th></th>

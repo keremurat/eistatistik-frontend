@@ -10,8 +10,8 @@ import { DatePicker } from "../../../components/DatePicker";
 import { MessageTemplatePicker } from "../../../components/MessageTemplatePicker";
 import { copyText } from "../../../utils/clipboard";
 
-type AdminSection = "overview" | "items" | "pricing" | "payment" | "messages" | "results" | "analyst" | "delivery" | "notes";
-type IconName = "arrow" | "assign" | "back" | "card" | "chart" | "check" | "clock" | "cloudUp" | "copy" | "download" | "eye" | "file" | "heart" | "invoice" | "list" | "message" | "note" | "package" | "percent" | "plus" | "search" | "star" | "tag" | "upload" | "user" | "video" | "x";
+type AdminSection = "overview" | "settings" | "items" | "pricing" | "payment" | "messages" | "proforma" | "results" | "analyst" | "delivery" | "notes" | "appointments";
+type IconName = "arrow" | "assign" | "back" | "card" | "chart" | "check" | "clock" | "cloudUp" | "copy" | "download" | "eye" | "file" | "invoice" | "link" | "list" | "message" | "note" | "package" | "percent" | "plus" | "search" | "settings" | "star" | "tag" | "upload" | "user" | "video" | "x";
 
 function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, React.ReactNode> = {
@@ -27,8 +27,8 @@ function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
     download:<><path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M5 21h14" /></>,
     eye:     <><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" /></>,
     file:    <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M8 13h8M8 17h5" /></>,
-    heart:   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />,
     invoice: <><path d="M5 3h14v18l-3-2-4 2-4-2-3 2z" /><path d="M8 8h8M8 12h8M8 16h5" /></>,
+    link:    <><path d="M10 13a5 5 0 0 0 7.07.07l2-2A5 5 0 0 0 12 4l-1.15 1.15" /><path d="M14 11a5 5 0 0 0-7.07-.07l-2 2A5 5 0 0 0 12 20l1.15-1.15" /></>,
     list:    <><path d="M9 6h11M9 12h11M9 18h11" /><circle cx="4" cy="6" r="1" fill="currentColor" stroke="none" /><circle cx="4" cy="12" r="1" fill="currentColor" stroke="none" /><circle cx="4" cy="18" r="1" fill="currentColor" stroke="none" /></>,
     message: <path d="M21 12a8 8 0 0 1-9 8 9 9 0 0 1-4-.9L3 21l1.9-5A9 9 0 1 1 21 12Z" />,
     note:    <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" /></>,
@@ -36,6 +36,7 @@ function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
     percent: <><path d="M19 5 5 19" /><circle cx="6.5" cy="6.5" r="2.5" /><circle cx="17.5" cy="17.5" r="2.5" /></>,
     plus:    <path d="M12 5v14M5 12h14" />,
     search:  <><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></>,
+    settings:<><path d="M4 7h10M18 7h2M4 17h2M10 17h10" /><circle cx="16" cy="7" r="2" /><circle cx="8" cy="17" r="2" /></>,
     star:    <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />,
     tag:     <><path d="M12 2H2v10l9.29 9.29a1 1 0 0 0 1.41 0l7.3-7.3a1 1 0 0 0 0-1.41z" /><circle cx="7" cy="7" r="1.5" fill="currentColor" stroke="none" /></>,
     upload:  <><path d="M12 16V4" /><path d="m7 9 5-5 5 5" /><path d="M5 20h14" /></>,
@@ -75,17 +76,21 @@ function PanelHeading({ eyebrow, title, description }: { eyebrow: string; title:
 
 const sidebarItems: { key: AdminSection; icon: IconName; label: string; badge?: number }[] = [
   { key: "overview",  icon: "file",    label: "Sipariş Ayrıntıları" },
+  { key: "settings",  icon: "settings",label: "Özel Ayarlar" },
   { key: "items",     icon: "list",    label: "Sipariş Kalemleri" },
   { key: "pricing",   icon: "tag",     label: "Güncel Ücret Belirle" },
   { key: "payment",   icon: "card",    label: "Ödeme" },
   { key: "messages",  icon: "message", label: "Yazışma", badge: 2 },
+  { key: "proforma",  icon: "invoice", label: "Proforma Faturanız" },
   { key: "results",   icon: "chart",   label: "Analiz Sonuçları" },
   { key: "analyst",   icon: "user",    label: "Analizör İşlemleri" },
   { key: "delivery",  icon: "package", label: "Teslimat İşlemleri" },
   { key: "notes",     icon: "note",    label: "Görev/Görüşme Notları" },
+  { key: "appointments", icon: "clock", label: "Randevu" },
 ];
 
-const analystSidebarItems = sidebarItems.filter((item) => ["overview", "items", "messages", "results", "delivery", "notes"].includes(item.key));
+const analystSidebarItems = sidebarItems.filter((item) => ["overview", "items", "messages", "proforma", "results", "delivery", "notes", "appointments"].includes(item.key));
+const staffSidebarItems = sidebarItems.filter((item) => item.key !== "settings");
 
 const timelineSteps = [
   { label: "Sipariş Verildi",  sub: "31.07.2026 14:34", state: "done"    as const },
@@ -97,14 +102,14 @@ const timelineSteps = [
 ];
 
 /* ─── Paylaşılan sipariş detay çalışma alanı ──────────────────── */
-export function SharedOrderDetail({ audience = "admin", orderCode = "PA260731006", orderTitle = "Yetişkinlerde Oral Hijyen Davranışları, Algılanan Engeller ve Motivasyon: Kesitsel Bir Anket Çalışması" }: { audience?: "admin" | "analizor" | "asistan"; orderCode?: string; orderTitle?: string }) {
+export function SharedOrderDetail({ audience = "admin", orderCode = "PA260731006", orderTitle = "Yetişkinlerde Oral Hijyen Davranışları, Algılanan Engeller ve Motivasyon: Kesitsel Bir Anket Çalışması" }: { audience?: "admin" | "analizor" | "asistan" | "editor"; orderCode?: string; orderTitle?: string }) {
   const params  = useSearchParams();
   const initSec = (params.get("section") ?? "overview") as AdminSection;
   const [section, setSection] = useState<AdminSection>(initSec);
   const [paymentMethod, setPaymentMethod] = useState<"transfer" | "card">("transfer");
   const [servicePrice, setServicePrice] = useState("7.700,00");
-  const visibleSidebarItems = audience === "analizor" ? analystSidebarItems : sidebarItems;
-  const backHref = audience === "analizor" ? "/analizor/islerim" : audience === "asistan" ? "/asistan/siparisler" : "/admin/siparisler";
+  const visibleSidebarItems = audience === "analizor" ? analystSidebarItems : audience === "admin" ? sidebarItems : staffSidebarItems;
+  const backHref = audience === "analizor" ? "/analizor/islerim" : audience === "asistan" ? "/asistan/siparisler" : audience === "editor" ? "/editor/siparisler" : "/admin/siparisler";
 
   return (
       <div className="detail-page shared-order-detail">
@@ -126,7 +131,7 @@ export function SharedOrderDetail({ audience = "admin", orderCode = "PA260731006
             </div>
           </div>
           <div className="admin-hero-actions">
-            <button className="admin-action-btn"><Icon name="heart" size={15} />Favorilere Ekle</button>
+            <button className="admin-action-btn"><Icon name="star" size={15} />Favorilere Ekle</button>
             <button className="admin-action-btn"><Icon name="percent" size={15} />İndirim Kodu Tanımla</button>
             <button className="admin-action-btn accent"><Icon name="assign" size={15} />Görev Ata</button>
           </div>
@@ -147,14 +152,17 @@ export function SharedOrderDetail({ audience = "admin", orderCode = "PA260731006
 
           <section className="detail-content">
             {section === "overview"  && <OverviewSection onSection={setSection} />}
+            {audience === "admin" && section === "settings" && <SpecialSettingsSection orderTitle={orderTitle} />}
             {section === "items"     && <FilesSection />}
             {audience !== "analizor" && section === "pricing" && <PricingSection price={servicePrice} onSave={setServicePrice} />}
             {audience !== "analizor" && section === "payment" && <PaymentSection method={paymentMethod} onMethod={setPaymentMethod} price={servicePrice} />}
             {section === "messages"  && <MessagesSection />}
+            {section === "proforma"  && <ProformaInvoiceSection />}
             {section === "results"   && <AnalysisResultsSection />}
             {audience !== "analizor" && section === "analyst" && <AnalystSection />}
             {section === "delivery"  && <DeliverySection />}
             {section === "notes"   && <NotesSection />}
+            {section === "appointments" && <AdminAppointmentsSection />}
           </section>
         </div>
       </div>
@@ -234,6 +242,108 @@ function OverviewSection({ onSection }: { onSection: (s: AdminSection) => void }
             return <button key={key} className="context-action" onClick={() => onSection(key)}><Icon name={item.icon} size={15} />{item.label}<Icon name="arrow" size={14} /></button>;
           })}
         </div>
+      </section>
+    </div>
+  );
+}
+
+/* ─── Özel Ayarlar ───────────────────────────────────────────── */
+const WORK_TYPES = ["Tez", "Makale", "Proje", "Derleme", "Seminer", "Sunum", "Rapor", "Diğer"];
+const ORDER_STATUSES = ["Ücret Belirlendi", "Ödeme Yapıldı", "Yapılıyor", "Yapıldı", "Teslim Edildi", "Ek Analiz İstendi", "Transfer Onayı Bekliyor", "Transfer Reddedildi", "İptal Edildi"];
+const DELIVERY_TYPES = ["Proforma fatura gönderimi"];
+const DELIVERY_DURATIONS = ["12 saat"];
+const RELATED_ORDERS = ["PA260731006 · Yetişkinlerde Oral Hijyen Davranışları", "SA260723002 · Yüksek lisans tezi veri analizi"];
+
+function SpecialSettingsSection({ orderTitle }: { orderTitle: string }) {
+  const [workType, setWorkType] = useState("");
+  const [orderStatus, setOrderStatus] = useState("Teslim Edildi");
+  const [deliveryType, setDeliveryType] = useState("Proforma fatura gönderimi");
+  const [deliveryDuration, setDeliveryDuration] = useState("12 saat");
+  const [deliveryDate, setDeliveryDate] = useState("23.07.2026");
+  const [createProforma, setCreateProforma] = useState(true);
+  const [quantity, setQuantity] = useState("1");
+  const [unitPrice, setUnitPrice] = useState("20.000,00");
+  const [vatRate, setVatRate] = useState("20");
+  const [vatExempt, setVatExempt] = useState(true);
+  const [createCertificate, setCreateCertificate] = useState(false);
+  const [certificateTitle, setCertificateTitle] = useState("Kerem Murat");
+  const [certificateName, setCertificateName] = useState("Kerem Murat");
+  const [certificateDate, setCertificateDate] = useState("23.07.2026");
+  const [relatedOrder, setRelatedOrder] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  const parsedQuantity = Number(quantity.replace(",", ".")) || 0;
+  const parsedPrice = Number(unitPrice.replace(/\./g, "").replace(",", ".")) || 0;
+  const parsedVat = Number(vatRate.replace(",", ".")) || 0;
+  const subtotal = parsedQuantity * parsedPrice;
+  const vat = vatExempt ? 0 : subtotal * parsedVat / 100;
+  const money = (value: number) => `${value.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`;
+
+  function saveSettings() {
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 2500);
+  }
+
+  return (
+    <div className="detail-stack special-settings">
+      <section className="detail-panel">
+        <PanelHeading eyebrow="SİPARİŞ" title="Sipariş Bilgileri" />
+        <div className="settings-panel-body form-grid">
+          <div className="form-field"><label>Çalışma türü</label><CustomDropdown value={workType} onChange={setWorkType} options={WORK_TYPES} placeholder="Çalışma türünü seçin" /></div>
+          <div className="form-field"><label>Sipariş durumu</label><CustomDropdown value={orderStatus} onChange={setOrderStatus} options={ORDER_STATUSES} /></div>
+        </div>
+      </section>
+
+      <section className="detail-panel">
+        <PanelHeading eyebrow="FATURA" title="Fatura Durumu" />
+        <div className="special-settings-status"><span><Icon name="invoice" size={17} /></span><div><strong>Fatura henüz oluşturulmamış</strong><small>Sipariş için oluşturulmuş bir satış faturası bulunmuyor.</small></div><button type="button" disabled>Faturayı iptal et</button></div>
+      </section>
+
+      <section className="detail-panel">
+        <PanelHeading eyebrow="TESLİMAT" title="Teslimat Ayarları" />
+        <div className="settings-panel-body">
+          <div className="form-grid">
+            <div className="form-field"><label>Teslimat şekli</label><CustomDropdown value={deliveryType} onChange={setDeliveryType} options={DELIVERY_TYPES} /></div>
+            <div className="form-field"><label>Teslimat süresi</label><CustomDropdown value={deliveryDuration} onChange={setDeliveryDuration} options={DELIVERY_DURATIONS} /></div>
+          </div>
+          <div className="form-field"><label htmlFor="special-delivery-date">Özel teslimat tarihi</label><DatePicker id="special-delivery-date" value={deliveryDate} onChange={setDeliveryDate} /></div>
+        </div>
+      </section>
+
+      <section className="detail-panel">
+        <PanelHeading eyebrow="BELGE" title="Proforma Fatura" />
+        <div className="settings-panel-body">
+          <label className="special-settings-check"><input type="checkbox" checked={createProforma} onChange={(event) => setCreateProforma(event.target.checked)} /><span><strong>Proforma fatura oluştur</strong><small>Sipariş teslim edildiğinde indirme bağlantısı müşteriye gösterilir.</small></span></label>
+          <div className="form-field"><label htmlFor="proforma-work-title">İş tanımı</label><input id="proforma-work-title" value={orderTitle} readOnly /></div>
+          <div className="form-grid">
+            <div className="form-field"><label htmlFor="proforma-quantity">Adet</label><input id="proforma-quantity" inputMode="decimal" value={quantity} onChange={(event) => setQuantity(event.target.value)} /></div>
+            <div className="form-field"><label htmlFor="proforma-price">Birim fiyat (TL)</label><input id="proforma-price" inputMode="decimal" value={unitPrice} onChange={(event) => setUnitPrice(event.target.value)} /></div>
+          </div>
+          <div className="form-grid">
+            <div className="form-field"><label htmlFor="proforma-vat">KDV oranı (%)</label><input id="proforma-vat" inputMode="decimal" value={vatRate} onChange={(event) => setVatRate(event.target.value)} disabled={vatExempt} /></div>
+            <label className="special-settings-check compact"><input type="checkbox" checked={vatExempt} onChange={(event) => setVatExempt(event.target.checked)} /><span><strong>KDV muaf</strong><small>KDV tutarı hesaplamaya eklenmez.</small></span></label>
+          </div>
+          <dl className="special-settings-totals"><div><dt>Ara toplam</dt><dd>{money(subtotal)}</dd></div><div><dt>{vatExempt ? "KDV (Muaf)" : `KDV (%${parsedVat})`}</dt><dd>{money(vat)}</dd></div><div><dt>Toplam</dt><dd>{money(subtotal + vat)}</dd></div></dl>
+        </div>
+      </section>
+
+      <section className="detail-panel">
+        <PanelHeading eyebrow="SERTİFİKA" title="İstatistiksel Analiz Sertifikası" />
+        <div className="settings-panel-body">
+          <label className="special-settings-check"><input type="checkbox" checked={createCertificate} onChange={(event) => setCreateCertificate(event.target.checked)} /><span><strong>Sertifika oluştur</strong><small>Sipariş teslim edildiğinde sertifika indirme bağlantısı görünür.</small></span></label>
+          <div className="form-field"><label htmlFor="certificate-project">Proje / çalışma adı</label><input id="certificate-project" value={orderTitle} readOnly /></div>
+          <div className="form-field"><label htmlFor="certificate-title">Başlık (unvan)</label><input id="certificate-title" value={certificateTitle} onChange={(event) => setCertificateTitle(event.target.value)} /></div>
+          <div className="form-grid">
+            <div className="form-field"><label htmlFor="certificate-name">Adı – soyadı</label><input id="certificate-name" value={certificateName} onChange={(event) => setCertificateName(event.target.value)} /></div>
+            <div className="form-field"><label htmlFor="certificate-date">Tarih</label><DatePicker id="certificate-date" value={certificateDate} onChange={setCertificateDate} /></div>
+          </div>
+        </div>
+      </section>
+
+      <section className="detail-panel">
+        <PanelHeading eyebrow="BAĞLANTI" title="Bağlantılı Sipariş" />
+        <div className="settings-panel-body"><div className="form-field"><label>İlişkili sipariş</label><CustomDropdown value={relatedOrder} onChange={setRelatedOrder} options={RELATED_ORDERS} placeholder="Sipariş seçin" /></div></div>
+        <footer className="settings-actions"><span className={`settings-note${saved ? " success" : ""}`}>{saved ? "Özel ayarlar kaydedildi." : "Değişiklikler kaydedilene kadar müşteriye yansımaz."}</span><button className="settings-save" type="button" onClick={saveSettings}><Icon name={saved ? "check" : "settings"} size={16} />{saved ? "Kaydedildi" : "Değişiklikleri kaydet"}</button></footer>
       </section>
     </div>
   );
@@ -432,6 +542,82 @@ function MessagesSection() {
       </div>
     </section>
   );
+}
+
+/* ─── Proforma Faturanız ─────────────────────────────────────── */
+function ProformaInvoiceSection() {
+  const reports = [
+    { title: "Ek Analiz 1", badge: "Ek #1", tone: "extra", empty: "Teslimat dosyası henüz eklenmemiştir." },
+    { title: "Analizör Raporu", badge: "Analizör", tone: "analyst", empty: "Analizör dosyası henüz eklenmemiştir." },
+    { title: "Analizör Raporu (Ek Analiz 1)", badge: "Analizör", tone: "analyst", empty: "Analizör dosyası henüz eklenmemiştir." },
+  ];
+
+  return (
+    <div className="detail-stack proforma-reports" aria-label="Proforma faturanız">
+      <section className="detail-panel proforma-report-card delivered">
+        <header className="proforma-report-head">
+          <div><span className="proforma-report-dot" /><p className="eyebrow">TESLİMAT RAPORLARI</p><h2>Proforma fatura</h2></div>
+          <span className="proforma-report-badge">Teslimat</span>
+        </header>
+        <div className="proforma-report-body">
+          <p className="proforma-delivery-note">Sayın hocam, istenilen belge ekte sunulmuştur. Ek taleplerinizi sistem üzerinden iletebilirsiniz. eistatistik&apos;i tercih ettiğiniz için teşekkür ederiz.</p>
+          <div className="result-file-row proforma-primary-file">
+            <FileTypeIcon filename="Proforma Fatura.pdf" />
+            <div><strong>Proforma Fatura.pdf</strong><small>PDF belge · Teslim edildi</small></div>
+            <button type="button" className="proforma-download" aria-label="Proforma faturayı indir"><Icon name="download" size={16} /><span>İndir</span></button>
+          </div>
+        </div>
+      </section>
+
+      {reports.map((report) => (
+        <section key={report.title} className={`detail-panel proforma-report-card ${report.tone}`}>
+          <header className="proforma-report-head">
+            <div><span className="proforma-report-dot" /><p className="eyebrow">{report.title.toLocaleUpperCase("tr-TR")}</p><h2>{report.title}</h2></div>
+            <span className="proforma-report-badge">{report.badge}</span>
+          </header>
+          <div className="proforma-report-body compact">
+            <div className="proforma-report-empty"><Icon name="file" size={16} /><span>{report.empty}</span></div>
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+const MONTH_LABELS = ["OCA", "ŞUB", "MAR", "NİS", "MAY", "HAZ", "TEM", "AĞU", "EYL", "EKİ", "KAS", "ARA"];
+type AppointmentEntry = { date: string; time: string; duration: string; channel: string; title: string };
+
+function AdminAppointmentsSection() {
+  const [appointments, setAppointments] = useState<AppointmentEntry[]>([
+    { date: "30.07.2026", time: "11:00", duration: "30 dakika", channel: "Google Meet", title: "Analiz öncesi değerlendirme" },
+  ]);
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState<AppointmentEntry>({ date: "", time: "", duration: "30 dakika", channel: "Google Meet", title: "" });
+
+  function addAppointment() {
+    if (!draft.date || !draft.time || !draft.title.trim()) return;
+    setAppointments((current) => [...current, draft]);
+    setDraft({ date: "", time: "", duration: "30 dakika", channel: "Google Meet", title: "" });
+    setAdding(false);
+  }
+
+  return <section className="detail-panel panel-direct appointments-panel" aria-label="Müşteri görüşmeleri">
+    <header className="detail-panel-heading appointment-panel-heading"><div><p className="eyebrow">GÖRÜŞMELER</p><h2>Müşteri randevuları</h2><span>Bu sipariş için müşteriyle planlanan çevrim içi görüşmeler.</span></div><button type="button" className="admin-action-btn" onClick={() => setAdding((value) => !value)}><Icon name="plus" size={14} />{adding ? "Vazgeç" : "Görüşme oluştur"}</button></header>
+    {adding && <div className="appointment-create-form">
+      <div className="form-field"><label>Tarih</label><DatePicker value={draft.date} onChange={(date) => setDraft((current) => ({ ...current, date }))} /></div>
+      <div className="form-field"><label htmlFor="appointment-time">Saat</label><input id="appointment-time" type="time" value={draft.time} onChange={(event) => setDraft((current) => ({ ...current, time: event.target.value }))} /></div>
+      <div className="form-field"><label>Süre</label><CustomDropdown value={draft.duration} onChange={(duration) => setDraft((current) => ({ ...current, duration }))} options={["30 dakika", "45 dakika", "1 saat"]} /></div>
+      <div className="form-field"><label>Kanal</label><CustomDropdown value={draft.channel} onChange={(channel) => setDraft((current) => ({ ...current, channel }))} options={["Google Meet", "Zoom", "Telefon"]} /></div>
+      <div className="form-field appointment-title-field"><label htmlFor="appointment-title">Görüşme başlığı</label><input id="appointment-title" value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder="Örn. Analiz öncesi değerlendirme" /></div>
+      <button type="button" className="appointment-save-btn" onClick={addAppointment} disabled={!draft.date || !draft.time || !draft.title.trim()}>Görüşmeyi kaydet</button>
+    </div>}
+    <div className="appointment-list">
+      {appointments.map((appointment, index) => {
+        const [day, month] = appointment.date.split(".");
+        return <article className="appointment-card" key={`${appointment.date}-${appointment.time}-${index}`}><div className="appointment-date"><strong>{day}</strong><span>{MONTH_LABELS[Number(month) - 1] ?? ""}</span></div><div><span>{appointment.time} · {appointment.duration} · {appointment.channel}</span><h3>{appointment.title}</h3><p>Müşteri ile çevrim içi görüşme</p></div><span className="appointment-status"><Icon name="check" size={13} />Planlandı</span></article>;
+      })}
+    </div>
+  </section>;
 }
 
 /* ─── Analiz Sonuçları ────────────────────────────────────────── */
@@ -650,7 +836,7 @@ function NotesSection() {
   );
 }
 
-/* ─── Generic portal dropdown (aynı AnalystDropdown görünümü) ── */
+/* ─── Generic portal dropdown (sistem cs-* kalıbı) ───────────── */
 function CustomDropdown({ value, onChange, options, placeholder = "Seçin…" }: {
   value: string; onChange: (v: string) => void; options: string[]; placeholder?: string;
 }) {
@@ -672,15 +858,15 @@ function CustomDropdown({ value, onChange, options, placeholder = "Seçin…" }:
     setOpen((o) => !o);
   }
   return (
-    <div className="analyst-dropdown-wrap">
-      <button ref={btnRef} type="button" className={`analyst-dropdown-btn ${open ? "open" : ""}`} aria-expanded={open} aria-haspopup="listbox" onClick={openMenu} style={{ minHeight: 38 }}>
-        <span style={!value ? { color: "#aab5be" } : {}}>{value || placeholder}</span>
-        <span className="caret">⌄</span>
+    <div className="cs-wrap">
+      <button ref={btnRef} type="button" className={`cs-trigger${open ? " open" : ""}`} aria-expanded={open} aria-haspopup="listbox" onClick={openMenu}>
+        <span className={!value ? "cs-placeholder" : undefined}>{value || placeholder}</span>
+        <span className="cs-arrow" aria-hidden="true">▾</span>
       </button>
       {open && typeof document !== "undefined" && createPortal(
-        <div ref={menuRef} className="analyst-dropdown-menu" role="listbox" style={{ position: "fixed", top: menuPos.top, left: menuPos.left, width: menuPos.width, zIndex: 9999 }}>
+        <div ref={menuRef} className="cs-panel special-settings-dropdown-panel" role="listbox" style={{ position: "fixed", top: menuPos.top, left: menuPos.left, width: menuPos.width, zIndex: 9999 }}>
           {options.map((opt) => (
-            <button key={opt} type="button" role="option" aria-selected={opt === value} className={opt === value ? "active-opt" : ""} onClick={() => { onChange(opt); setOpen(false); }}>{opt}</button>
+            <button key={opt} type="button" role="option" aria-selected={opt === value} className={`cs-option${opt === value ? " active" : ""}`} onClick={() => { onChange(opt); setOpen(false); }}>{opt}</button>
           ))}
         </div>,
         document.body
