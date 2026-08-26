@@ -91,21 +91,54 @@ function RowMenu({ id, onDelete }: { id: number; onDelete: () => void }) {
   );
 }
 
-const PER_PAGE = 10;
+const FALLBACK_PER_PAGE = 10;   // masaüstü ölçümü hazır olana / mobilde kullanılır
+const ROW_HEIGHT = 64;          // .edu-table sabit satır yüksekliği (globals.css)
 
 export default function ModulListesiPage() {
   const [page,       setPage]       = useState(1);
+  const [query,      setQuery]      = useState("");
   const [deletedIds, setDeletedIds] = useState<Set<number>>(new Set());
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
-  const visible    = modules.filter((m) => !deletedIds.has(m.id));
-  const totalPages = Math.max(1, Math.ceil(visible.length / PER_PAGE));
+  // Sayfa başına satır sayısı: masaüstünde tablo alanının boş yüksekliğine göre
+  // dinamik hesaplanır; ekran büyüdükçe daha çok satır sığar. Mobilde sabit kalır.
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [perPage, setPerPage] = useState(FALLBACK_PER_PAGE);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    const desktop = window.matchMedia("(min-width:761px)");
+
+    function recompute() {
+      if (!wrap || !desktop.matches) { setPerPage(FALLBACK_PER_PAGE); return; }
+      const thead   = wrap.querySelector("thead");
+      const headH   = thead ? thead.getBoundingClientRect().height : 34;
+      const avail   = wrap.clientHeight - headH;
+      setPerPage(Math.max(3, Math.floor(avail / ROW_HEIGHT)));
+    }
+
+    recompute();
+    const ro = new ResizeObserver(recompute);
+    ro.observe(wrap);
+    desktop.addEventListener("change", recompute);
+    return () => { ro.disconnect(); desktop.removeEventListener("change", recompute); };
+  }, []);
+
+  const filtered = modules.filter((m) => {
+    if (deletedIds.has(m.id)) return false;
+    if (query && !`${m.adi} ${m.url} ${m.aciklama}`.toLowerCase().includes(query.toLowerCase())) return false;
+    return true;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage   = Math.min(page, totalPages);
-  const pageItems  = visible.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
+  const pageItems  = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+  const emptyRows  = pageItems.length > 0 ? Math.max(0, perPage - pageItems.length) : 0;
 
   return (
     <AdminShell>
-      <div className="st-page">
+      <div className="st-page education-list-page">
         <header className="orders-hero">
           <div>
             <p className="eyebrow">YÖNETİM · EĞİTİM TALEPLERİ</p>
@@ -117,31 +150,58 @@ export default function ModulListesiPage() {
         </header>
 
         <section className="detail-panel st-list-panel" style={{ padding: 0 }}>
-          <div className="ur-table-wrap">
+          <div className="edu-list-toolbar" aria-label="Modül listesini filtrele">
+            <label className="orders-search edu-list-search">
+              <span aria-hidden="true">⌕</span>
+              <input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="Modül adı, URL veya açıklamada ara…" />
+            </label>
+            <span className="result-count">{filtered.length} modül</span>
+          </div>
+
+          <div className="ur-table-wrap" ref={wrapRef}>
             <table className="ur-table edu-table">
+              <colgroup>
+                <col style={{ width: "64px" }} />
+                <col style={{ width: "26%" }} />
+                <col style={{ width: "32%" }} />
+                <col />
+                <col style={{ width: "52px" }} />
+              </colgroup>
               <thead>
                 <tr>
-                  <th style={{ width: 60 }}>ID</th>
+                  <th className="nowrap">ID</th>
                   <th>Adı</th>
                   <th>URL</th>
                   <th>Açıklama</th>
-                  <th style={{ width: 48 }}></th>
+                  <th aria-label="İşlemler"></th>
                 </tr>
               </thead>
               <tbody>
                 {pageItems.map((m) => (
                   <tr key={m.id}>
-                    <td className="ms-id-cell">{m.id}</td>
-                    <td><span className="edu-name-link">{m.adi}</span></td>
+                    <td className="nowrap ms-id-cell">{m.id}</td>
+                    <td><span className="edu-name-link" title={m.adi}>{m.adi}</span></td>
                     <td>
                       {m.url
                         ? <a className="edu-url-cell" href={m.url} target="_blank" rel="noopener noreferrer" title={m.url}>{m.url}</a>
-                        : <span style={{ color: "var(--muted)", fontSize: ".64rem" }}>—</span>}
+                        : <span style={{ color: "var(--muted)" }}>—</span>}
                     </td>
-                    <td style={{ maxWidth: 260 }}>{m.aciklama || <span style={{ color: "var(--muted)" }}>—</span>}</td>
-                    <td style={{ textAlign: "center", padding: "0 .5rem" }}>
+                    <td title={m.aciklama || undefined}>{m.aciklama || <span style={{ color: "var(--muted)" }}>—</span>}</td>
+                    <td className="edu-actions-cell">
                       <RowMenu id={m.id} onDelete={() => setDeleteConfirm(m.id)} />
                     </td>
+                  </tr>
+                ))}
+                {pageItems.length === 0 && (
+                  <tr>
+                    <td colSpan={5} style={{ padding: "2rem", textAlign: "center", color: "var(--muted)", fontSize: ".7rem" }}>
+                      Kayıt bulunamadı.
+                    </td>
+                  </tr>
+                )}
+                {Array.from({ length: emptyRows }, (_, index) => (
+                  <tr className="edu-placeholder-row" aria-hidden="true" key={`empty-${index}`}>
+                    <td colSpan={5}></td>
                   </tr>
                 ))}
               </tbody>

@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useState } from "react";
 import { AdminShell } from "../AdminShell";
 
-type IconName = "plus";
+type IconName = "plus" | "edit" | "trash";
 function Icon({ name, size = 17 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, React.ReactNode> = {
     plus: <path d="M12 5v14M5 12h14" />,
+    edit: <><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z" /></>,
+    trash: <><path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="m19 6-1 14H6L5 6" /><path d="M10 11v5M14 11v5" /></>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
@@ -66,7 +68,7 @@ const allTemplates: Template[] = [
   { id: 1, title: "Kayıt Onayı", body: "Sayın {musteri_adi},\n\neistatistik'e kaydınız başarıyla tamamlanmıştır.\n\nE-posta: {email}\n\nHizmetlerimizden yararlanmak için giriş yapabilirsiniz.\n\nSaygılarımızla,\neistatistik Ekibi" },
 ];
 
-const PER_PAGE = 10;
+const PER_PAGE = 7;
 
 export default function MesajSablonlariPage() {
   const [page, setPage]         = useState(1);
@@ -114,29 +116,22 @@ export default function MesajSablonlariPage() {
 
   return (
     <AdminShell>
-      <div className="st-page">
+      <div className="st-page message-templates-page">
         <header className="orders-hero">
-          <div>
-            <p className="eyebrow">YÖNETİM</p>
-            <h1>Mesaj Şablonları</h1>
-            <p>Sipariş mesajlaşma alanında kullanılan hazır şablonları yönetin.</p>
-          </div>
+          <div><h1>Mesaj Şablonları</h1></div>
+          <Link className="orders-create" href="/admin/mesaj-sablonlari/ekle">
+            <Icon name="plus" size={16} />Ekle
+          </Link>
         </header>
 
         <section className="detail-panel st-list-panel">
-          <div className="ms-panel-toolbar">
-            <Link className="orders-create" href="/admin/mesaj-sablonlari/ekle">
-              <Icon name="plus" size={16} />Ekle
-            </Link>
-          </div>
-
           <div className="ur-table-wrap">
             <table className="ur-table ms-table">
               <thead>
                 <tr>
                   <th className="ms-id-th">ID</th>
                   <th>Mesaj Başlığı</th>
-                  <th></th>
+                  <th><span className="sr-only">İşlemler</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -153,8 +148,8 @@ export default function MesajSablonlariPage() {
                         </div>
                       ) : (
                         <div className="ms-actions">
-                          <button className="ms-btn edit"   onClick={() => openEdit(t)}>Düzenle</button>
-                          <button className="ms-btn delete" onClick={() => setConfirmId(t.id)}>Sil</button>
+                          <button className="service-type-edit" onClick={() => openEdit(t)} aria-label={`${t.title} şablonunu düzenle`} title="Düzenle"><Icon name="edit" size={15} /></button>
+                          <button className="service-type-edit ms-delete-trigger" onClick={() => setConfirmId(t.id)} aria-label={`${t.title} şablonunu sil`} title="Sil"><Icon name="trash" size={15} /></button>
                         </div>
                       )}
                     </td>

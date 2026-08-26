@@ -20,7 +20,7 @@ export function MaskedNum({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-type AdminIconName = "home" | "orders" | "education" | "manage" | "calendar" | "message" | "eye" | "eyeOff" | "star" | "starFilled" | "trash" | "inbox";
+type AdminIconName = "home" | "orders" | "education" | "manage" | "calendar" | "message" | "eye" | "eyeOff" | "star" | "starFilled" | "trash" | "inbox" | "users" | "role" | "transfer" | "tag" | "card" | "send" | "book" | "layers" | "settings";
 
 function AdminIcon({ name, size = 17 }: { name: AdminIconName; size?: number }) {
   const paths: Record<AdminIconName, React.ReactNode> = {
@@ -36,6 +36,15 @@ function AdminIcon({ name, size = 17 }: { name: AdminIconName; size?: number }) 
     starFilled: <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" fill="currentColor" />,
     trash:      <><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2" /></>,
     inbox:      <><polyline points="22 12 16 12 14 15 10 15 8 12 2 12" /><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" /></>,
+    users:      <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>,
+    role:       <><path d="M12 3l7 3v5c0 4.2-2.8 7.3-7 8.8-4.2-1.5-7-4.6-7-8.8V6l7-3Z" /><path d="m9 11.5 2 2 4-4" /></>,
+    transfer:   <><path d="M4 8h13" /><path d="m13 4 4 4-4 4" /><path d="M20 16H7" /><path d="m11 12-4 4 4 4" /></>,
+    tag:        <><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z" /><circle cx="7.5" cy="7.5" r="1.1" fill="currentColor" stroke="none" /></>,
+    card:       <><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></>,
+    send:       <><path d="M22 2 11 13" /><path d="M22 2 15 22l-4-9-9-4 20-7Z" /></>,
+    book:       <><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" /></>,
+    layers:     <><path d="m12 2 10 5-10 5L2 7l10-5Z" /><path d="m2 12 10 5 10-5" /><path d="m2 17 10 5 10-5" /></>,
+    settings:   <><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3" /><path d="M1 14h6M9 8h6M17 16h6" /></>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
@@ -116,34 +125,34 @@ const managementGroups: ManagementGroup[] = [
   { label: "Sipariş Ayarları", items: [
     { label: "Favori Kategorileri", href: "/admin/favori-kategorileri", icon: "star" },
     { label: "Sipariş Türleri", href: "/admin/siparis-turleri", icon: "orders" },
-    { label: "Sipariş Analizör Değiştir", href: "/admin/analizor-degistir", icon: "manage" },
+    { label: "Sipariş Analizör Değiştir", href: "/admin/analizor-degistir", icon: "transfer" },
     { label: "Mesaj Şablonları", href: "/admin/mesaj-sablonlari", icon: "message" },
   ] },
   { label: "Eğitim Talepleri", items: [
     { label: "Eğitim Listesi", href: "/admin/egitim-talepleri/egitim-listesi", icon: "education" },
-    { label: "Modül Listesi", href: "/admin/egitim-talepleri/modul-listesi", icon: "manage" },
-    { label: "Ders Listesi", href: "/admin/egitim-talepleri/ders-listesi", icon: "education" },
-    { label: "Mentörlük Ayarı", href: "/admin/egitim-talepleri/mentorluk-ayari", icon: "manage" },
-    { label: "İndirim Kodları", href: "/admin/indirim-kodlari", icon: "star" },
-    { label: "Rol Yönetimi", href: "/admin/rol-yonetimi", icon: "manage" },
+    { label: "Modül Listesi", href: "/admin/egitim-talepleri/modul-listesi", icon: "layers" },
+    { label: "Ders Listesi", href: "/admin/egitim-talepleri/ders-listesi", icon: "book" },
+    { label: "Mentörlük Ayarı", href: "/admin/egitim-talepleri/mentorluk-ayari", icon: "users" },
+    { label: "İndirim Kodları", href: "/admin/indirim-kodlari", icon: "tag" },
+    { label: "Rol Yönetimi", href: "/admin/rol-yonetimi", icon: "role" },
   ] },
   { label: "Kullanıcı Yönetimi", items: [
-    { label: "Kullanıcılar", href: "/admin/kullanici-yonetimi", icon: "manage" },
-    { label: "Toplu Mesaj Gönder", href: "/admin/toplu-mesaj", icon: "message" },
+    { label: "Kullanıcılar", href: "/admin/kullanici-yonetimi", icon: "users" },
+    { label: "Toplu Mesaj Gönder", href: "/admin/toplu-mesaj", icon: "send" },
     { label: "Randevular", href: "/admin/randevular", icon: "calendar" },
-    { label: "Rehber Adımları", href: "/admin/rehber-adimlari", icon: "education" },
+    { label: "Rehber Adımları", href: "/admin/rehber-adimlari", icon: "book" },
     { label: "Duyurular", href: "/admin/duyurular", icon: "message" },
   ] },
   { label: "Abonelik", items: [
-    { label: "Abonelikler", href: "/admin/abonelikler", icon: "manage" },
-    { label: "Plan Ayarları", href: "/admin/plan-ayarlari", icon: "manage" },
-    { label: "Bültenler", href: "/admin/bultenler", icon: "message" },
-    { label: "İçerikler", href: "/admin/icerikler", icon: "orders" },
+    { label: "Abonelikler", href: "/admin/abonelikler", icon: "card" },
+    { label: "Plan Ayarları", href: "/admin/plan-ayarlari", icon: "settings" },
+    { label: "Bültenler", href: "/admin/bultenler", icon: "send" },
+    { label: "İçerikler", href: "/admin/icerikler", icon: "inbox" },
     { label: "Bülten Önizleme", href: "/admin/bulten-onizleme", icon: "eye" },
     { label: "Hizmetler", href: "/admin/hizmetler", icon: "orders" },
   ] },
   { label: "Şablon Ayarları", items: [
-    { label: "Analiz Şablonları", href: "/admin/analiz-sablonlari", icon: "manage" },
+    { label: "Analiz Şablonları", href: "/admin/analiz-sablonlari", icon: "layers" },
     { label: "Şablon Görünümü", href: "/admin/sablon-gorunumu", icon: "eye" },
   ] },
   { label: "Görev İşlemleri", items: [
@@ -152,7 +161,7 @@ const managementGroups: ManagementGroup[] = [
     { label: "Arşiv", href: "/admin/gorev-isleri/arsiv", icon: "inbox" },
   ] },
   { label: "Site Ayarları", items: [
-    { label: "Anasayfa Ayarları", href: "/admin/anasayfa-ayarlari", icon: "manage" },
+    { label: "Anasayfa Ayarları", href: "/admin/anasayfa-ayarlari", icon: "home" },
   ] },
 ];
 const adminMenus: { key: MenuKey; label: string; icon: AdminIconName; items: MenuItemDef[] }[] = [
@@ -234,6 +243,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const menus = isEditor ? editorMenus : adminMenus;
   const homeHref = isEditor ? "/editor" : "/admin";
   const calendarHref = isEditor ? "/editor/takvim" : "/admin/takvim";
+  const managementHrefs = isEditor
+    ? editorMenus.find((menu) => menu.key === "manage")?.items.flatMap((item) => [item.href, ...(item.subItems?.map((subItem) => subItem.href) ?? [])]) ?? []
+    : managementGroups.flatMap((group) => group.items.map((item) => item.href));
+  const isManagementPage = managementHrefs.some((href) => href !== "#" && pathname.startsWith(href));
 
   useEffect(() => {
     function closeAll() { setOpenMenu(null); setOpenSubMenu(null); }
@@ -345,7 +358,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <ProfileMenu roleLabel={isEditor ? "Editör hesabı" : "Yönetici"} ordersHref={isEditor ? "/editor/siparisler" : "/admin/siparisler"} ordersLabel="Sipariş Yönetimi" name={isEditor ? "eistatistik Editör" : undefined} email={isEditor ? "editor@eistatistik.com" : undefined} initials={isEditor ? "EE" : undefined} />
         </div>
       </header>
-      <main id="admin-main" className="admin-dash" data-hidden={dataHidden ? "true" : undefined}>
+      <main id="admin-main" className={`admin-dash${isManagementPage ? " admin-management-page" : ""}`} data-hidden={dataHidden ? "true" : undefined}>
         <DataHiddenContext.Provider value={dataHidden}>{children}</DataHiddenContext.Provider>
       </main>
     </div>

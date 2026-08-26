@@ -106,7 +106,8 @@ function RowMenu({ id, basePath, onDelete, onCustomers }: RowMenuProps) {
 }
 
 // ── Ana sayfa ──────────────────────────────────────────────────────
-const PER_PAGE = 10;
+const FALLBACK_PER_PAGE = 6;          // masaüstü ölçümü hazır olana / mobilde kullanılır
+const ROW_HEIGHT = 64;                // .edu-table sabit satır yüksekliği (globals.css)
 
 export default function EgitimListesiPage() {
   return <AdminShell><EducationListContent /></AdminShell>;
@@ -114,8 +115,7 @@ export default function EgitimListesiPage() {
 
 export function EducationListContent({ basePath = "/admin/egitim-talepleri/egitim-listesi" }: { basePath?: string }) {
   const [page,      setPage]      = useState(1);
-  const [fAdi,      setFAdi]      = useState("");
-  const [fAciklama, setFAciklama] = useState("");
+  const [query,     setQuery]     = useState("");
   const [fTur,      setFTur]      = useState("");
   const [fKota,     setFKota]     = useState("");
   const [fEsnek,    setFEsnek]    = useState("");
@@ -125,10 +125,34 @@ export function EducationListContent({ basePath = "/admin/egitim-talepleri/egiti
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [customersId,   setCustomersId]   = useState<number | null>(null);
 
+  // Sayfa başına satır sayısı: masaüstünde tablo alanının boş yüksekliğine göre
+  // dinamik hesaplanır; ekran büyüdükçe daha çok satır sığar. Mobilde sabit kalır.
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [perPage, setPerPage] = useState(FALLBACK_PER_PAGE);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    const desktop = window.matchMedia("(min-width:761px)");
+
+    function recompute() {
+      if (!wrap || !desktop.matches) { setPerPage(FALLBACK_PER_PAGE); return; }
+      const thead   = wrap.querySelector("thead");
+      const headH   = thead ? thead.getBoundingClientRect().height : 34;
+      const avail   = wrap.clientHeight - headH;
+      setPerPage(Math.max(3, Math.floor(avail / ROW_HEIGHT)));
+    }
+
+    recompute();
+    const ro = new ResizeObserver(recompute);
+    ro.observe(wrap);
+    desktop.addEventListener("change", recompute);
+    return () => { ro.disconnect(); desktop.removeEventListener("change", recompute); };
+  }, []);
+
   const filtered = trainings.filter((t) => {
     if (deletedIds.has(t.id))                                                          return false;
-    if (fAdi      && !t.adi.toLowerCase().includes(fAdi.toLowerCase()))                return false;
-    if (fAciklama && !t.aciklama.toLowerCase().includes(fAciklama.toLowerCase()))      return false;
+    if (query && !`${t.adi} ${t.aciklama}`.toLowerCase().includes(query.toLowerCase())) return false;
     if (fTur      && t.tur !== fTur)                                                   return false;
     if (fKota     && !`${t.kota}/${t.katilan}`.includes(fKota))                        return false;
     if (fEsnek    && t.esnekKota !== fEsnek)                                           return false;
@@ -136,9 +160,10 @@ export function EducationListContent({ basePath = "/admin/egitim-talepleri/egiti
     return true;
   });
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage   = Math.min(page, totalPages);
-  const pageItems  = filtered.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
+  const pageItems  = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+  const emptyRows  = pageItems.length > 0 ? Math.max(0, perPage - pageItems.length) : 0;
 
   function changePage(p: number) { setPage(Math.max(1, Math.min(totalPages, p))); }
 
@@ -148,7 +173,7 @@ export function EducationListContent({ basePath = "/admin/egitim-talepleri/egiti
 
   return (
     <>
-      <div className="st-page">
+      <div className="st-page education-list-page">
         <header className="orders-hero">
           <div>
             <p className="eyebrow">YÖNETİM · EĞİTİM TALEPLERİ</p>
@@ -160,50 +185,55 @@ export function EducationListContent({ basePath = "/admin/egitim-talepleri/egiti
         </header>
 
         <section className="detail-panel st-list-panel" style={{ padding: 0 }}>
-          <div className="ur-table-wrap">
+          <div className="edu-list-toolbar" aria-label="Eğitim listesini filtrele">
+            <label className="orders-search edu-list-search">
+              <span aria-hidden="true">⌕</span>
+              <input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="Eğitim adı veya açıklamada ara…" />
+            </label>
+            <SystemDropdown className="edu-toolbar-select" ariaLabel="Eğitim türü filtresi" placeholder="Tüm eğitim türleri" value={fTur} onChange={(value) => { setFTur(value); setPage(1); }} options={[{ value: "", label: "Tüm eğitim türleri" }, { value: "Online", label: "Online" }, { value: "Offline", label: "Offline" }]} />
+            <label className="edu-capacity-filter">
+              <span>Kota / katılan</span>
+              <input value={fKota} onChange={(event) => { setFKota(event.target.value); setPage(1); }} placeholder="Örn. 30 / 2" />
+            </label>
+            <SystemDropdown className="edu-toolbar-select" ariaLabel="Esnek kota filtresi" placeholder="Tüm kota tipleri" value={fEsnek} onChange={(value) => { setFEsnek(value); setPage(1); }} options={[{ value: "", label: "Tüm kota tipleri" }, { value: "Esnek", label: "Esnek" }, { value: "Esnek Değil", label: "Esnek değil" }]} />
+            <SystemDropdown className="edu-toolbar-select edu-status-filter" ariaLabel="Durum filtresi" placeholder="Tüm durumlar" value={fDurum} onChange={(value) => { setFDurum(value); setPage(1); }} options={[{ value: "", label: "Tüm durumlar" }, { value: "Aktif", label: "Aktif" }, { value: "Pasif", label: "Pasif" }]} />
+            <span className="result-count">{filtered.length} eğitim</span>
+          </div>
+          <div className="ur-table-wrap" ref={wrapRef}>
             <table className="ur-table edu-table">
+              <colgroup>
+                <col className="edu-col-summary" />
+                <col className="edu-col-type" />
+                <col className="edu-col-capacity" />
+                <col className="edu-col-quota" />
+                <col className="edu-col-status" />
+                <col className="edu-col-date" />
+                <col className="edu-col-price" />
+                <col className="edu-col-actions" />
+              </colgroup>
               <thead>
                 <tr>
-                  <th>Adı</th>
-                  <th>Açıklama</th>
+                  <th>Eğitim</th>
                   <th>Tür</th>
-                  <th className="nowrap">Kota / Katılan</th>
-                  <th>Esnek Kota</th>
+                  <th className="nowrap">Katılım</th>
+                  <th>Kota tipi</th>
                   <th>Durum</th>
-                  <th className="nowrap">Başlama / Bitiş</th>
+                  <th className="nowrap">Tarih aralığı</th>
                   <th>Ücret</th>
-                  <th style={{ width: 48 }}></th>
-                </tr>
-                <tr className="edu-filter-row">
-                  <th><input className="edu-filter-input" value={fAdi}      onChange={(e) => { setFAdi(e.target.value); setPage(1); }}      placeholder="Ara…" /></th>
-                  <th><input className="edu-filter-input" value={fAciklama} onChange={(e) => { setFAciklama(e.target.value); setPage(1); }} placeholder="Ara…" /></th>
-                  <th>
-                    <SystemDropdown className="edu-filter-select" ariaLabel="Eğitim türü filtresi" placeholder="Eğitim Türü" value={fTur} onChange={(value) => { setFTur(value); setPage(1); }} options={[{ value: "", label: "Eğitim Türü" }, { value: "Online", label: "Online" }, { value: "Offline", label: "Offline" }]} />
-                  </th>
-                  <th><input className="edu-filter-input" value={fKota} onChange={(e) => { setFKota(e.target.value); setPage(1); }} placeholder="Ara…" /></th>
-                  <th>
-                    <SystemDropdown className="edu-filter-select" ariaLabel="Esnek kota filtresi" placeholder="Esnek Kota" value={fEsnek} onChange={(value) => { setFEsnek(value); setPage(1); }} options={[{ value: "", label: "Esnek Kota" }, { value: "Esnek", label: "Esnek" }, { value: "Esnek Değil", label: "Esnek Değil" }]} />
-                  </th>
-                  <th>
-                    <SystemDropdown className="edu-filter-select" ariaLabel="Durum filtresi" placeholder="Durum" value={fDurum} onChange={(value) => { setFDurum(value); setPage(1); }} options={[{ value: "", label: "Durum" }, { value: "Aktif", label: "Aktif" }, { value: "Pasif", label: "Pasif" }]} />
-                  </th>
-                  <th></th>
-                  <th></th>
-                  <th></th>
+                  <th aria-label="İşlemler"></th>
                 </tr>
               </thead>
               <tbody>
                 {pageItems.map((t) => (
                   <tr key={t.id}>
-                    <td style={{ minWidth: 200, maxWidth: 320 }}><span className="edu-name-link">{t.adi}</span></td>
-                    <td style={{ minWidth: 140, maxWidth: 220 }}>{t.aciklama}</td>
+                    <td className="edu-summary-cell"><span className="edu-name-link" title={t.adi}>{t.adi}</span><small title={t.aciklama}>{t.aciklama}</small></td>
                     <td className="nowrap"><span className={`edu-badge ${t.tur.toLowerCase()}`}>{t.tur}</span></td>
-                    <td className="nowrap">{t.kota} / {t.katilan}</td>
+                    <td className="nowrap"><strong className="edu-capacity-value">{t.katilan}</strong><span className="edu-capacity-total"> / {t.kota}</span></td>
                     <td className="nowrap"><span className={`edu-badge ${t.esnekKota === "Esnek" ? "esnek" : "esnek-degil"}`}>{t.esnekKota}</span></td>
                     <td className="nowrap"><span className={`edu-badge ${t.durum.toLowerCase()}`}>{t.durum}</span></td>
-                    <td className="nowrap" style={{ fontSize: ".64rem" }}>{t.baslama} / {t.bitis}</td>
-                    <td className="nowrap">{t.ucret.toLocaleString("tr-TR")}.0</td>
-                    <td style={{ textAlign: "center", padding: "0 .5rem" }}>
+                    <td className="nowrap edu-date-cell"><span>{t.baslama}</span><small>{t.bitis}</small></td>
+                    <td className="nowrap edu-price-cell">{t.ucret.toLocaleString("tr-TR")} TL</td>
+                    <td className="edu-actions-cell">
                       <RowMenu
                         id={t.id}
                         basePath={basePath}
@@ -215,11 +245,16 @@ export function EducationListContent({ basePath = "/admin/egitim-talepleri/egiti
                 ))}
                 {pageItems.length === 0 && (
                   <tr>
-                    <td colSpan={9} style={{ padding: "2rem", textAlign: "center", color: "var(--muted)", fontSize: ".7rem" }}>
+                    <td colSpan={8} style={{ padding: "2rem", textAlign: "center", color: "var(--muted)", fontSize: ".7rem" }}>
                       Kayıt bulunamadı.
                     </td>
                   </tr>
                 )}
+                {Array.from({ length: emptyRows }, (_, index) => (
+                  <tr className="edu-placeholder-row" aria-hidden="true" key={`empty-${index}`}>
+                    <td colSpan={8}></td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

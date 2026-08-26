@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { AdminShell } from "../../AdminShell";
 import { SystemDropdown } from "../../../components/SystemDropdown";
 import { readServiceTypes, ServiceOption, ServiceStatus, writeServiceTypes } from "../serviceTypeData";
@@ -48,11 +48,44 @@ function OptionEditor({ title, hint, rows, onChange }: { title:string; hint:stri
 
 export default function SiparisTuruEklePage() {
   const router = useRouter();
+  const finalSectionRef = useRef<HTMLElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
   const [code,setCode] = useState("");
   const [title,setTitle] = useState("");
   const [initialFee,setInitialFee] = useState("0");
   const [order,setOrder] = useState("1");
   const [status,setStatus] = useState<ServiceStatus>("aktif");
+
+  useEffect(() => {
+    let frame = 0;
+    const updateActionsBoundary = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const actions = actionsRef.current;
+        const finalSection = finalSectionRef.current;
+        if (!actions || !finalSection || window.innerWidth <= 980) {
+          actions?.style.removeProperty("--service-actions-bottom");
+          return;
+        }
+        const finalBottom = finalSection.getBoundingClientRect().bottom;
+        const bottomOffset = Math.max(20, window.innerHeight - finalBottom);
+        actions.style.setProperty("--service-actions-bottom", `${bottomOffset}px`);
+      });
+    };
+
+    updateActionsBoundary();
+    window.addEventListener("scroll", updateActionsBoundary, { passive:true });
+    window.addEventListener("resize", updateActionsBoundary);
+    const observer = new ResizeObserver(updateActionsBoundary);
+    const finalSection = finalSectionRef.current;
+    if (finalSection) observer.observe(finalSection);
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener("scroll", updateActionsBoundary);
+      window.removeEventListener("resize", updateActionsBoundary);
+    };
+  }, []);
   const [description,setDescription] = useState("");
   const [helpVideo,setHelpVideo] = useState("");
   const [deliveryTimes,setDeliveryTimes] = useState<ServiceOption[]>([]);
@@ -127,7 +160,7 @@ export default function SiparisTuruEklePage() {
               </div>
             </section>
 
-            <section className="detail-panel">
+            <section ref={finalSectionRef} className="detail-panel">
               <div className="service-form-section-heading"><span><Icon name="image" size={16} /></span><strong>Görsel ve fiyat ayarları</strong></div>
               <div className="settings-panel-body">
                 <div className="form-field"><label htmlFor="service-logo">Logo URL <em>(900×500)</em></label><input id="service-logo" value={logoUrl} onChange={(event) => setLogoUrl(event.target.value)} placeholder="https://..." /><p className="settings-hint">Görsel URL girildiğinde sağdaki müşteri önizlemesinde gösterilir.</p></div>
@@ -151,7 +184,7 @@ export default function SiparisTuruEklePage() {
           </aside>
         </div>
 
-        <div className="service-type-form-actions">
+        <div ref={actionsRef} className="service-type-form-actions">
           {error && <p className="settings-note error" role="alert">{error}</p>}
           <Link href="/admin/siparis-turleri">İptal</Link>
           <button type="submit"><Icon name="save" size={16} />Kaydet</button>

@@ -91,29 +91,61 @@ function RowMenu({ id, onDelete }: { id: number; onDelete: () => void }) {
   );
 }
 
-const PER_PAGE = 10;
+const FALLBACK_PER_PAGE = 10;   // masaüstü ölçümü hazır olana / mobilde kullanılır
+const ROW_HEIGHT = 64;          // .edu-table sabit satır yüksekliği (globals.css)
 
 function getPageNumbers(current: number, total: number): (number | "…")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  const pages: (number | "…")[] = [1, 2, 3, 4, 5];
-  if (total > 6) pages.push("…");
-  pages.push(total);
-  return pages;
+  if (current <= 4)         return [1, 2, 3, 4, 5, "…", total];
+  if (current >= total - 3) return [1, "…", total - 4, total - 3, total - 2, total - 1, total];
+  return [1, "…", current - 1, current, current + 1, "…", total];
 }
 
 export default function DersListesiPage() {
   const [page,         setPage]         = useState(1);
+  const [query,        setQuery]        = useState("");
   const [deletedIds,   setDeletedIds]   = useState<Set<number>>(new Set());
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
-  const visible    = lessons.filter((d) => !deletedIds.has(d.id));
-  const totalPages = Math.max(1, Math.ceil(visible.length / PER_PAGE));
+  // Sayfa başına satır sayısı: masaüstünde tablo alanının boş yüksekliğine göre
+  // dinamik hesaplanır; ekran büyüdükçe daha çok satır sığar. Mobilde sabit kalır.
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [perPage, setPerPage] = useState(FALLBACK_PER_PAGE);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    const desktop = window.matchMedia("(min-width:761px)");
+
+    function recompute() {
+      if (!wrap || !desktop.matches) { setPerPage(FALLBACK_PER_PAGE); return; }
+      const thead   = wrap.querySelector("thead");
+      const headH   = thead ? thead.getBoundingClientRect().height : 34;
+      const avail   = wrap.clientHeight - headH;
+      setPerPage(Math.max(3, Math.floor(avail / ROW_HEIGHT)));
+    }
+
+    recompute();
+    const ro = new ResizeObserver(recompute);
+    ro.observe(wrap);
+    desktop.addEventListener("change", recompute);
+    return () => { ro.disconnect(); desktop.removeEventListener("change", recompute); };
+  }, []);
+
+  const filtered = lessons.filter((d) => {
+    if (deletedIds.has(d.id)) return false;
+    if (query && !`${d.adi} ${d.aciklama} ${d.modul}`.toLowerCase().includes(query.toLowerCase())) return false;
+    return true;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage   = Math.min(page, totalPages);
-  const pageItems  = visible.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
+  const pageItems  = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+  const emptyRows  = pageItems.length > 0 ? Math.max(0, perPage - pageItems.length) : 0;
 
   return (
     <AdminShell>
-      <div className="st-page">
+      <div className="st-page education-list-page">
         <header className="orders-hero">
           <div>
             <p className="eyebrow">YÖNETİM · EĞİTİM TALEPLERİ</p>
@@ -125,27 +157,54 @@ export default function DersListesiPage() {
         </header>
 
         <section className="detail-panel st-list-panel" style={{ padding: 0 }}>
-          <div className="ur-table-wrap">
+          <div className="edu-list-toolbar" aria-label="Ders listesini filtrele">
+            <label className="orders-search edu-list-search">
+              <span aria-hidden="true">⌕</span>
+              <input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="Ders adı, açıklama veya modülde ara…" />
+            </label>
+            <span className="result-count">{filtered.length} ders</span>
+          </div>
+
+          <div className="ur-table-wrap" ref={wrapRef}>
             <table className="ur-table edu-table">
+              <colgroup>
+                <col style={{ width: "64px" }} />
+                <col style={{ width: "30%" }} />
+                <col style={{ width: "26%" }} />
+                <col />
+                <col style={{ width: "52px" }} />
+              </colgroup>
               <thead>
                 <tr>
-                  <th style={{ width: 60 }}>ID</th>
+                  <th className="nowrap">ID</th>
                   <th>Adı</th>
                   <th>Açıklama</th>
                   <th>Hangi Modüllerde Kullanılıyor?</th>
-                  <th style={{ width: 48 }}></th>
+                  <th aria-label="İşlemler"></th>
                 </tr>
               </thead>
               <tbody>
                 {pageItems.map((d) => (
                   <tr key={d.id}>
-                    <td className="ms-id-cell">{d.id}</td>
-                    <td><span className="edu-name-link">{d.adi}</span></td>
-                    <td>{d.aciklama || <span style={{ color: "var(--muted)" }}>—</span>}</td>
-                    <td><span className="edu-module-cell">{d.modul}</span></td>
-                    <td style={{ textAlign: "center", padding: "0 .5rem" }}>
+                    <td className="nowrap ms-id-cell">{d.id}</td>
+                    <td><span className="edu-name-link" title={d.adi}>{d.adi}</span></td>
+                    <td title={d.aciklama || undefined}>{d.aciklama || <span style={{ color: "var(--muted)" }}>—</span>}</td>
+                    <td><span className="edu-module-cell" title={d.modul}>{d.modul}</span></td>
+                    <td className="edu-actions-cell">
                       <RowMenu id={d.id} onDelete={() => setDeleteConfirm(d.id)} />
                     </td>
+                  </tr>
+                ))}
+                {pageItems.length === 0 && (
+                  <tr>
+                    <td colSpan={5} style={{ padding: "2rem", textAlign: "center", color: "var(--muted)", fontSize: ".7rem" }}>
+                      Kayıt bulunamadı.
+                    </td>
+                  </tr>
+                )}
+                {Array.from({ length: emptyRows }, (_, index) => (
+                  <tr className="edu-placeholder-row" aria-hidden="true" key={`empty-${index}`}>
+                    <td colSpan={5}></td>
                   </tr>
                 ))}
               </tbody>

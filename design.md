@@ -149,17 +149,23 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
 
 ### Yönetim mega menüsü
 
-- Yönetici üst barındaki `Yönetim` açılır alanı tek sütunlu, iç içe flyout kullanmaz. İçerik;
-  Sipariş Ayarları, Eğitim Talepleri, Kullanıcı Yönetimi, Abonelik, Şablon Ayarları,
-  Görev İşlemleri ve Site Ayarları başlıkları altında üç sütunlu `.admin-management-menu`
-  ızgarasında gösterilir.
+- Yönetici üst barındaki `Yönetim` açılır alanı iç içe flyout kullanmaz. İçerik; Sipariş Ayarları,
+  Eğitim Talepleri, Kullanıcı Yönetimi, Abonelik, Şablon Ayarları, Görev İşlemleri ve Site Ayarları
+  başlıklarına ayrılır. Kategoriler `.admin-management-menu` içinde iki sütunlu (`column-count:2`) bir
+  akışa dağıtılır; her kategori `break-inside:avoid` ile bütün kalır ve öğelerini **tek sütun** halinde
+  listeler. İki sütun; panelin hem alçak kalıp iç scroll olmadan sığmasını hem de sağa gereksiz
+  genişleyip ölü alan bırakmadan dengeli dolmasını sağlar. Kategori
+  başlığı `h2`, soluna ince mavi aksan çubuğu (`h2::before`) alır. Öğe ikonları tekrarlı jenerik ikon
+  değil, içeriğe uygun anlamlı ikonlardır; hover'da öğe `--blue-soft` zemin alır.
 - Mevcut rotalar doğrudan bağlanır; henüz ekranı teslim edilmemiş öğeler menüde planlanan rota
   ile görünür. Menü mevcut `--line`, `--navy`, `--muted`, `--surface` tokenlarını ve yönetici
   üst barının hover/Escape/dışarı çıkınca kapanma davranışını korur.
 - Yönetim panelinin kendi içinde dikey scroll oluşmaz. Yoğun içerik kompakt grup ve satır
   ölçüleriyle yerleştirilir. Açılma konumu, hareketi ve kapanma davranışı üst bardaki diğer
   `.admin-menu` dropdownlarıyla aynıdır; yalnızca panel genişliği ve kategorili iç düzeni
-  farklıdır. 980px altında iki, 680px altında tek sütuna iner.
+  farklıdır. Panel iki kategori sütunlu ve ≤600px genişliğindedir; eski genişliğin altında kalarak sağ
+  kenardan taşmayı önler. 680px altında panel sabit konumlanır, tek sütuna iner ve yalnızca bu dar
+  görünümde içerik viewport'u aşarsa dikey kaydırmaya izin verilir.
 
 ### Sipariş analizörü değiştirme
 
@@ -187,6 +193,10 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   üretmez; mevcut form alanı, focus halkası, küçük ikon kutusu ve `settings-actions` kalıplarını
   kullanır. Renk seçimi yalnızca kategori tanımlama verisidir ve mevcut yardımcı renk paletiyle
   sınırlandırılır.
+- Yeni kategori formu masaüstünde yönetici üst barının altında kalan görünüm yüksekliğine bütünüyle
+  sığar; sayfa ya da panel içinde dikey kaydırma üretmez. Başlık, önizleme, alanlar ve aksiyonlar aynı
+  ekranda görünür. Dar ekranlarda kontrollerin erişilebilirliğini korumak için doğal sayfa akışı
+  kullanılır.
 - Kategori ikonları iki ekranın da kullandığı tek tipli inline-SVG bileşeninden çizilir. Liste ve
   form arasında ikon geometrisi değişmez. Demo akışında kayıtlar tarayıcı depolamasında saklanır;
   kaydetme sonrası listeye dönülür ve sıra değerine göre gösterilir.
@@ -204,6 +214,10 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   bileşenidir. Önizleme başlık, kod, açıklama ve logo URL değişikliklerini anlık yansıtır.
 - Yeni türler demo akışında tarayıcı depolamasına kaydedilir, ardından liste ekranında mevcut
   sistem türleriyle birlikte sıra değerine göre gösterilir.
+- Formun kaydetme/iptal işlem kartı masaüstünde sağdaki müşteri önizleme kolonu ile aynı genişlikte
+  ve aynı sağ hizada, ekran tabanından güvenli bir boşluk bırakacak biçimde sabit durur. Kartın alt
+  hareket sınırı son “Görsel ve fiyat ayarları” panelidir; sayfa sonunda bu panelin alt hizasını
+  geçmez. Dar ekranlarda içeriği kapatmamak için normal akışa döner ve tam genişliğe açılır.
 
 ### Randevu yönetimi
 
@@ -813,6 +827,15 @@ fark, veri yoğun "yönetim" düzeni ve custom SVG grafiklerdir.
   düz çizgi, barlar 0), tablo "Veriler gizlendi" satırına döner. Etiket/başlıklar okunur kalır; göz açılınca
   orijinal veriler geri gelir.
 - **Alt sayfalar** `AdminShell` içinde kurulur. Üst kısımda `.admin-breadcrumb` (Anasayfa · bölüm · **sayfa**).
+- **Yönetim alt sayfası düşey ritmi:** Üst bardaki `Yönetim` menüsünden açılan rotalarda
+  `AdminShell`, ana içerik yüzeyine `.admin-management-page` modifier'ını ekler. Bu modifier genel
+  `.admin-dash` üst padding'ini `.45rem` seviyesine indirir ve doğrudan çocuk sayfanın ikinci bir
+  üst padding üretmesini engeller; başlık ile 72px üst bar arasında tek, kontrollü bir boşluk kalır.
+  Uzun ayar/oluşturma formları doğal sayfa kaydırmasını korur. İçeriği kısa olan yönetim ekranları
+  aynı kompakt başlangıç sayesinde ek bir "one page" bileşeni üretmeden görünür alana sığar.
+  `/admin/analizor-degistir` özelinde eski `4rem` alt tampon kullanılmaz; iki seçim paneli ve aktarım
+  özeti masaüstünde tek görünüm hedefiyle akar, 920px altında mevcut tek kolon ve doğal scroll
+  davranışı devam eder. İçerik hiçbir viewport'ta `overflow:hidden` ile kesilmez.
 - Veriler şimdilik statik/mock; gerçek sistemde backend'den beslenmeli.
 - **Grafik etkileşimi:** sütun, alan, halka ve analizör çubukları fare/klavye odağında mevcut
   etiketi ve değeri küçük bilgi kartında gösterir. Halka grafiklerde aktif dilimin kategori adı,

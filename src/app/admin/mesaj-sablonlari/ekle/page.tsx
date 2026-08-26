@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { AdminShell } from "../../AdminShell";
 
 type IconName = "back" | "check" | "save";
@@ -18,71 +18,94 @@ export default function MesajSablonuEklePage() {
   const [baslik, setBaslik] = useState("");
   const [icerik, setIcerik] = useState("");
   const [saved,  setSaved]  = useState(false);
+  const editorRef = useRef<HTMLTextAreaElement>(null);
 
   const canSave = baslik.trim() && icerik.trim();
 
-  function handleSave() {
+  function handleSave(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     if (!canSave) return;
     setSaved(true);
     setTimeout(() => setSaved(false), 2200);
   }
 
+  function insertVariable(variable: string) {
+    const editor = editorRef.current;
+    const start = editor?.selectionStart ?? icerik.length;
+    const end = editor?.selectionEnd ?? start;
+    setIcerik(`${icerik.slice(0, start)}${variable}${icerik.slice(end)}`);
+    requestAnimationFrame(() => {
+      editor?.focus();
+      editor?.setSelectionRange(start + variable.length, start + variable.length);
+    });
+  }
+
   return (
     <AdminShell>
-      <div className="st-page">
-        <header className="st-ekle-header">
+      <div className="st-page message-template-create-page">
+        <header className="favorite-category-create-header">
           <Link className="back-link" href="/admin/mesaj-sablonlari">
             <Icon name="back" size={16} />Mesaj Şablonlarına dön
           </Link>
-          <div>
-            <p className="eyebrow">YÖNETİM · MESAJ ŞABLONLARI</p>
-            <h1>Yeni Mesaj Şablonu Ekle</h1>
-          </div>
+          <h1>Yeni Mesaj Şablonu</h1>
         </header>
 
-        <section className="detail-panel" style={{ maxWidth: 720 }}>
+        <form className="detail-panel message-template-create-form" onSubmit={handleSave}>
+          <div className="detail-panel-heading">
+            <div>
+              <p className="eyebrow">ŞABLON BİLGİLERİ</p>
+              <h2>Mesaj içeriğini oluşturun</h2>
+            </div>
+          </div>
+
           <div className="settings-panel-body">
             <div className="form-field">
-              <label htmlFor="ms-baslik">Mesaj Başlığı <em>*</em></label>
+              <label htmlFor="ms-baslik">Başlık <em>*</em></label>
               <input
                 id="ms-baslik"
                 value={baslik}
                 onChange={(e) => setBaslik(e.target.value)}
-                placeholder="Şablon adını girin"
+                placeholder="Mesaj şablonu başlığını girin"
                 autoFocus
               />
             </div>
 
             <div className="form-field">
-              <label htmlFor="ms-icerik">
-                Mesaj İçeriği <em>*</em>
-                <span style={{ marginLeft: ".5rem", fontWeight: 600, color: "#9baab6", fontSize: ".8em" }}>
-                  Değişkenler: {"{musteri_adi}"} {"{siparis_kodu}"} {"{tarih}"} vb.
-                </span>
-              </label>
-              <textarea
-                id="ms-icerik"
-                value={icerik}
-                onChange={(e) => setIcerik(e.target.value)}
-                placeholder={"Sayın {musteri_adi},\n\nMesaj içeriği buraya yazılır...\n\nSaygılarımızla,\neistatistik Ekibi"}
-                rows={12}
-                style={{ resize: "vertical", fontFamily: "inherit" }}
-              />
-            </div>
-
-            <div className="st-save-row">
-              <button
-                className={`st-save-btn${saved ? " saved" : ""}`}
-                onClick={handleSave}
-                disabled={!canSave}
-              >
-                {saved
-                  ? <><Icon name="check" size={16} />Kaydedildi</>
-                  : <><Icon name="save"  size={16} />Kaydet</>}
-              </button>
+              <label htmlFor="ms-icerik">Mesaj şablonu <em>*</em></label>
+              <div className="guide-editor message-template-editor">
+                <div className="guide-editor-toolbar" aria-label="Mesaj değişkenleri">
+                  <span>Değişken ekle</span>
+                  <button type="button" onClick={() => insertVariable("{musteri_adi}")}>Müşteri adı</button>
+                  <button type="button" onClick={() => insertVariable("{siparis_kodu}")}>Sipariş kodu</button>
+                  <button type="button" onClick={() => insertVariable("{tarih}")}>Tarih</button>
+                </div>
+                <textarea
+                  ref={editorRef}
+                  id="ms-icerik"
+                  value={icerik}
+                  onChange={(e) => setIcerik(e.target.value)}
+                  placeholder={"Sayın {musteri_adi},\n\nMesajınızı buraya yazın.\n\nSaygılarımızla,\neistatistik Ekibi"}
+                  aria-describedby="message-template-help"
+                />
+              </div>
+              <small id="message-template-help" className="message-template-help">
+                Değişkenler, mesaj gönderilirken ilgili müşteri ve sipariş bilgileriyle otomatik olarak doldurulur.
+              </small>
             </div>
           </div>
-        </section>
+
+          <div className="settings-actions">
+            <p className={`settings-note${saved ? " success" : ""}`} aria-live="polite">
+              {saved ? "Mesaj şablonu kaydedildi." : "Başlık ve mesaj şablonu alanları zorunludur."}
+            </p>
+            <Link className="favorite-category-cancel" href="/admin/mesaj-sablonlari">
+              <Icon name="back" size={15} />İptal
+            </Link>
+            <button className="settings-save" type="submit" disabled={!canSave}>
+              {saved ? <><Icon name="check" size={16} />Kaydedildi</> : <><Icon name="save" size={16} />Kaydet</>}
+            </button>
+          </div>
+        </form>
       </div>
     </AdminShell>
   );
