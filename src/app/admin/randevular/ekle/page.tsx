@@ -56,8 +56,8 @@ export default function AddAppointmentPage() {
         <div className="settings-panel-body">
           <div className="form-field"><label htmlFor="appointment-title">Başlık <em>*</em></label><input id="appointment-title" value={title} onChange={event => { setTitle(event.target.value); setError(""); }} placeholder="Örn. Tez veri analizi kapsam görüşmesi" autoFocus /></div>
           <div className="form-grid">
-            <div className="form-field"><label>Müşteri <em>*</em></label><SystemDropdown value={customerId} onChange={value => { setCustomerId(value); setError(""); }} placeholder="Müşteri seçin" ariaLabel="Randevu müşterisi" options={customerOptions} /></div>
-            <div className="form-field"><label>Atanan kişi <em>*</em></label><SystemDropdown value={assigneeId} onChange={value => { setAssigneeId(value); setError(""); }} placeholder="Ekip üyesi seçin" ariaLabel="Randevuya atanan kişi" options={assigneeOptions} /></div>
+            <div className="form-field"><label>Müşteri <em>*</em></label><SystemDropdown value={customerId} onChange={value => { setCustomerId(value); setError(""); }} placeholder="Müşteri seçin" ariaLabel="Randevu müşterisi" options={customerOptions} searchable searchPlaceholder="Müşteri ara…" /></div>
+            <div className="form-field"><label>Atanan kişi <em>*</em></label><SystemDropdown value={assigneeId} onChange={value => { setAssigneeId(value); setError(""); }} placeholder="Ekip üyesi seçin" ariaLabel="Randevuya atanan kişi" options={assigneeOptions} searchable searchPlaceholder="Kişi ara…" /></div>
           </div>
           <div className="form-grid appointment-datetime-grid">
             <fieldset><legend>Başlangıç <em>*</em></legend><div><DatePicker id="appointment-start-date" value={startDate} onChange={value => { setStartDate(value); setError(""); }} required /><TimePicker id="appointment-start-time" value={startTime} onChange={value => { setStartTime(value); setError(""); }} /></div></fieldset>

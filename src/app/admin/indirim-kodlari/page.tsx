@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AdminShell } from "../AdminShell";
 
 type KodTip = "percentage" | "amount";
@@ -54,42 +54,83 @@ function Icon({ name, size = 17 }: { name: IconName; size?: number }) {
   );
 }
 
-const PER_PAGE = 10;
+const FALLBACK_PER_PAGE = 10;   // masaüstü ölçümü hazır olana / mobilde kullanılır
+const ROW_HEIGHT = 64;          // .edu-table sabit satır yüksekliği (globals.css)
 
-function getPageNumbers(current: number, total: number): (number | "…")[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  const pages: (number | "…")[] = [1, 2, 3, 4, 5];
-  pages.push("…");
-  pages.push(total);
-  return pages;
+function formatTutar(k: IndirimKodu) {
+  const n = k.tutar.toLocaleString("tr-TR");
+  return k.tip === "percentage" ? `%${n}` : `${n} ₺`;
 }
 
 export default function IndirimKoduListesiPage() {
-  const [page, setPage] = useState(1);
+  const [page,  setPage]  = useState(1);
+  const [query, setQuery] = useState("");
 
-  const totalPages = Math.max(1, Math.ceil(DATA.length / PER_PAGE));
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [perPage, setPerPage] = useState(FALLBACK_PER_PAGE);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    const desktop = window.matchMedia("(min-width:761px)");
+
+    function recompute() {
+      if (!wrap || !desktop.matches) { setPerPage(FALLBACK_PER_PAGE); return; }
+      const thead   = wrap.querySelector("thead");
+      const headH   = thead ? thead.getBoundingClientRect().height : 34;
+      const avail   = wrap.clientHeight - headH;
+      setPerPage(Math.max(3, Math.floor(avail / ROW_HEIGHT)));
+    }
+
+    recompute();
+    const ro = new ResizeObserver(recompute);
+    ro.observe(wrap);
+    desktop.addEventListener("change", recompute);
+    return () => { ro.disconnect(); desktop.removeEventListener("change", recompute); };
+  }, []);
+
+  const filtered = DATA.filter((k) => {
+    if (query && !`${k.kod} ${k.aciklama}`.toLowerCase().includes(query.toLowerCase())) return false;
+    return true;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const safePage   = Math.min(page, totalPages);
-  const pageItems  = DATA.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
+  const pageItems  = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+  const emptyRows  = pageItems.length > 0 ? Math.max(0, perPage - pageItems.length) : 0;
 
   return (
     <AdminShell>
-      <div className="st-page">
+      <div className="st-page education-list-page">
         <header className="orders-hero">
           <div>
             <p className="eyebrow">YÖNETİM</p>
             <h1>İndirim Kodu Listesi</h1>
           </div>
+          <Link className="orders-create" href="/admin/indirim-kodlari/ekle">
+            <Icon name="plus" size={16} />Ekle
+          </Link>
         </header>
 
         <section className="detail-panel st-list-panel" style={{ padding: 0 }}>
-          <div style={{ padding: ".85rem 1.1rem .65rem", borderBottom: "1px solid var(--line)" }}>
-            <Link className="orders-create" href="/admin/indirim-kodlari/ekle">
-              <Icon name="plus" size={15} />Ekle
-            </Link>
+          <div className="edu-list-toolbar" aria-label="İndirim kodlarını filtrele">
+            <label className="orders-search edu-list-search">
+              <span aria-hidden="true">⌕</span>
+              <input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="Kod veya açıklamada ara…" />
+            </label>
+            <span className="result-count">{filtered.length} kod</span>
           </div>
 
-          <div className="ur-table-wrap">
-            <table className="ur-table">
+          <div className="ur-table-wrap" ref={wrapRef}>
+            <table className="ur-table edu-table">
+              <colgroup>
+                <col style={{ width: "13%" }} />
+                <col style={{ width: "33%" }} />
+                <col style={{ width: "10%" }} />
+                <col style={{ width: "13%" }} />
+                <col style={{ width: "13%" }} />
+                <col style={{ width: "18%" }} />
+              </colgroup>
               <thead>
                 <tr>
                   <th>Kod</th>
@@ -103,19 +144,33 @@ export default function IndirimKoduListesiPage() {
               <tbody>
                 {pageItems.map((k) => (
                   <tr key={k.id}>
-                    <td><span className="ic-code">{k.kod}</span></td>
+                    <td><span className="ic-code" title={k.kod}>{k.kod}</span></td>
                     <td>
                       {k.aciklama
                         ? k.aciklamaLink
-                          ? <a className="ic-desc-link" href="/admin/siparisler">{k.aciklama}</a>
-                          : <span style={{ color: "#3f556a", fontWeight: 700 }}>{k.aciklama}</span>
+                          ? <a className="ic-desc-link" href="/admin/siparisler" title={k.aciklama}>{k.aciklama}</a>
+                          : <span style={{ color: "#3f556a", fontWeight: 700 }} title={k.aciklama}>{k.aciklama}</span>
                         : <span style={{ color: "var(--muted)" }}>—</span>
                       }
                     </td>
-                    <td style={{ color: "#54687a", fontWeight: 600, fontSize: ".7rem" }}>{k.tip}</td>
-                    <td style={{ color: "var(--navy)", fontWeight: 700, fontSize: ".7rem" }}>{k.tutar}.0</td>
+                    <td style={{ color: "#54687a", fontWeight: 600, fontSize: ".7rem" }}>
+                      {k.tip === "percentage" ? "Yüzde" : "Tutar"}
+                    </td>
+                    <td style={{ color: "var(--navy)", fontWeight: 700, fontSize: ".7rem" }}>{formatTutar(k)}</td>
                     <td style={{ color: "#54687a", fontWeight: 700, fontSize: ".7rem" }}>{k.limit} / {k.kullanilan}</td>
                     <td className="ic-date-cell">{k.baslama} - {k.bitis}</td>
+                  </tr>
+                ))}
+                {pageItems.length === 0 && (
+                  <tr>
+                    <td colSpan={6} style={{ padding: "2rem", textAlign: "center", color: "var(--muted)", fontSize: ".7rem" }}>
+                      Kayıt bulunamadı.
+                    </td>
+                  </tr>
+                )}
+                {Array.from({ length: emptyRows }, (_, index) => (
+                  <tr className="edu-placeholder-row" aria-hidden="true" key={`empty-${index}`}>
+                    <td colSpan={6}></td>
                   </tr>
                 ))}
               </tbody>
@@ -125,13 +180,11 @@ export default function IndirimKoduListesiPage() {
           {totalPages > 1 && (
             <div className="ms-pagination" role="navigation" aria-label="Sayfalama">
               <button disabled={safePage === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>‹ Önceki</button>
-              {getPageNumbers(safePage, totalPages).map((p, i) =>
-                p === "…"
-                  ? <button key={`ell-${i}`} disabled style={{ cursor: "default" }}>…</button>
-                  : <button key={p} className={p === safePage ? "active" : ""}
-                      aria-current={p === safePage ? "page" : undefined}
-                      onClick={() => setPage(p as number)}>{p}</button>
-              )}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <button key={p} className={p === safePage ? "active" : ""}
+                  aria-current={p === safePage ? "page" : undefined}
+                  onClick={() => setPage(p)}>{p}</button>
+              ))}
               <button disabled={safePage === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Sonraki ›</button>
             </div>
           )}

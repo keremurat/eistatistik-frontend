@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AdminShell } from "../AdminShell";
 import { KULLANICILAR, KullaniciDurum, KullaniciRol } from "./data";
 
-type IconName = "search" | "user" | "arrow";
+type IconName = "user" | "arrow";
 function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, React.ReactNode> = {
-    search: <><circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" /></>,
     user:   <><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></>,
     arrow:  <><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>,
   };
@@ -18,6 +17,16 @@ function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
       {paths[name]}
     </svg>
   );
+}
+
+const FALLBACK_PER_PAGE = 10;   // masaüstü ölçümü hazır olana / mobilde kullanılır
+const ROW_HEIGHT = 64;          // .edu-table sabit satır yüksekliği (globals.css)
+
+function getPageNumbers(current: number, total: number): (number | "…")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  if (current <= 4)         return [1, 2, 3, 4, 5, "…", total];
+  if (current >= total - 3) return [1, "…", total - 4, total - 3, total - 2, total - 1, total];
+  return [1, "…", current - 1, current, current + 1, "…", total];
 }
 
 const ROL_RENK: Record<KullaniciRol, { bg: string; color: string }> = {
@@ -39,6 +48,30 @@ export default function KullaniciListesiPage() {
 
 export function UserListContent({ basePath = "/admin/kullanici-yonetimi" }: { basePath?: string }) {
   const [search, setSearch] = useState("");
+  const [page,   setPage]   = useState(1);
+
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [perPage, setPerPage] = useState(FALLBACK_PER_PAGE);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    const desktop = window.matchMedia("(min-width:761px)");
+
+    function recompute() {
+      if (!wrap || !desktop.matches) { setPerPage(FALLBACK_PER_PAGE); return; }
+      const thead   = wrap.querySelector("thead");
+      const headH   = thead ? thead.getBoundingClientRect().height : 34;
+      const avail   = wrap.clientHeight - headH;
+      setPerPage(Math.max(3, Math.floor(avail / ROW_HEIGHT)));
+    }
+
+    recompute();
+    const ro = new ResizeObserver(recompute);
+    ro.observe(wrap);
+    desktop.addEventListener("change", recompute);
+    return () => { ro.disconnect(); desktop.removeEventListener("change", recompute); };
+  }, []);
 
   const filtered = KULLANICILAR.filter((u) => {
     const q = search.toLowerCase().trim();
@@ -52,130 +85,150 @@ export function UserListContent({ basePath = "/admin/kullanici-yonetimi" }: { ba
     );
   });
 
-  return (
-    <>
-      <div className="st-page">
-        <header className="orders-hero">
-          <div>
-            <p className="eyebrow">KULLANICI YÖNETİMİ</p>
-            <h1>Kullanıcı Listesi</h1>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: ".6rem" }}>
-            <span style={{ fontSize: ".65rem", color: "#8493a0", fontWeight: 700 }}>
-              {filtered.length} kullanıcı
-            </span>
-            <div style={{
-              display: "flex", alignItems: "center", gap: ".45rem",
-              padding: ".38rem .75rem", border: "1px solid var(--line)",
-              borderRadius: 8, background: "#fff", minWidth: 220,
-            }}>
-              <span style={{ color: "#94aab7", display: "flex" }}><Icon name="search" size={14} /></span>
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Ad, e-posta, GSM veya ID ara…"
-                style={{
-                  flex: 1, border: 0, outline: "none", background: "transparent",
-                  fontSize: ".7rem", color: "var(--ink)", fontFamily: "inherit",
-                }}
-              />
-            </div>
-          </div>
-        </header>
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+  const safePage   = Math.min(page, totalPages);
+  const pageItems  = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+  const emptyRows  = pageItems.length > 0 ? Math.max(0, perPage - pageItems.length) : 0;
 
-        <section className="detail-panel st-list-panel" style={{ padding: 0 }}>
-          <div className="ur-table-wrap">
-            <table className="ur-table">
-              <thead>
-                <tr>
-                  <th style={{ width: 56 }}>ID</th>
-                  <th>Adı Soyadı</th>
-                  <th>E-posta</th>
-                  <th>GSM</th>
-                  <th style={{ textAlign: "center" }}>Tür</th>
-                  <th style={{ textAlign: "center" }}>Durum</th>
-                  <th style={{ textAlign: "center" }}>Rol</th>
-                  <th style={{ textAlign: "right" }}>İşlemler</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} style={{ textAlign: "center", padding: "2.5rem", color: "#8493a0", fontSize: ".75rem" }}>
-                      Kullanıcı bulunamadı
+  return (
+    <div className="st-page education-list-page">
+      <header className="orders-hero">
+        <div>
+          <p className="eyebrow">KULLANICI YÖNETİMİ</p>
+          <h1>Kullanıcı Listesi</h1>
+        </div>
+      </header>
+
+      <section className="detail-panel st-list-panel" style={{ padding: 0 }}>
+        <div className="edu-list-toolbar" aria-label="Kullanıcı listesini filtrele">
+          <label className="orders-search edu-list-search">
+            <span aria-hidden="true">⌕</span>
+            <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Ad, e-posta, GSM veya ID ara…" />
+          </label>
+          <span className="result-count">{filtered.length} kullanıcı</span>
+        </div>
+
+        <div className="ur-table-wrap" ref={wrapRef}>
+          <table className="ur-table edu-table">
+            <colgroup>
+              <col style={{ width: "56px" }} />
+              <col style={{ width: "19%" }} />
+              <col style={{ width: "24%" }} />
+              <col style={{ width: "12%" }} />
+              <col style={{ width: "9%" }} />
+              <col style={{ width: "11%" }} />
+              <col style={{ width: "10%" }} />
+              <col style={{ width: "92px" }} />
+            </colgroup>
+            <thead>
+              <tr>
+                <th className="nowrap">ID</th>
+                <th>Adı Soyadı</th>
+                <th>E-posta</th>
+                <th>GSM</th>
+                <th style={{ textAlign: "center" }}>Tür</th>
+                <th style={{ textAlign: "center" }}>Durum</th>
+                <th style={{ textAlign: "center" }}>Rol</th>
+                <th style={{ textAlign: "right" }}>İşlemler</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pageItems.map((u) => {
+                const rol    = ROL_RENK[u.rol];
+                const durum  = DURUM_RENK[u.durum];
+                return (
+                  <tr key={u.id}>
+                    <td className="nowrap" style={{ color: "#8493a0", fontSize: ".68rem", fontVariantNumeric: "tabular-nums" }}>
+                      {u.id}
+                    </td>
+                    <td>
+                      <div style={{ display: "flex", alignItems: "center", gap: ".5rem", minWidth: 0 }}>
+                        <span style={{
+                          width: 28, height: 28, borderRadius: "50%",
+                          background: "#edf1f5", color: "#54687a",
+                          display: "grid", placeItems: "center", flexShrink: 0,
+                        }}>
+                          <Icon name="user" size={13} />
+                        </span>
+                        <span style={{ fontSize: ".72rem", fontWeight: 800, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={u.adSoyad}>
+                          {u.adSoyad}
+                        </span>
+                      </div>
+                    </td>
+                    <td style={{ color: "#54687a", fontSize: ".7rem" }} title={u.eposta}>{u.eposta}</td>
+                    <td className="nowrap" style={{ color: "#54687a", fontSize: ".7rem", fontVariantNumeric: "tabular-nums" }}>
+                      {u.gsm}
+                    </td>
+                    <td className="nowrap" style={{ textAlign: "center" }}>
+                      <span style={{ fontSize: ".62rem", fontWeight: 800, color: "#617689" }}>
+                        {u.tur}
+                      </span>
+                    </td>
+                    <td className="nowrap" style={{ textAlign: "center" }}>
+                      <span style={{
+                        display: "inline-flex", alignItems: "center", gap: ".3rem",
+                        padding: ".22rem .6rem", borderRadius: 99,
+                        background: durum.bg, color: durum.color,
+                        fontSize: ".62rem", fontWeight: 800,
+                      }}>
+                        <span style={{ width: 5, height: 5, borderRadius: "50%", background: durum.dot, flexShrink: 0 }} />
+                        {u.durum}
+                      </span>
+                    </td>
+                    <td className="nowrap" style={{ textAlign: "center" }}>
+                      <span style={{
+                        display: "inline-block", padding: ".22rem .6rem", borderRadius: 99,
+                        background: rol.bg, color: rol.color,
+                        fontSize: ".62rem", fontWeight: 800,
+                      }}>
+                        {u.rol}
+                      </span>
+                    </td>
+                    <td className="nowrap" style={{ textAlign: "right" }}>
+                      <Link
+                        href={`${basePath}/${u.id}`}
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: ".3rem",
+                          padding: ".3rem .75rem", border: 0, borderRadius: 7,
+                          background: "var(--navy)", color: "#fff",
+                          fontSize: ".67rem", fontWeight: 800, textDecoration: "none",
+                        }}>
+                        Detay <Icon name="arrow" size={12} />
+                      </Link>
                     </td>
                   </tr>
-                ) : filtered.map((u) => {
-                  const rol    = ROL_RENK[u.rol];
-                  const durum  = DURUM_RENK[u.durum];
-                  return (
-                    <tr key={u.id}>
-                      <td style={{ color: "#8493a0", fontSize: ".68rem", fontVariantNumeric: "tabular-nums" }}>
-                        {u.id}
-                      </td>
-                      <td>
-                        <div style={{ display: "flex", alignItems: "center", gap: ".5rem" }}>
-                          <span style={{
-                            width: 28, height: 28, borderRadius: "50%",
-                            background: "#edf1f5", color: "#54687a",
-                            display: "grid", placeItems: "center", flexShrink: 0,
-                          }}>
-                            <Icon name="user" size={13} />
-                          </span>
-                          <span style={{ fontSize: ".72rem", fontWeight: 800, color: "var(--ink)" }}>
-                            {u.adSoyad}
-                          </span>
-                        </div>
-                      </td>
-                      <td style={{ color: "#54687a", fontSize: ".7rem" }}>{u.eposta}</td>
-                      <td style={{ color: "#54687a", fontSize: ".7rem", fontVariantNumeric: "tabular-nums" }}>
-                        {u.gsm}
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        <span style={{ fontSize: ".62rem", fontWeight: 800, color: "#617689" }}>
-                          {u.tur}
-                        </span>
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        <span style={{
-                          display: "inline-flex", alignItems: "center", gap: ".3rem",
-                          padding: ".22rem .6rem", borderRadius: 99,
-                          background: durum.bg, color: durum.color,
-                          fontSize: ".62rem", fontWeight: 800,
-                        }}>
-                          <span style={{ width: 5, height: 5, borderRadius: "50%", background: durum.dot, flexShrink: 0 }} />
-                          {u.durum}
-                        </span>
-                      </td>
-                      <td style={{ textAlign: "center" }}>
-                        <span style={{
-                          display: "inline-block", padding: ".22rem .6rem", borderRadius: 99,
-                          background: rol.bg, color: rol.color,
-                          fontSize: ".62rem", fontWeight: 800,
-                        }}>
-                          {u.rol}
-                        </span>
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        <Link
-                          href={`${basePath}/${u.id}`}
-                          style={{
-                            display: "inline-flex", alignItems: "center", gap: ".3rem",
-                            padding: ".3rem .75rem", border: 0, borderRadius: 7,
-                            background: "var(--navy)", color: "#fff",
-                            fontSize: ".67rem", fontWeight: 800, textDecoration: "none",
-                          }}>
-                          Detay <Icon name="arrow" size={12} />
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                );
+              })}
+              {pageItems.length === 0 && (
+                <tr>
+                  <td colSpan={8} style={{ padding: "2rem", textAlign: "center", color: "var(--muted)", fontSize: ".7rem" }}>
+                    Kullanıcı bulunamadı
+                  </td>
+                </tr>
+              )}
+              {Array.from({ length: emptyRows }, (_, index) => (
+                <tr className="edu-placeholder-row" aria-hidden="true" key={`empty-${index}`}>
+                  <td colSpan={8}></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {totalPages > 1 && (
+          <div className="ms-pagination" role="navigation" aria-label="Sayfalama">
+            <button disabled={safePage === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>‹ Önceki</button>
+            {getPageNumbers(safePage, totalPages).map((p, i) =>
+              p === "…"
+                ? <button key={`ell-${i}`} disabled style={{ cursor: "default" }}>…</button>
+                : <button key={p} className={p === safePage ? "active" : ""}
+                    aria-current={p === safePage ? "page" : undefined}
+                    onClick={() => setPage(p as number)}>{p}</button>
+            )}
+            <button disabled={safePage === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Sonraki ›</button>
           </div>
-        </section>
-      </div>
-    </>
+        )}
+      </section>
+    </div>
   );
 }

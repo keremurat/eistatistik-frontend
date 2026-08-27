@@ -110,51 +110,15 @@ function EditForm() {
 
   return (
     <div className="st-page">
-      <header className="orders-hero" style={{ marginBottom: "1rem" }}>
-        <div>
-          <p className="eyebrow">YÖNETİM · ROL YÖNETİMİ</p>
-          <h1 style={{ fontSize: "1.2rem" }}>Rol Düzenle</h1>
-        </div>
+      <header className="favorite-category-create-header">
         <Link className="back-link" href="/admin/rol-yonetimi">
-          <Icon name="back" size={15} />Listeye dön
+          <Icon name="back" size={16} />Listeye dön
         </Link>
+        <h1>Rol Düzenle</h1>
       </header>
 
-      {/* ── Temel bilgiler ── */}
-      <section className="detail-panel" style={{ marginBottom: "1rem" }}>
-        <div className="detail-panel-heading">
-          <p className="eyebrow">TEMEL BİLGİLER</p>
-          <h2>Rol Bilgileri</h2>
-        </div>
-        <div className="settings-panel-body">
-          <div className="edu-row-2">
-            <div className="form-field">
-              <label htmlFor="rol-adi">Rol Adı</label>
-              <input id="rol-adi" value={adi} onChange={(e) => setAdi(e.target.value)} />
-            </div>
-            <div className="form-field" style={{ justifyContent: "flex-start" }}>
-              <label>Görev Ataması</label>
-              <div style={{ display: "flex", alignItems: "center", gap: ".65rem", marginTop: ".25rem" }}>
-                <Toggle
-                  checked={gorevAtamasi}
-                  onChange={setGorevAtamasi}
-                  label="Görev ataması aktif/pasif"
-                />
-                <span style={{ fontSize: ".72rem", fontWeight: 700, color: gorevAtamasi ? "#287a55" : "#758695" }}>
-                  {gorevAtamasi ? "Aktif" : "Pasif"}
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="form-field">
-            <label htmlFor="rol-aciklama">Açıklama</label>
-            <textarea id="rol-aciklama" value={aciklama} rows={2}
-              onChange={(e) => setAciklama(e.target.value)} style={{ resize: "vertical" }} />
-          </div>
-        </div>
-      </section>
-
-      {/* ── Yetki matrisi ── */}
+      <div className="rol-edit-wrap">
+      {/* ── Sol: Yetki matrisi ── */}
       <section className="detail-panel" style={{ flex: 1 }}>
         <div className="detail-panel-heading" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: ".5rem" }}>
           <div>
@@ -285,26 +249,45 @@ function EditForm() {
           )}
         </div>
 
-        {/* Kaydet */}
-        <div style={{
-          padding: ".85rem 1.1rem",
-          borderTop: "1px solid var(--line)",
-          display: "flex", justifyContent: "flex-end",
-        }}>
-          <button
-            type="button"
-            onClick={handleSave}
-            style={{
-              display: "inline-flex", alignItems: "center", gap: ".4rem",
-              minHeight: 40, padding: "0 1.5rem", border: 0, borderRadius: 8,
-              background: saved ? "#287a55" : "var(--navy)",
-              color: "#fff", font: "inherit", fontSize: ".72rem", fontWeight: 800,
-              cursor: "pointer", transition: ".15s",
-            }}>
-            {saved ? <><Icon name="check" size={15} />Kaydedildi</> : <><Icon name="shield" size={15} />Kaydet</>}
-          </button>
-        </div>
       </section>
+
+      {/* ── Sağ: Temel bilgiler ── */}
+      <aside className="rol-basic">
+        <section className="detail-panel">
+          <div className="detail-panel-heading">
+            <p className="eyebrow">TEMEL BİLGİLER</p>
+            <h2>Rol Bilgileri</h2>
+          </div>
+          <div className="settings-panel-body">
+            <div className="form-field">
+              <label htmlFor="rol-adi">Rol Adı</label>
+              <input id="rol-adi" value={adi} onChange={(e) => setAdi(e.target.value)} />
+            </div>
+            <div className="form-field">
+              <label>Görev Ataması</label>
+              <div style={{ display: "flex", alignItems: "center", gap: ".65rem", marginTop: ".25rem" }}>
+                <Toggle
+                  checked={gorevAtamasi}
+                  onChange={setGorevAtamasi}
+                  label="Görev ataması aktif/pasif"
+                />
+                <span style={{ fontSize: ".72rem", fontWeight: 700, color: gorevAtamasi ? "#287a55" : "#758695" }}>
+                  {gorevAtamasi ? "Aktif" : "Pasif"}
+                </span>
+              </div>
+            </div>
+            <div className="form-field">
+              <label htmlFor="rol-aciklama">Açıklama</label>
+              <textarea id="rol-aciklama" value={aciklama} rows={3}
+                onChange={(e) => setAciklama(e.target.value)} style={{ resize: "vertical" }} />
+            </div>
+            <button className={`edu-form-save${saved ? " saved" : ""}`} onClick={handleSave} style={{ marginTop: ".3rem" }}>
+              {saved ? <><Icon name="check" size={15} /> Kaydedildi</> : "Kaydet"}
+            </button>
+          </div>
+        </section>
+      </aside>
+      </div>
     </div>
   );
 }

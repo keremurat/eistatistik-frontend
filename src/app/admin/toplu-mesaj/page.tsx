@@ -6,12 +6,13 @@ import { AdminShell } from "../AdminShell";
 import { DatePicker } from "../../components/DatePicker";
 
 // ── İkon ─────────────────────────────────────────────────────────────────────
-type IconName = "check" | "send" | "x";
+type IconName = "check" | "send" | "x" | "info";
 function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, React.ReactNode> = {
     check: <path d="m5 12 4 4L19 6" />,
     send:  <><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></>,
     x:     <><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>,
+    info:  <><circle cx="12" cy="12" r="9" /><path d="M12 16v-4M12 8h.01" /></>,
   };
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -186,6 +187,11 @@ export default function TopluMesajPage() {
     setTimeout(() => setSent(false), 2500);
   }
 
+  const turLabel   = SIPARIS_TURLERI.find((o) => o.value === siparisTuru)?.label ?? "—";
+  const durumLabel = SIPARIS_DURUMLARI.find((o) => o.value === siparisDurumu)?.label ?? "—";
+  const mailLabel  = MAIL_SECENEKLERI.find((o) => o.value === mailBilgi)?.label ?? "Bildirilsin";
+  const willMail   = mailBilgi === "bildirilsin";
+
   return (
     <AdminShell>
       <div className="st-page">
@@ -196,135 +202,143 @@ export default function TopluMesajPage() {
           </div>
         </header>
 
-        <section className="detail-panel">
-          <div className="detail-panel-heading">
-            <p className="eyebrow">MESAJ FİLTRESİ</p>
-            <h2>Hedef Kitleyi Belirle</h2>
+        <div className="tm-wrap">
+          {/* ── Sol: filtre + mesaj ── */}
+          <div className="edu-edit-col">
+            <section className="detail-panel">
+              <div className="detail-panel-heading">
+                <p className="eyebrow">FİLTRELE VE GÖNDER</p>
+                <h2>Hedef kitle ve mesaj</h2>
+              </div>
+              <div className="settings-panel-body">
+
+                <div className="form-field">
+                  <label htmlFor="tm-tur">Sipariş Türü</label>
+                  <SearchableSelect
+                    id="tm-tur"
+                    placeholder="Sipariş Türü Seçiniz"
+                    value={siparisTuru}
+                    onChange={(v) => { setSiparisTuru(v); setSiparis(""); }}
+                    options={SIPARIS_TURLERI}
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="tm-durum">Sipariş Durumu</label>
+                  <SearchableSelect
+                    id="tm-durum"
+                    placeholder="Sipariş Durumu Seçiniz"
+                    value={siparisDurumu}
+                    onChange={(v) => { setSiparisDurumu(v); setSiparis(""); }}
+                    options={SIPARIS_DURUMLARI}
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label>Sipariş Tarih Aralığı</label>
+                  <div className="edu-row-2" style={{ marginTop: 0 }}>
+                    <div className="form-field" style={{ marginBottom: 0 }}>
+                      <label htmlFor="tm-bas" style={{ fontSize: ".63rem", color: "var(--muted)" }}>Başlangıç</label>
+                      <DatePicker id="tm-bas" value={tarihBaslama} onChange={setTarihBaslama} />
+                    </div>
+                    <div className="form-field" style={{ marginBottom: 0 }}>
+                      <label htmlFor="tm-bit" style={{ fontSize: ".63rem", color: "var(--muted)" }}>Bitiş</label>
+                      <DatePicker id="tm-bit" value={tarihBitis} onChange={setTarihBitis} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="tm-siparis">
+                    Siparişler
+                    <span style={{ fontSize: ".63rem", color: "var(--muted)", fontWeight: 600, marginLeft: ".4rem" }}>
+                      ({filteredSiparisler.length} sipariş)
+                    </span>
+                  </label>
+                  <SearchableSelect
+                    id="tm-siparis"
+                    placeholder="Sipariş Seçiniz"
+                    value={siparis}
+                    onChange={setSiparis}
+                    options={filteredSiparisler}
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="tm-mail">Mail ile Bilgilendirme</label>
+                  <SearchableSelect
+                    id="tm-mail"
+                    placeholder="Seçiniz"
+                    value={mailBilgi}
+                    onChange={setMailBilgi}
+                    options={MAIL_SECENEKLERI}
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label htmlFor="tm-mesaj">
+                    Mesajınız<span style={{ color: "#c85a51", marginLeft: ".2rem" }}>*</span>
+                  </label>
+                  <textarea
+                    id="tm-mesaj"
+                    rows={5}
+                    value={mesaj}
+                    onChange={(e) => { setMesaj(e.target.value); setError(""); }}
+                    placeholder="Göndermek istediğiniz mesajı buraya yazın…"
+                    style={{ resize: "vertical", borderColor: error ? "#c85a51" : undefined }}
+                  />
+                  {error && (
+                    <span style={{ fontSize: ".65rem", color: "#c85a51", marginTop: ".15rem" }}>{error}</span>
+                  )}
+                </div>
+
+              </div>
+            </section>
           </div>
-          <div className="settings-panel-body">
 
-            {/* Sipariş Türü */}
-            <div className="form-field">
-              <label htmlFor="tm-tur">Sipariş Türü Seçiniz</label>
-              <SearchableSelect
-                id="tm-tur"
-                placeholder="Sipariş Türü Seçiniz"
-                value={siparisTuru}
-                onChange={(v) => { setSiparisTuru(v); setSiparis(""); }}
-                options={SIPARIS_TURLERI}
-              />
+          {/* ── Sağ: gönderim özeti ── */}
+          <aside className="edu-preview-card">
+            <div className="tm-summary-head">
+              <Icon name="send" size={16} />Gönderim Özeti
             </div>
-
-            {/* Sipariş Durumu */}
-            <div className="form-field">
-              <label htmlFor="tm-durum">Sipariş Durumu Seçiniz</label>
-              <SearchableSelect
-                id="tm-durum"
-                placeholder="Sipariş Durumu Seçiniz"
-                value={siparisDurumu}
-                onChange={(v) => { setSiparisDurumu(v); setSiparis(""); }}
-                options={SIPARIS_DURUMLARI}
-              />
-            </div>
-
-            {/* Tarih aralığı */}
-            <div className="form-field">
-              <label>Sipariş Tarih Aralığı</label>
-              <div className="edu-row-2" style={{ marginTop: 0 }}>
-                <div className="form-field" style={{ marginBottom: 0 }}>
-                  <label htmlFor="tm-bas" style={{ fontSize: ".63rem", color: "var(--muted)" }}>Başlangıç</label>
-                  <DatePicker id="tm-bas" value={tarihBaslama} onChange={setTarihBaslama} />
-                </div>
-                <div className="form-field" style={{ marginBottom: 0 }}>
-                  <label htmlFor="tm-bit" style={{ fontSize: ".63rem", color: "var(--muted)" }}>Bitiş</label>
-                  <DatePicker id="tm-bit" value={tarihBitis} onChange={setTarihBitis} />
-                </div>
+            <div className="tm-stats">
+              <div className="tm-stat">
+                <strong>{filteredSiparisler.length}</strong>
+                <small>SİPARİŞ</small>
+              </div>
+              <div className="tm-stat">
+                {willMail
+                  ? <span className="tm-check"><Icon name="check" size={22} /></span>
+                  : <span className="tm-dash">—</span>}
+                <small>E-POSTA</small>
               </div>
             </div>
-
-            {/* Sipariş Seçiniz */}
-            <div className="form-field">
-              <label htmlFor="tm-siparis">
-                Sipariş Seçiniz
-                <span style={{ fontSize: ".63rem", color: "var(--muted)", fontWeight: 600, marginLeft: ".4rem" }}>
-                  ({filteredSiparisler.length} sipariş)
-                </span>
-              </label>
-              <SearchableSelect
-                id="tm-siparis"
-                placeholder="Sipariş Seçiniz"
-                value={siparis}
-                onChange={setSiparis}
-                options={filteredSiparisler}
-              />
+            <div className="edu-preview-info">
+              <div className="edu-preview-row">
+                <span className="edu-preview-key">Sipariş Türü</span>
+                <span className="edu-preview-val">{turLabel}</span>
+              </div>
+              <div className="edu-preview-row">
+                <span className="edu-preview-key">Durum</span>
+                <span className="edu-preview-val">{durumLabel}</span>
+              </div>
+              <div className="edu-preview-row">
+                <span className="edu-preview-key">E-posta</span>
+                <span className="edu-preview-val">{mailLabel}</span>
+              </div>
             </div>
-
-            {/* Mail ile Bilgilendirme */}
-            <div className="form-field">
-              <label htmlFor="tm-mail">Mail ile Bilgilendirme</label>
-              <SearchableSelect
-                id="tm-mail"
-                placeholder="Seçiniz"
-                value={mailBilgi}
-                onChange={setMailBilgi}
-                options={MAIL_SECENEKLERI}
-              />
+            <div className="tm-note">
+              <Icon name="info" size={14} />
+              <span>Filtre seçildiğinde siparişler otomatik yüklenir. Mesaj kuyruğa alınır.</span>
             </div>
-
-            {/* Mesaj */}
-            <div className="form-field">
-              <label htmlFor="tm-mesaj">
-                Mesajınız
-                <span style={{ color: "#c85a51", marginLeft: ".2rem" }}>*</span>
-              </label>
-              <textarea
-                id="tm-mesaj"
-                rows={5}
-                value={mesaj}
-                onChange={(e) => { setMesaj(e.target.value); setError(""); }}
-                placeholder="Göndermek istediğiniz mesajı buraya yazın…"
-                style={{
-                  resize: "vertical",
-                  borderColor: error ? "#c85a51" : undefined,
-                }}
-              />
-              {error && (
-                <span style={{ fontSize: ".65rem", color: "#c85a51", marginTop: ".15rem" }}>{error}</span>
-              )}
-            </div>
-
-            {/* Gönder */}
-            <div style={{ display: "flex", flexDirection: "column", gap: ".5rem", marginTop: ".25rem" }}>
-              {sent && (
-                <div style={{
-                  display: "flex", alignItems: "center", gap: ".5rem",
-                  padding: ".65rem 1rem", borderRadius: 9,
-                  background: "#edf7f1", color: "#287a55",
-                  fontSize: ".72rem", fontWeight: 800,
-                }}>
-                  <Icon name="check" size={15} />
-                  Mesaj başarıyla gönderildi.
-                </div>
-              )}
-              <button
-                type="button"
-                onClick={handleGonder}
-                style={{
-                  width: "100%", display: "flex", alignItems: "center",
-                  justifyContent: "center", gap: ".5rem",
-                  minHeight: 44, border: 0, borderRadius: 9,
-                  background: sent ? "#287a55" : "var(--navy)",
-                  color: "#fff", font: "inherit",
-                  fontSize: ".78rem", fontWeight: 800,
-                  cursor: "pointer", transition: "background .18s",
-                }}>
-                <Icon name={sent ? "check" : "send"} size={15} />
-                {sent ? "Gönderildi" : "Gönder"}
-              </button>
-            </div>
-
-          </div>
-        </section>
+            {sent && (
+              <div className="tm-sent"><Icon name="check" size={14} />Mesaj gönderildi.</div>
+            )}
+            <button className={`edu-preview-save${sent ? " saved" : ""}`} onClick={handleGonder} disabled={!mesaj.trim()}>
+              {sent ? "Gönderildi" : "Gönder"}
+            </button>
+          </aside>
+        </div>
       </div>
     </AdminShell>
   );
