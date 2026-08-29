@@ -78,7 +78,7 @@ function SimpleSelect({
 
 // ─────────────────────────────────────────────────────────────────────────────
 type IconName = "back" | "bold" | "italic" | "heading" | "quote" | "ul" | "ol" | "task" |
-  "link" | "image" | "preview" | "table" | "fullscreen" | "help" | "upload" | "check" | "x";
+  "link" | "image" | "preview" | "table" | "fullscreen" | "help" | "upload" | "check" | "x" | "info";
 
 function Icon({ name, size = 15 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, React.ReactNode> = {
@@ -99,6 +99,7 @@ function Icon({ name, size = 15 }: { name: IconName; size?: number }) {
     upload:     <><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M12 12v9M8 16l4-4 4 4" /></>,
     check:      <path d="m5 12 4 4L19 6" />,
     x:          <><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>,
+    info:       <><circle cx="12" cy="12" r="9" /><path d="M12 16v-4M12 8h.01" /></>,
   };
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -188,78 +189,87 @@ export function DuyuruForm({ mode, initial = {}, basePath = "/admin/duyurular", 
 
   const content = (
       <div className="st-page">
-        <header className="orders-hero" style={{ marginBottom: "1rem" }}>
-          <div>
-            <p className="eyebrow">YÖNETİM · DUYURULAR</p>
-            <h1 style={{ fontSize: "1.2rem" }}>{mode === "ekle" ? "Duyuru Ekle" : "Duyuru Düzenle"}</h1>
-          </div>
+        <header className="favorite-category-create-header">
           <Link className="back-link" href={basePath}>
-            <Icon name="back" size={15} />Duyuru Listesine dön
+            <Icon name="back" size={16} />Duyuru Listesine dön
           </Link>
+          <h1>{mode === "ekle" ? "Duyuru Ekle" : "Duyuru Düzenle"}</h1>
         </header>
 
-        <section className="detail-panel">
-          <div className="settings-panel-body">
+        <div className="edu-edit-wrap">
+        <div className="edu-edit-col">
 
-            {/* Üst bilgi satırı */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "1rem" }}>
-              <div className="form-field" style={{ gridColumn: "1" }}>
-                <label htmlFor="d-baslik">
-                  Duyuru Başlığı
-                  <span style={{ color: "#c85a51", marginLeft: ".2rem" }}>*</span>
-                </label>
-                <input
-                  id="d-baslik"
-                  value={baslik}
-                  onChange={(e) => { setBaslik(e.target.value); setError(""); }}
-                  placeholder="Duyuru başlığını girin"
-                  style={error && !baslik.trim() ? { borderColor: "#c85a51" } : undefined}
-                />
-              </div>
+          {/* ── Duyuru bilgileri ── */}
+          <section className="detail-panel">
+            <div className="detail-panel-heading">
+              <p className="eyebrow">DUYURU BİLGİLERİ</p>
+              <h2>Temel Bilgiler</h2>
+            </div>
+            <div className="settings-panel-body">
+              <div className="edu-row-2">
+                <div className="form-field">
+                  <label htmlFor="d-baslik">
+                    Duyuru Başlığı
+                    <span style={{ color: "#c85a51", marginLeft: ".2rem" }}>*</span>
+                  </label>
+                  <input
+                    id="d-baslik"
+                    value={baslik}
+                    onChange={(e) => { setBaslik(e.target.value); setError(""); }}
+                    placeholder="Duyuru başlığını girin"
+                    style={error && !baslik.trim() ? { borderColor: "#c85a51" } : undefined}
+                  />
+                </div>
 
-              <div className="form-field">
-                <label htmlFor="d-tarih">Yayın Tarihi</label>
-                <div style={{ display: "flex", gap: ".4rem" }}>
-                  <DatePicker id="d-tarih" value={yayinTarih} onChange={setYayinTarih} />
-                  <div style={{ width: 80, flexShrink: 0 }}>
-                    <TimePicker id="d-saat" value={yayinSaat} onChange={setYayinSaat} placeholder="SS:DD" />
+                <div className="form-field">
+                  <label htmlFor="d-tarih">Yayın Tarihi</label>
+                  <div style={{ display: "flex", gap: ".4rem" }}>
+                    <DatePicker id="d-tarih" value={yayinTarih} onChange={setYayinTarih} />
+                    <div style={{ width: 80, flexShrink: 0 }}>
+                      <TimePicker id="d-saat" value={yayinSaat} onChange={setYayinSaat} placeholder="SS:DD" />
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="form-field">
-                <label htmlFor="d-durum">Durumu</label>
-                <SimpleSelect
-                  id="d-durum"
-                  value={durum}
-                  onChange={(v) => setDurum(v as "Aktif" | "Pasif")}
-                  options={[
-                    { value: "Pasif", label: "Pasif" },
-                    { value: "Aktif", label: "Aktif" },
-                  ]}
-                />
-              </div>
+              <div className="edu-row-2">
+                <div className="form-field">
+                  <label htmlFor="d-durum">Durumu</label>
+                  <SimpleSelect
+                    id="d-durum"
+                    value={durum}
+                    onChange={(v) => setDurum(v as "Aktif" | "Pasif")}
+                    options={[
+                      { value: "Pasif", label: "Pasif" },
+                      { value: "Aktif", label: "Aktif" },
+                    ]}
+                  />
+                </div>
 
-              <div className="form-field">
-                <label htmlFor="d-modal">Ekranda Gösterilsin mi? (Modal)</label>
-                <SimpleSelect
-                  id="d-modal"
-                  value={modal ? "evet" : "hayir"}
-                  onChange={(v) => setModal(v === "evet")}
-                  options={[
-                    { value: "hayir", label: "Hayır" },
-                    { value: "evet",  label: "Evet"  },
-                  ]}
-                />
+                <div className="form-field">
+                  <label htmlFor="d-modal">Ekranda Gösterilsin mi? (Modal)</label>
+                  <SimpleSelect
+                    id="d-modal"
+                    value={modal ? "evet" : "hayir"}
+                    onChange={(v) => setModal(v === "evet")}
+                    options={[
+                      { value: "hayir", label: "Hayır" },
+                      { value: "evet",  label: "Evet"  },
+                    ]}
+                  />
+                </div>
               </div>
             </div>
+          </section>
 
-            {/* Markdown editör */}
+          {/* ── Duyuru içeriği ── */}
+          <section className="detail-panel">
+            <div className="detail-panel-heading">
+              <p className="eyebrow">DUYURU İÇERİĞİ</p>
+              <h2>İçerik</h2>
+            </div>
+            <div className="settings-panel-body">
             <div className="form-field">
-              <label>
-                Duyuru İçeriği
-                <span style={{ color: "#c85a51", marginLeft: ".2rem" }}>*</span>
-              </label>
               <div style={{
                 border: `1px solid ${error && !icerik.trim() ? "#c85a51" : "var(--line)"}`,
                 borderRadius: 9, overflow: "hidden",
@@ -327,90 +337,103 @@ export function DuyuruForm({ mode, initial = {}, basePath = "/admin/duyurular", 
               </div>
             </div>
 
-            {/* Arka plan resmi */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", alignItems: "start" }}>
-              <div className="form-field">
-                <label>Duyuru Arka Plan Resmi</label>
-                <div
-                  onClick={() => fileRef.current?.click()}
-                  style={{
-                    display: "flex", flexDirection: "column", alignItems: "center",
-                    justifyContent: "center", gap: ".6rem",
-                    minHeight: 140, borderRadius: 10, cursor: "pointer",
-                    border: "2px dashed var(--line)",
-                    background: bgImage ? "transparent" : "#f8fafb",
-                    overflow: "hidden", position: "relative",
-                    transition: "border-color .15s",
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--blue)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--line)")}>
-                  {bgImage ? (
-                    <>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={bgImage} alt="Arka plan" style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0 }} />
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); setBgImage(null); }}
-                        style={{
-                          position: "absolute", top: 6, right: 6,
-                          width: 24, height: 24, borderRadius: "50%",
-                          border: 0, background: "rgba(0,0,0,.5)", color: "#fff",
-                          cursor: "pointer", display: "grid", placeItems: "center",
-                        }}>
-                        <Icon name="x" size={12} />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <span style={{ color: "#94aab7" }}><Icon name="upload" size={32} /></span>
-                      <span style={{ fontSize: ".7rem", color: "var(--blue)", fontWeight: 700 }}>
-                        Resim seçmek için tıklayınız
-                      </span>
-                    </>
-                  )}
-                </div>
-                <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
-                  onChange={handleFileChange} />
-              </div>
+            </div>
+          </section>
 
-              <div className="form-field">
-                <label>Duyuru Arka Plan Resmi</label>
-                <div style={{
-                  padding: ".75rem 1rem", borderRadius: 10,
-                  background: "#f8fafb", border: "1px solid var(--line)",
-                  fontSize: ".7rem", color: "#8493a0", minHeight: 60,
-                }}>
-                  {bgImage ? (
-                    <span style={{ color: "#287a55", fontWeight: 700 }}>Resim seçildi</span>
-                  ) : (
-                    "Resim ekli değil"
-                  )}
+          {/* ── Arka plan resmi ── */}
+          <section className="detail-panel">
+            <div className="detail-panel-heading">
+              <p className="eyebrow">ARKA PLAN RESMİ</p>
+              <h2>Görsel</h2>
+            </div>
+            <div className="settings-panel-body">
+              <div className="edu-row-2" style={{ alignItems: "start" }}>
+                <div className="form-field">
+                  <label>Resim yükleyin</label>
+                  <div
+                    onClick={() => fileRef.current?.click()}
+                    style={{
+                      display: "flex", flexDirection: "column", alignItems: "center",
+                      justifyContent: "center", gap: ".6rem",
+                      minHeight: 140, borderRadius: 10, cursor: "pointer",
+                      border: "2px dashed var(--line)",
+                      background: bgImage ? "transparent" : "#f8fafb",
+                      overflow: "hidden", position: "relative",
+                      transition: "border-color .15s",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--blue)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--line)")}>
+                    {bgImage ? (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={bgImage} alt="Arka plan" style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0 }} />
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setBgImage(null); }}
+                          style={{
+                            position: "absolute", top: 6, right: 6,
+                            width: 24, height: 24, borderRadius: "50%",
+                            border: 0, background: "rgba(0,0,0,.5)", color: "#fff",
+                            cursor: "pointer", display: "grid", placeItems: "center",
+                          }}>
+                          <Icon name="x" size={12} />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span style={{ color: "#94aab7" }}><Icon name="upload" size={32} /></span>
+                        <span style={{ fontSize: ".7rem", color: "var(--blue)", fontWeight: 700 }}>
+                          Resim seçmek için tıklayınız
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
+                    onChange={handleFileChange} />
+                </div>
+
+                <div className="form-field">
+                  <label>Önizleme</label>
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    padding: ".75rem 1rem", borderRadius: 10, minHeight: 140,
+                    background: "#f8fafb", border: "1px solid var(--line)",
+                    fontSize: ".7rem", color: "#8493a0", textAlign: "center",
+                  }}>
+                    {bgImage
+                      ? <span style={{ color: "#287a55", fontWeight: 700 }}>Resim seçildi</span>
+                      : "Henüz resim yüklenmedi"}
+                  </div>
                 </div>
               </div>
             </div>
+          </section>
 
-            {/* Hata + Kaydet */}
-            {error && (
-              <p style={{ margin: 0, fontSize: ".65rem", color: "#c85a51", fontWeight: 700 }}>{error}</p>
-            )}
-            <div>
-              <button
-                type="button"
-                onClick={handleSave}
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: ".4rem",
-                  minHeight: 42, padding: "0 2rem", border: 0, borderRadius: 8,
-                  background: saved ? "#287a55" : "var(--navy)",
-                  color: "#fff", font: "inherit", fontSize: ".75rem", fontWeight: 800,
-                  cursor: "pointer", transition: "background .18s",
-                }}>
-                <Icon name={saved ? "check" : "upload"} size={15} />
-                {saved ? "Kaydedildi" : "Kaydet"}
-              </button>
-            </div>
+        </div>
+
+        {/* ── Sağ: Duyuru Özeti ── */}
+        <aside className="edu-preview-card">
+          <div className="ik-preview-head">
+            <p className="eyebrow">ÖZET</p>
+            <strong>Duyuru Özeti</strong>
           </div>
-        </section>
+          <div className="edu-preview-info">
+            <div className="edu-preview-row"><span className="edu-preview-key">Başlık</span><span className="edu-preview-val">{baslik || "—"}</span></div>
+            <div className="edu-preview-row"><span className="edu-preview-key">Durum</span><span className="edu-preview-val">{durum}</span></div>
+            <div className="edu-preview-row"><span className="edu-preview-key">Yayın</span><span className="edu-preview-val">{yayinTarih} · {yayinSaat}</span></div>
+            <div className="edu-preview-row"><span className="edu-preview-key">Modal</span><span className="edu-preview-val">{modal ? "Evet" : "Hayır"}</span></div>
+          </div>
+          <div className="ik-preview-note">
+            <Icon name="info" size={14} />
+            <span>Duyuru içeriği Markdown formatında yazılabilir.</span>
+          </div>
+          {error && <p style={{ margin: "0 1rem .7rem", fontSize: ".64rem", color: "#c85a51", fontWeight: 700, lineHeight: 1.45 }}>{error}</p>}
+          <button className={`edu-preview-save${saved ? " saved" : ""}`} onClick={handleSave}>
+            {saved ? "Kaydedildi" : "Kaydet"}
+          </button>
+        </aside>
       </div>
+    </div>
   );
   return embedded ? content : <AdminShell>{content}</AdminShell>;
 }

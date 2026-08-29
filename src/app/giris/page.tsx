@@ -5,7 +5,6 @@ import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { findDemoAccount } from "../lib/demoAccounts";
-import { GMAIL_PASSWORD_URL } from "../lib/contact";
 
 type IconName = "arrow" | "eye" | "eyeOff" | "lock" | "mail" | "shield" | "user";
 type LegalDocument = "membership" | "kvkk";
@@ -96,7 +95,7 @@ export default function AuthPage() {
               <AuthField name="login-email" autoComplete="section-login username" icon="mail" type="email" placeholder="E-posta adresi" value={login.email} onChange={value => { setLogin(current => ({ ...current, email: value })); setAuthError(""); }} invalid={submitted && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email)} error="Geçerli bir e-posta adresi girin." />
               <AuthField name="login-password" autoComplete="section-login current-password" icon="lock" type={showPassword ? "text" : "password"} placeholder="Şifre" value={login.password} onChange={value => { setLogin(current => ({ ...current, password: value })); setAuthError(""); }} invalid={submitted && login.password.length < 6} error="Şifreniz en az 6 karakter olmalı." action={<button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}><AuthIcon name={showPassword ? "eyeOff" : "eye"} size={16} /></button>} />
               {authError && <p className="auth-error" role="alert">{authError}</p>}
-              <div className="auth-form-options"><label><input type="checkbox" defaultChecked />Beni hatırla</label><a href={GMAIL_PASSWORD_URL} target="_blank" rel="noopener noreferrer">Şifremi unuttum</a></div>
+              <div className="auth-form-options"><label><input type="checkbox" defaultChecked />Beni hatırla</label><Link href="/sifre-sifirlama">Şifremi unuttum</Link></div>
               <button className="auth-primary-button" disabled={loading}>{loading ? <span className="login-loader" /> : <>Giriş yap <AuthIcon name="arrow" size={16} /></>}</button>
             </form>
             <div className="auth-form-footer">

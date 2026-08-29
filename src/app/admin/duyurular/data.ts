@@ -113,4 +113,97 @@ Saygılarımızla`,
     durum: "Pasif",
     modalGoster: false,
   },
+  {
+    id: 36,
+    baslik: "Kurban Bayramı Teslimat Bilgilendirmesi",
+    icerik: `**SİPARİŞLERİN TESLİMİ**
+
+Değerli Hocalarımız,
+
+Kurban Bayramı resmi tatili kapsamında, bayram günlerine denk gelen analizlerin teslimat süreleri resmi tatil gün sayısı kadar uzayacaktır.
+
+Bilgilerinize sunar, hayırlı bayramlar dileriz.`,
+    eklemeTarihi: "12.04.2025 10:12",
+    yayinTarihi: "05.06.2025 09:00",
+    durum: "Pasif",
+    modalGoster: false,
+  },
+  {
+    id: 35,
+    baslik: "Yeni Eğitim Modülleri Yayında",
+    icerik: `Değerli Hocalarımız,
+
+Bibliyometrik Veri Analizi ve Meta Analizi eğitim modüllerimiz güncellenmiştir. Detaylara Eğitimler sekmesinden ulaşabilirsiniz.
+
+Saygılarımızla`,
+    eklemeTarihi: "03.03.2025 16:40",
+    yayinTarihi: "04.03.2025 08:00",
+    durum: "Aktif",
+    modalGoster: false,
+  },
+  {
+    id: 34,
+    baslik: "Sistem Bakım Çalışması",
+    icerik: `**BİLGİLENDİRME**
+
+Platformumuzda planlı bakım çalışması nedeniyle, 22 Şubat gecesi 00:00 – 03:00 saatleri arasında kısa süreli erişim kesintileri yaşanabilir.
+
+Anlayışınız için teşekkür ederiz.`,
+    eklemeTarihi: "18.02.2025 09:05",
+    yayinTarihi: "20.02.2025 12:00",
+    durum: "Pasif",
+    modalGoster: false,
+  },
+  {
+    id: 33,
+    baslik: "Sömestr Yoğunluğu Hakkında",
+    icerik: `Değerli Hocalarımız,
+
+Sömestr dönemindeki yoğunluk nedeniyle analiz teslim sürelerinde kısa gecikmeler olabilir. Planlamalarınızı buna göre yapmanızı rica ederiz.
+
+Saygılarımızla`,
+    eklemeTarihi: "20.01.2025 13:22",
+    yayinTarihi: "22.01.2025 10:00",
+    durum: "Pasif",
+    modalGoster: false,
+  },
+  {
+    id: 32,
+    baslik: "İndirim Kampanyası Başladı",
+    icerik: `**KAMPANYA**
+
+Yıl sonuna özel istatistiksel analiz siparişlerinde geçerli indirim kodlarımız aktif edilmiştir. Sipariş oluştururken ilgili kodu girmeyi unutmayın.
+
+Saygılarımızla`,
+    eklemeTarihi: "10.12.2024 11:00",
+    yayinTarihi: "11.12.2024 09:00",
+    durum: "Aktif",
+    modalGoster: true,
+  },
+  {
+    id: 31,
+    baslik: "Çalışma Saatleri Güncellemesi",
+    icerik: `Değerli Hocalarımız,
+
+Hafta içi çalışma saatlerimiz 09:00 – 18:00 olarak güncellenmiştir. Hafta sonu talepleriniz ilk iş günü değerlendirmeye alınacaktır.
+
+Saygılarımızla`,
+    eklemeTarihi: "25.11.2024 15:15",
+    yayinTarihi: "26.11.2024 08:30",
+    durum: "Pasif",
+    modalGoster: false,
+  },
+  {
+    id: 30,
+    baslik: "Yeni Ödeme Yöntemleri",
+    icerik: `**BİLGİLENDİRME**
+
+Havale/EFT'ye ek olarak kredi kartı ile 3D Secure ödeme seçeneği devreye alınmıştır. Ödeme adımında tercih edebilirsiniz.
+
+Saygılarımızla`,
+    eklemeTarihi: "05.11.2024 10:48",
+    yayinTarihi: "06.11.2024 09:00",
+    durum: "Pasif",
+    modalGoster: false,
+  },
 ];
