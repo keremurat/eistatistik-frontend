@@ -247,6 +247,19 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
 - Seçim değeri ve sayfanın filtre/form mantığı değişmez; bu kural yalnızca görsel ve etkileşim
   tutarlılığı sağlar.
 
+### Portal panellerinin viewport sınırlaması (ZORUNLU)
+
+- `document.body` altına portal ile açılan **tüm** açılır paneller — `SystemDropdown`/`SimpleSelect`/
+  `SearchableSelect` dropdownları, `DatePicker` takvimi, `TimePicker` saat seçici, satır/eylem menüleri —
+  daima **viewport içinde** konumlanır; ekranın sağ/sol/alt kenarından **taşmaz**.
+- Yatayda: tetikleyici genişliğini alan paneller (dropdownlar) tetikleyicinin üstünde kaldığından zaten
+  taşmaz. Tetikleyiciden **geniş** sabit panelli bileşenler (`DatePicker` 272px, `TimePicker` 180px) `left`
+  değerini `min(max(pad, rect.left), window.innerWidth - panelWidth - pad)` ile kenardan içeride tutar.
+- Dikeyde: altta yer yoksa panel yukarı açılır (`SystemDropdown` up/down, `DatePicker`/`TimePicker`
+  above/below). Menüler sağ kenara `right` ile bağlanır.
+- Yeni bir portal panel/açılır bileşen eklerken bu kenar-güvenliği (yatay clamp + dikey flip) zorunludur;
+  panel hiçbir ekranda kırpılmamalı veya ekran dışına çıkmamalıdır.
+
 ```tsx
 <div className="app-shell">
   <a className="skip-link" href="#main-content">İçeriğe geç</a>
@@ -286,6 +299,12 @@ Kurallar:
   bağlantısıdır; grubun herhangi bir yerine tıklamak landing page'e (`/`) döner.
 - Alt içerik sayfaları `back-link` ile bir üst listeye döner:
   `<Link className="back-link" href="..."><Icon name="back" size={16} />… dön</Link>`.
+- **Geri-dön + başlık boşluğu standardı (ZORUNLU):** Ekleme/düzenleme/detay ekranlarında geri-dön
+  bağlantısı ile ana `h1` başlığı aynı `.favorite-category-create-header` kabı içinde, üstte back-link
+  altında h1 olacak şekilde durur. Aralarında yalnızca kabın grid `gap`'i (`.48rem`) bulunur; back-link'e
+  ayrıca `margin-bottom` verilmez ve back-link ayrı bir `st-page` grid çocuğu olarak konmaz (bu, ~2rem'lik
+  gereksiz boşluk üretir). Başlığın sağındaki birincil aksiyon (ör. `Düzenle`, `Ekle`) başlık satırının
+  içinde `space-between` ile yer alır. Bu boşluk tüm ekranlarda tutarlıdır.
 - `editor` rolü girişten sonra bağımsız `/editor` çalışma alanına yönlenir; yönetici rotasına
   düşmez. Editör kabuğu ortak `app-shell`, `topbar`, `BrandLogo`, `NotificationMenu` ve
   `ProfileMenu` bileşenlerini kullanır.

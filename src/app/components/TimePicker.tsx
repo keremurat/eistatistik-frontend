@@ -58,10 +58,14 @@ export function TimePicker({ id, value, onChange, placeholder = "SS:DD" }: TimeP
   function openPanel() {
     if (!inputRef.current) return;
     const r   = inputRef.current.getBoundingClientRect();
-    const top = window.innerHeight - r.bottom - 8 < PANEL_H
+    const pad = 8;
+    const top = window.innerHeight - r.bottom - pad < PANEL_H
       ? r.top - PANEL_H - 4
       : r.bottom + 6;
-    setPos({ top, left: r.left });
+    // Paneli viewport içinde tut: sağ/sol kenardan taşmasın.
+    const maxLeft = Math.max(pad, window.innerWidth - PANEL_W - pad);
+    const left = Math.min(Math.max(pad, r.left), maxLeft);
+    setPos({ top, left });
     setOpen((o) => !o);
   }
 
