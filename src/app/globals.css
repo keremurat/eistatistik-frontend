@@ -709,6 +709,18 @@ button:focus-visible,a:focus-visible { outline:3px solid #69b9dc; outline-offset
 .settings-save { min-height:40px; padding:0 1rem; display:flex; align-items:center; gap:.4rem; border:0; border-radius:8px; background:var(--navy); color:#fff; font-size:.65rem; font-weight:800; }
 .settings-save:disabled { cursor:not-allowed; background:#9ca9b4; }
 .special-settings .detail-panel-heading { min-height:64px; padding-block:.9rem; }
+.special-settings-panel .detail-panel-heading { padding:0; }
+.special-settings-panel .detail-panel-heading > button { width:100%; min-height:64px; padding:.9rem 1.4rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; border:0; border-radius:inherit; background:transparent; color:var(--navy); text-align:left; cursor:pointer; }
+.special-settings-panel .detail-panel-heading > button > span:first-child { display:grid; gap:.18rem; }
+.special-settings-panel .detail-panel-heading .eyebrow { display:block; }
+.special-settings-panel-title { font-size:1rem; font-weight:800; letter-spacing:-.02em; }
+.special-settings-panel-chevron { flex:0 0 auto; display:grid; place-items:center; color:#758695; transition:transform .32s cubic-bezier(.22,1,.36,1),color .2s ease; }
+.special-settings-panel .detail-panel-heading > button:hover .special-settings-panel-chevron,.special-settings-panel .detail-panel-heading > button:focus-visible .special-settings-panel-chevron { color:var(--blue); }
+.special-settings-panel .detail-panel-heading > button:focus-visible { outline:3px solid var(--blue-soft); outline-offset:-3px; }
+.special-settings-panel.open .special-settings-panel-chevron { transform:rotate(180deg); }
+.special-settings-panel-body { display:grid; grid-template-rows:0fr; opacity:0; transition:grid-template-rows .38s cubic-bezier(.22,1,.36,1),opacity .24s ease; }
+.special-settings-panel-body > div { min-height:0; overflow:hidden; }
+.special-settings-panel.open .special-settings-panel-body { grid-template-rows:1fr; opacity:1; }
 .special-settings .settings-panel-body.form-grid { display:grid; }
 .special-settings .form-field > .cs-wrap,.special-settings .form-field > .dc-input { width:100%; }
 .special-settings-dropdown-panel { max-height:260px; overflow-y:auto; }
@@ -731,6 +743,7 @@ button:focus-visible,a:focus-visible { outline:3px solid #69b9dc; outline-offset
 .special-settings-totals dd { margin:0; color:var(--navy); font-size:.64rem; font-weight:800; font-variant-numeric:tabular-nums; }
 @media (max-width:760px) { .form-grid { grid-template-columns:1fr; } .settings-actions { flex-wrap:wrap; } .settings-note { width:100%; margin:0 0 .4rem; } }
 @media (max-width:760px) { .special-settings-status { grid-template-columns:auto 1fr; } .special-settings-status button { grid-column:1/-1; } }
+@media (prefers-reduced-motion:reduce) { .special-settings-panel-body,.special-settings-panel-chevron { transition-duration:.01ms; } }
 .request-summary { padding:1.25rem; position:sticky; top:88px; border:1px solid var(--line); border-radius:13px; background:#fff; }
 .summary-service { padding:.8rem 0 1rem; display:flex; align-items:center; gap:.65rem; border-bottom:1px solid var(--line); }.summary-service strong { color:var(--navy); font-size:.67rem; }
 .request-summary dl { margin:.5rem 0 0; }.request-summary dl div { min-height:49px; display:grid; align-content:center; gap:.2rem; border-bottom:1px solid #e8eef1; }.request-summary dl div:last-child { border-bottom:0; }
@@ -2649,6 +2662,21 @@ button:focus-visible,a:focus-visible { outline:3px solid #69b9dc; outline-offset
   .education-list-page .edu-table td { padding-top:.5rem; padding-bottom:.5rem; }
   .education-list-page .ms-pagination { flex:0 0 auto; }
 }
+/* Mevcut Siparişler — Eğitim Listesi tek sayfa + sayfalama kalıbı */
+.admin-orders-head { display:flex; flex-direction:column; }
+.admin-orders-edu-table .edu-name-link { text-decoration:none; }
+.admin-orders-edu-table tbody tr:hover .edu-name-link { color:var(--blue); }
+.admin-orders-edu-table .aoc-2line { display:inline-flex; flex-direction:column; line-height:1.25; }
+.admin-orders-edu-table .aoc-2line strong { color:var(--navy); font-size:.7rem; font-weight:800; }
+.admin-orders-edu-table .aoc-2line small { color:#8b99a6; font-size:.58rem; }
+.admin-orders-edu-table .aoc-state { display:inline-flex; align-items:center; gap:.45rem; color:var(--navy); font-size:.68rem; font-weight:750; }
+.admin-orders-edu-table .aoc-strong { color:var(--navy); font-size:.69rem; font-weight:750; }
+.admin-orders-edu-table .aoc-muted { color:#5c6f7e; font-size:.68rem; font-weight:650; }
+.admin-orders-edu-table .edu-actions-cell { text-align:right; }
+.admin-orders-edu-table tbody tr.ao-row-link { cursor:pointer; }
+.admin-orders-edu-table tbody tr.ao-row-link:focus-visible { outline:2px solid var(--blue); outline-offset:-2px; background:#f5fafc; }
+.aoc-clear { margin-left:.4rem; border:0; background:none; color:var(--blue); font:inherit; font-size:.7rem; font-weight:800; text-decoration:underline; cursor:pointer; }
+
 @media (max-width:1100px) {
   .edu-list-toolbar { flex-wrap:wrap; }
   .edu-list-toolbar .result-count { display:none; }
@@ -2793,6 +2821,31 @@ button:focus-visible,a:focus-visible { outline:3px solid #69b9dc; outline-offset
 .bulten-preview-body h2 { margin:0 0 .7rem; color:var(--navy); font-size:1.35rem; letter-spacing:-.02em; line-height:1.2; }
 .bulten-preview-body p { margin:0; color:#3f556a; font-size:.78rem; line-height:1.65; white-space:pre-wrap; }
 .bulten-preview-body p.muted { color:#94aab7; font-style:italic; }
+/* Analiz şablonu formu — iki kolon, tek sayfa (scroll yok). */
+@media (min-width:761px) {
+  .admin-dash:has(.sablon-onepage) { height:calc(100dvh - 72px); padding:.7rem 0; overflow:hidden; }
+  .sablon-onepage { height:100%; min-height:0; padding-top:0; grid-template-rows:auto minmax(0,1fr); gap:.7rem; }
+  .sablon-onepage .favorite-category-create-header { min-height:58px; gap:.32rem; }
+  .sablon-onepage .edu-edit-wrap { min-height:0; align-items:stretch; }
+  .sablon-onepage .edu-edit-col { min-height:0; }
+  .sablon-onepage .sablon-main-panel { min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr); overflow:hidden; }
+  .sablon-onepage .sablon-main-panel .detail-panel-heading { min-height:58px; padding:.75rem 1.15rem; }
+  .sablon-onepage .sablon-main-panel .settings-panel-body { min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr); overflow:hidden; }
+  .sablon-onepage .sablon-desc-field { min-height:0; grid-template-rows:auto minmax(0,1fr); }
+  .sablon-onepage .sablon-desc-field textarea { height:100%; min-height:0; resize:none; }
+  .sablon-onepage .bulten-side { min-height:0; }
+  .sablon-onepage .bulten-side .settings-panel-body { gap:.85rem; }
+}
+
+/* Hizmetler — liste aksiyon butonları ve slug hücresi. */
+.hz-actions { display:flex; gap:.4rem; justify-content:flex-end; }
+.hz-action-btn { min-height:32px; padding:0 .8rem; display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:7px; background:#fff; color:#526a7d; font:inherit; font-size:.64rem; font-weight:800; cursor:pointer; text-decoration:none; transition:.14s; }
+.hz-action-btn:hover { background:#f5f8f9; border-color:#9eb8c8; color:var(--navy); }
+.hz-action-btn.danger { color:#c85a51; }
+.hz-action-btn.danger:hover { border-color:#f2c0bc; background:#fff3f2; color:#a5372e; }
+.hz-slug { color:#8493a0; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.63rem; }
+.hz-url-note { margin:.25rem 0 0; color:#8a9bad; font-size:.63rem; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+
 /* Bülten önizleme — halka açık görünüm (hero + içerik kartları). */
 .bp-hero { position:relative; overflow:hidden; padding:2.5rem; border-radius:16px; color:#fff; background:linear-gradient(120deg,var(--navy-deep),var(--blue)); }
 .bp-hero::before { content:""; position:absolute; right:-80px; top:-120px; width:360px; height:360px; border-radius:50%; background:rgba(255,255,255,.06); }

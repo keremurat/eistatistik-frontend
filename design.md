@@ -498,6 +498,13 @@ ise ortak `DatePicker` bileşenini kullanır. Native `select`, native date picke
 görsel dili kullanılmaz. Bölüme özgü `.special-settings-*` sınıfları yalnızca panel içi hizalama,
 özet ve durum satırlarını düzenler; renk, radius ve gölge mevcut tokenlardan gelir.
 
+Özel Ayarlar içindeki paneller ilk açılışta kapalıdır ve yalnızca mevcut panel başlık satırları
+görünür. Her başlık bütünüyle bir butondur; `aria-expanded` ve `aria-controls` ile kendi gövdesini
+bağımsız açıp kapatır. Açılma/kapanma sabit bir `max-height` kullanmaz; `.special-settings-panel-body`
+üzerinde `grid-template-rows: 0fr → 1fr` ve opacity geçişiyle içerik yüksekliğine göre kayar.
+Başlığın sağındaki chevron açık durumda 180° döner. `prefers-reduced-motion: reduce` tercihinde
+geçişler anlık hale gelir. Bir panelin açılması diğer açık panelleri kapatmaz.
+
 ---
 
 ## 6. Ödeme sekmesi

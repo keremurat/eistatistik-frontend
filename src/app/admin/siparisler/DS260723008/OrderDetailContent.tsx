@@ -11,7 +11,7 @@ import { MessageTemplatePicker } from "../../../components/MessageTemplatePicker
 import { copyText } from "../../../utils/clipboard";
 
 type AdminSection = "overview" | "settings" | "items" | "pricing" | "payment" | "messages" | "proforma" | "results" | "analyst" | "delivery" | "notes" | "appointments";
-type IconName = "arrow" | "assign" | "back" | "card" | "chart" | "check" | "clock" | "cloudUp" | "copy" | "download" | "eye" | "file" | "invoice" | "link" | "list" | "message" | "note" | "package" | "percent" | "plus" | "search" | "settings" | "star" | "tag" | "upload" | "user" | "video" | "x";
+type IconName = "arrow" | "assign" | "back" | "card" | "chart" | "check" | "chevron" | "clock" | "cloudUp" | "copy" | "download" | "eye" | "file" | "invoice" | "link" | "list" | "message" | "note" | "package" | "percent" | "plus" | "search" | "settings" | "star" | "tag" | "upload" | "user" | "video" | "x";
 
 function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, React.ReactNode> = {
@@ -21,6 +21,7 @@ function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
     card:    <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18" /></>,
     chart:   <><path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" /></>,
     check:   <path d="M20 6 9 17l-5-5" />,
+    chevron: <path d="m6 9 6 6 6-6" />,
     clock:   <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
     cloudUp: <><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" /><path d="M12 12v9" /><path d="m16 16-4-4-4 4" /></>,
     copy:    <><rect x="8" y="8" width="11" height="11" rx="2" /><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" /></>,
@@ -72,6 +73,25 @@ function FileTypeIcon({ filename }: { filename: string }) {
 
 function PanelHeading({ eyebrow, title, description }: { eyebrow: string; title: string; description?: string }) {
   return <header className="detail-panel-heading"><div><p className="eyebrow">{eyebrow}</p><h2>{title}</h2>{description && <span>{description}</span>}</div></header>;
+}
+
+function CollapsibleSettingsPanel({ id, eyebrow, title, children }: { id: string; eyebrow: string; title: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const panelId = `special-settings-${id}`;
+
+  return (
+    <section className={`detail-panel special-settings-panel${open ? " open" : ""}`}>
+      <header className="detail-panel-heading">
+        <button type="button" aria-expanded={open} aria-controls={panelId} onClick={() => setOpen((current) => !current)}>
+          <span><span className="eyebrow">{eyebrow}</span><span className="special-settings-panel-title">{title}</span></span>
+          <span className="special-settings-panel-chevron"><Icon name="chevron" size={17} /></span>
+        </button>
+      </header>
+      <div className="special-settings-panel-body" id={panelId} role="region" aria-label={title} aria-hidden={!open} inert={open ? undefined : true}>
+        <div>{children}</div>
+      </div>
+    </section>
+  );
 }
 
 const sidebarItems: { key: AdminSection; icon: IconName; label: string; badge?: number }[] = [
@@ -286,21 +306,18 @@ function SpecialSettingsSection({ orderTitle }: { orderTitle: string }) {
 
   return (
     <div className="detail-stack special-settings">
-      <section className="detail-panel">
-        <PanelHeading eyebrow="SİPARİŞ" title="Sipariş Bilgileri" />
+      <CollapsibleSettingsPanel id="order" eyebrow="SİPARİŞ" title="Sipariş Bilgileri">
         <div className="settings-panel-body form-grid">
           <div className="form-field"><label>Çalışma türü</label><CustomDropdown value={workType} onChange={setWorkType} options={WORK_TYPES} placeholder="Çalışma türünü seçin" /></div>
           <div className="form-field"><label>Sipariş durumu</label><CustomDropdown value={orderStatus} onChange={setOrderStatus} options={ORDER_STATUSES} /></div>
         </div>
-      </section>
+      </CollapsibleSettingsPanel>
 
-      <section className="detail-panel">
-        <PanelHeading eyebrow="FATURA" title="Fatura Durumu" />
+      <CollapsibleSettingsPanel id="invoice" eyebrow="FATURA" title="Fatura Durumu">
         <div className="special-settings-status"><span><Icon name="invoice" size={17} /></span><div><strong>Fatura henüz oluşturulmamış</strong><small>Sipariş için oluşturulmuş bir satış faturası bulunmuyor.</small></div><button type="button" disabled>Faturayı iptal et</button></div>
-      </section>
+      </CollapsibleSettingsPanel>
 
-      <section className="detail-panel">
-        <PanelHeading eyebrow="TESLİMAT" title="Teslimat Ayarları" />
+      <CollapsibleSettingsPanel id="delivery" eyebrow="TESLİMAT" title="Teslimat Ayarları">
         <div className="settings-panel-body">
           <div className="form-grid">
             <div className="form-field"><label>Teslimat şekli</label><CustomDropdown value={deliveryType} onChange={setDeliveryType} options={DELIVERY_TYPES} /></div>
@@ -308,10 +325,9 @@ function SpecialSettingsSection({ orderTitle }: { orderTitle: string }) {
           </div>
           <div className="form-field"><label htmlFor="special-delivery-date">Özel teslimat tarihi</label><DatePicker id="special-delivery-date" value={deliveryDate} onChange={setDeliveryDate} /></div>
         </div>
-      </section>
+      </CollapsibleSettingsPanel>
 
-      <section className="detail-panel">
-        <PanelHeading eyebrow="BELGE" title="Proforma Fatura" />
+      <CollapsibleSettingsPanel id="proforma" eyebrow="BELGE" title="Proforma Fatura">
         <div className="settings-panel-body">
           <label className="special-settings-check"><input type="checkbox" checked={createProforma} onChange={(event) => setCreateProforma(event.target.checked)} /><span><strong>Proforma fatura oluştur</strong><small>Sipariş teslim edildiğinde indirme bağlantısı müşteriye gösterilir.</small></span></label>
           <div className="form-field"><label htmlFor="proforma-work-title">İş tanımı</label><input id="proforma-work-title" value={orderTitle} readOnly /></div>
@@ -325,10 +341,9 @@ function SpecialSettingsSection({ orderTitle }: { orderTitle: string }) {
           </div>
           <dl className="special-settings-totals"><div><dt>Ara toplam</dt><dd>{money(subtotal)}</dd></div><div><dt>{vatExempt ? "KDV (Muaf)" : `KDV (%${parsedVat})`}</dt><dd>{money(vat)}</dd></div><div><dt>Toplam</dt><dd>{money(subtotal + vat)}</dd></div></dl>
         </div>
-      </section>
+      </CollapsibleSettingsPanel>
 
-      <section className="detail-panel">
-        <PanelHeading eyebrow="SERTİFİKA" title="İstatistiksel Analiz Sertifikası" />
+      <CollapsibleSettingsPanel id="certificate" eyebrow="SERTİFİKA" title="İstatistiksel Analiz Sertifikası">
         <div className="settings-panel-body">
           <label className="special-settings-check"><input type="checkbox" checked={createCertificate} onChange={(event) => setCreateCertificate(event.target.checked)} /><span><strong>Sertifika oluştur</strong><small>Sipariş teslim edildiğinde sertifika indirme bağlantısı görünür.</small></span></label>
           <div className="form-field"><label htmlFor="certificate-project">Proje / çalışma adı</label><input id="certificate-project" value={orderTitle} readOnly /></div>
@@ -338,13 +353,12 @@ function SpecialSettingsSection({ orderTitle }: { orderTitle: string }) {
             <div className="form-field"><label htmlFor="certificate-date">Tarih</label><DatePicker id="certificate-date" value={certificateDate} onChange={setCertificateDate} /></div>
           </div>
         </div>
-      </section>
+      </CollapsibleSettingsPanel>
 
-      <section className="detail-panel">
-        <PanelHeading eyebrow="BAĞLANTI" title="Bağlantılı Sipariş" />
+      <CollapsibleSettingsPanel id="related-order" eyebrow="BAĞLANTI" title="Bağlantılı Sipariş">
         <div className="settings-panel-body"><div className="form-field"><label>İlişkili sipariş</label><CustomDropdown value={relatedOrder} onChange={setRelatedOrder} options={RELATED_ORDERS} placeholder="Sipariş seçin" /></div></div>
         <footer className="settings-actions"><span className={`settings-note${saved ? " success" : ""}`}>{saved ? "Özel ayarlar kaydedildi." : "Değişiklikler kaydedilene kadar müşteriye yansımaz."}</span><button className="settings-save" type="button" onClick={saveSettings}><Icon name={saved ? "check" : "settings"} size={16} />{saved ? "Kaydedildi" : "Değişiklikleri kaydet"}</button></footer>
-      </section>
+      </CollapsibleSettingsPanel>
     </div>
   );
 }

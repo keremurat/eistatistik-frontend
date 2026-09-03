@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AdminShell } from "../AdminShell";
@@ -188,15 +189,6 @@ const tabs: { key: TabKey; label: string }[] = [
   { key: "cancelled", label: "İptal edilen" },
 ];
 
-const groupDefs: { key: StatusGroup; eyebrow: string; title: string; subdued?: boolean }[] = [
-  { key: "action",    eyebrow: "BEKLEYEN",   title: "Bekleyen siparişler" },
-  { key: "active",    eyebrow: "DEVAM EDEN", title: "Aktif analizler" },
-  { key: "completed", eyebrow: "ARŞİV",      title: "Teslim edilenler / Arşiv", subdued: true },
-  { key: "cancelled", eyebrow: "İPTAL",      title: "İptal edilenler",          subdued: true },
-];
-
-type VisibleOrderGroup = { key: StatusGroup | "all"; eyebrow: string; title: string; subdued?: boolean };
-
 const ACTIVITY_ROWS: ActivityRow[] = [
   { v: 1, time: "31/07/2026 16:26", actor: "KEREM MURAT(customer)", code: "—",           title: "Kerem Murat Deneme", status: "{}",        ilkUcret: "0", sonUcret: "0", odemeDurumu: "false", odemeZamani: "—", teslimatZamani: "—", teslimatTipi: "2", musteriId: "1",   analizorId: "6050", parentId: "—", kuponId: "—", kuponZamani: "—" },
   { v: 2, time: "31/07/2026 16:26", actor: "KEREM MURAT(customer)", code: "SA260731010", title: "—",                   status: "—",         ilkUcret: "—", sonUcret: "—", odemeDurumu: "—",     odemeZamani: "—", teslimatZamani: "—", teslimatTipi: "—", musteriId: "—",   analizorId: "—",    parentId: "—", kuponId: "—", kuponZamani: "—" },
@@ -368,7 +360,6 @@ function ConfirmModal({ cfg, onConfirm, onClose }: { cfg: ConfirmCfg; onConfirm:
 
 // ── 3-nokta bağlam menüsü ─────────────────────────────────────────
 interface CtxMenuProps {
-  order: Order;
   detailHref: string;
   isFavorite: boolean;
   isMessageClosed: boolean;
@@ -381,7 +372,7 @@ interface CtxMenuProps {
   onShowRelated: () => void;
 }
 
-function OrderContextMenu({ order, detailHref, isFavorite, isMessageClosed, onFavoriteToggle, onCancelRequest, onDeleteRequest, onArchive, onCloseMessage, onShowActivity, onShowRelated }: CtxMenuProps) {
+function OrderContextMenu({ detailHref, isFavorite, isMessageClosed, onFavoriteToggle, onCancelRequest, onDeleteRequest, onArchive, onCloseMessage, onShowActivity, onShowRelated }: CtxMenuProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos]   = useState({ top: 0, right: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -498,11 +489,15 @@ function OrderContextMenu({ order, detailHref, isFavorite, isMessageClosed, onFa
 }
 
 // ── Ana sayfa ─────────────────────────────────────────────────────
+const FALLBACK_PER_PAGE = 6;   // masaüstü ölçümü hazır olana / mobilde kullanılır
+const ROW_HEIGHT = 64;         // .edu-table sabit satır yüksekliği (globals.css)
+
 export default function AdminOrdersPage() {
   return <AdminShell><SharedOrdersList /></AdminShell>;
 }
 
 export function SharedOrdersList({ basePath = "/admin/siparisler" }: { basePath?: string }) {
+  const router = useRouter();
   const [activeTab,      setActiveTab]      = useState<TabKey>("all");
   const [query,          setQuery]          = useState("");
   const [analystFilter,  setAnalystFilter]  = useState("all");
@@ -514,8 +509,31 @@ export function SharedOrdersList({ basePath = "/admin/siparisler" }: { basePath?
   const [activityFor,    setActivityFor]    = useState<string | null>(null);
   const [relatedFor,     setRelatedFor]     = useState<string | null>(null);
   const [confirmCfg,     setConfirmCfg]     = useState<ConfirmCfg | null>(null);
+  const [page,           setPage]           = useState(1);
   const detailHref = `${basePath}/DS260723008`;
   const showAnalystFilter = basePath.startsWith("/admin/");
+
+  // Sayfa başına satır: masaüstünde tablo alanının boş yüksekliğine göre dinamik
+  // hesaplanır (ekran büyüdükçe daha çok satır); mobilde sabit kalır. (Eğitim Listesi mantığı)
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [perPage, setPerPage] = useState(FALLBACK_PER_PAGE);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    const desktop = window.matchMedia("(min-width:761px)");
+    function recompute() {
+      if (!wrap || !desktop.matches) { setPerPage(FALLBACK_PER_PAGE); return; }
+      const thead = wrap.querySelector("thead");
+      const headH = thead ? thead.getBoundingClientRect().height : 34;
+      setPerPage(Math.max(3, Math.floor((wrap.clientHeight - headH) / ROW_HEIGHT)));
+    }
+    recompute();
+    const ro = new ResizeObserver(recompute);
+    ro.observe(wrap);
+    desktop.addEventListener("change", recompute);
+    return () => { ro.disconnect(); desktop.removeEventListener("change", recompute); };
+  }, []);
 
   // Siparişlere durum override'ları uygula
   const displayOrders = useMemo(() =>
@@ -550,9 +568,11 @@ export function SharedOrdersList({ basePath = "/admin/siparisler" }: { basePath?
     }).sort((a, b) => orderTimestamp(b.date) - orderTimestamp(a.date));
   }, [activeTab, query, analystFilteredOrders]);
 
-  const visibleGroups: VisibleOrderGroup[] = activeTab === "all"
-    ? [{ key: "all", eyebrow: "", title: "" }]
-    : groupDefs;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+  const safePage   = Math.min(page, totalPages);
+  const pageItems  = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+  const emptyRows  = pageItems.length > 0 ? Math.max(0, perPage - pageItems.length) : 0;
+  function changePage(p: number) { setPage(Math.max(1, Math.min(totalPages, p))); }
 
   // İlişkili siparişler — aynı müşterinin diğer siparişleri
   const relatedOrders = useMemo(() => {
@@ -581,121 +601,126 @@ export function SharedOrdersList({ basePath = "/admin/siparisler" }: { basePath?
 
   return (
     <>
-      <div className="orders-page admin-orders-page">
-        <header className="orders-hero">
-          <div>
-            <p className="eyebrow">SİPARİŞ YÖNETİMİ</p>
-            <h1>Mevcut Siparişler</h1>
-            <p>Tüm analiz taleplerini, teslimatları ve müşteri siparişlerini yönetin.</p>
+      <div className="st-page education-list-page admin-orders-onepage">
+        <div className="admin-orders-head">
+          <header className="orders-hero">
+            <div>
+              <p className="eyebrow">SİPARİŞ YÖNETİMİ</p>
+              <h1>Mevcut Siparişler</h1>
+            </div>
+            <a className="orders-create" href="#"><Icon name="plus" size={16} />Sipariş Ver</a>
+          </header>
+
+          <nav className="order-tabs" aria-label="Sipariş durumları">
+            {tabs.map((tab) => (
+              <button key={tab.key} className={activeTab === tab.key ? "active" : ""}
+                onClick={() => { setActiveTab(tab.key); setPage(1); }}>
+                {tab.label}<span>{counts[tab.key]}</span>
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        <section className="detail-panel st-list-panel" style={{ padding: 0 }}>
+          <div className="edu-list-toolbar" aria-label="Sipariş arama">
+            <label className="orders-search edu-list-search">
+              <Icon name="search" size={17} />
+              <input value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+                placeholder="Sipariş kodu, müşteri veya analizör ara…" aria-label="Siparişlerde ara" />
+            </label>
+            {showAnalystFilter && <AnalystFilterDropdown value={analystFilter} onChange={(v) => { setAnalystFilter(v); setPage(1); }} />}
+            <span className="result-count">{filtered.length} sipariş</span>
           </div>
-          <a className="orders-create" href="#"><Icon name="plus" size={18} />Sipariş Ver</a>
-        </header>
 
-        <nav className="order-tabs" aria-label="Sipariş durumları">
-          {tabs.map((tab) => (
-            <button key={tab.key} className={activeTab === tab.key ? "active" : ""}
-              onClick={() => setActiveTab(tab.key)}>
-              {tab.label}<span>{counts[tab.key]}</span>
-            </button>
-          ))}
-        </nav>
+          <div className="ur-table-wrap" ref={wrapRef}>
+            <table className="ur-table edu-table admin-orders-edu-table">
+              <colgroup>
+                <col style={{ width: "19%" }} />
+                <col style={{ width: "12%" }} />
+                <col style={{ width: "15%" }} />
+                <col style={{ width: "10%" }} />
+                <col style={{ width: "8%" }} />
+                <col style={{ width: "15%" }} />
+                <col style={{ width: "12%" }} />
+                <col style={{ width: "9%" }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Sipariş</th>
+                  <th className="nowrap">Son güncelleme</th>
+                  <th>Durum</th>
+                  <th>Teslimat</th>
+                  <th>Kalan</th>
+                  <th>Müşteri</th>
+                  <th>Analizör</th>
+                  <th aria-label="İşlemler"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {pageItems.map((order) => {
+                  const status = statusMap[order.statusKey];
+                  const [dateDay, dateTime] = order.date.split(" ");
+                  const title = PREFIX_LABELS[order.code.slice(0, 2)] ?? "Analiz Talebi";
+                  return (
+                    <tr key={order.code} className="ao-row-link" role="link" tabIndex={0}
+                      aria-label={`${title} — ${order.code} detayını aç`}
+                      onClick={() => router.push(detailHref)}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); router.push(detailHref); } }}>
+                      <td className="edu-summary-cell">
+                        <span className="edu-name-link" title={title}>{title}</span>
+                        <small title={order.code}>{order.code}</small>
+                      </td>
+                      <td className="nowrap"><span className="aoc-2line"><strong>{dateDay}</strong><small>{dateTime}</small></span></td>
+                      <td className="nowrap"><span className="aoc-state"><span className={DOT[status.group]} />{status.label}</span></td>
+                      <td className="nowrap"><strong className="aoc-strong">{order.delivery}</strong></td>
+                      <td className="nowrap"><strong className="aoc-strong">{order.remaining}</strong></td>
+                      <td className="nowrap"><strong className="aoc-strong">{order.customer}</strong></td>
+                      <td className="nowrap"><span className="aoc-muted">{order.analyst}</span></td>
+                      <td className="edu-actions-cell" onClick={(e) => e.stopPropagation()}>
+                        <OrderContextMenu
+                          detailHref={detailHref}
+                          isFavorite={isFav(order.code)}
+                          isMessageClosed={msgClosedSet.has(order.code)}
+                          onFavoriteToggle={() => toggleFavorite(order)}
+                          onCancelRequest={() => setConfirmCfg({ type: "cancel", code: order.code })}
+                          onDeleteRequest={() => setConfirmCfg({ type: "delete", code: order.code })}
+                          onArchive={() => archive(order.code)}
+                          onCloseMessage={() => closeMessage(order.code)}
+                          onShowActivity={() => setActivityFor(order.code)}
+                          onShowRelated={() => setRelatedFor(order.code)}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+                {pageItems.length === 0 && (
+                  <tr>
+                    <td colSpan={8} style={{ padding: "2rem", textAlign: "center", color: "var(--muted)", fontSize: ".7rem" }}>
+                      Sipariş bulunamadı. <button className="aoc-clear" onClick={() => { setQuery(""); setActiveTab("all"); setAnalystFilter("all"); setPage(1); }}>Filtreleri temizle</button>
+                    </td>
+                  </tr>
+                )}
+                {Array.from({ length: emptyRows }, (_, index) => (
+                  <tr className="edu-placeholder-row" aria-hidden="true" key={`empty-${index}`}>
+                    <td colSpan={8}></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-        <section className="orders-toolbar" aria-label="Sipariş arama">
-          <label className="orders-search">
-            <Icon name="search" size={18} />
-            <input value={query} onChange={(e) => setQuery(e.target.value)}
-              placeholder="Sipariş kodu, müşteri veya analizör ara…" aria-label="Siparişlerde ara" />
-          </label>
-          {showAnalystFilter && <AnalystFilterDropdown value={analystFilter} onChange={setAnalystFilter} />}
-          <span className="result-count">{filtered.length} sipariş gösteriliyor</span>
+          {totalPages > 1 && (
+            <div className="ms-pagination" role="navigation" aria-label="Sayfalama">
+              <button disabled={safePage === 1} onClick={() => changePage(safePage - 1)}>‹ Önceki</button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <button key={p} className={p === safePage ? "active" : ""}
+                  aria-current={p === safePage ? "page" : undefined}
+                  onClick={() => changePage(p)}>{p}</button>
+              ))}
+              <button disabled={safePage === totalPages} onClick={() => changePage(safePage + 1)}>Sonraki ›</button>
+            </div>
+          )}
         </section>
-
-        {filtered.length === 0 ? (
-          <section className="orders-empty">
-            <span><Icon name="search" size={25} /></span>
-            <h2>Sipariş bulunamadı</h2>
-            <p>Arama kelimenizi veya seçtiğiniz filtreyi değiştirin.</p>
-            <button onClick={() => { setQuery(""); setActiveTab("all"); }}>Filtreleri temizle</button>
-          </section>
-        ) : (
-          <div className="order-groups admin-orders">
-            {visibleGroups.map((group) => {
-              const groupOrders = group.key === "all" ? filtered : filtered.filter(o => statusMap[o.statusKey].group === group.key);
-              if (groupOrders.length === 0) return null;
-              return (
-                <section key={group.key} className={`order-group ${group.subdued ? "subdued" : ""} ${group.key === "all" ? "ungrouped" : ""}`}>
-                  {group.key !== "all" && <header>
-                    <div><p className="eyebrow">{group.eyebrow}</p><h2>{group.title}</h2></div>
-                    <span>{groupOrders.length} sipariş</span>
-                  </header>}
-                  <div className="orders-table admin-orders-table">
-                    <div className="orders-table-head">
-                      <span>Sipariş</span><span>Son güncelleme</span><span>Durum</span>
-                      <span>Teslimat</span><span>Kalan</span><span>Müşteri</span>
-                      <span>Analizör</span><span>İşlem</span>
-                    </div>
-                    {groupOrders.map((order) => {
-                      const status = statusMap[order.statusKey];
-                      const [dateDay, dateTime] = order.date.split(" ");
-                      return (
-                        <article className="orders-row" key={order.code}>
-                          <Link className="order-row-link" href={detailHref}
-                            aria-label={`${PREFIX_LABELS[order.code.slice(0, 2)] ?? "Analiz Talebi"} — ${order.code} detayını görüntüle`} />
-
-                          <div className="order-identity">
-                            <span className="order-file"><Icon name="file" size={18} /></span>
-                            <span>
-                              <strong>{PREFIX_LABELS[order.code.slice(0, 2)] ?? "Analiz Talebi"}</strong>
-                              <small>{order.code}</small>
-                            </span>
-                          </div>
-
-                          <div className="ao-cell">
-                            <strong>{dateDay}</strong><small>{dateTime}</small>
-                          </div>
-
-                          <div className="order-state">
-                            <span className={DOT[status.group]} />
-                            <span><strong>{status.label}</strong></span>
-                          </div>
-
-                          <div className="ao-cell"><strong>{order.delivery}</strong></div>
-                          <div className="ao-cell"><strong>{order.remaining}</strong></div>
-
-                          <div className="order-identity">
-                            <span className="order-file"><Icon name="user" size={18} /></span>
-                            <span><strong>{order.customer}</strong></span>
-                          </div>
-
-                          <div className="ao-cell"><strong>{order.analyst}</strong></div>
-
-                          <div className="order-actions">
-                            <Link href={detailHref} className="context-action">
-                              Detay<Icon name="arrow" size={15} />
-                            </Link>
-                            <OrderContextMenu
-                              order={order}
-                              detailHref={detailHref}
-                              isFavorite={isFav(order.code)}
-                              isMessageClosed={msgClosedSet.has(order.code)}
-                              onFavoriteToggle={() => toggleFavorite(order)}
-                              onCancelRequest={() => setConfirmCfg({ type: "cancel", code: order.code })}
-                              onDeleteRequest={() => setConfirmCfg({ type: "delete", code: order.code })}
-                              onArchive={() => archive(order.code)}
-                              onCloseMessage={() => closeMessage(order.code)}
-                              onShowActivity={() => setActivityFor(order.code)}
-                              onShowRelated={() => setRelatedFor(order.code)}
-                            />
-                          </div>
-                        </article>
-                      );
-                    })}
-                  </div>
-                </section>
-              );
-            })}
-          </div>
-        )}
       </div>
 
       {/* Modaller */}
