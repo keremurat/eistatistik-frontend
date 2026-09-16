@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { AdminShell, useDataHidden } from "./AdminShell";
 import { AdminAnalyticsSection } from "./AnalyticsDashboard";
+import { TimeGreeting } from "../components/TimeGreeting";
 
 function OrdersIcon({ size = 18 }: { size?: number }) {
   return (
@@ -44,7 +45,7 @@ function AdminDashboard() {
       <section className="daily-brief admin-brief">
         <div className="brief-copy">
           <p className="eyebrow light">CUMA · 31 TEMMUZ 2026</p>
-          <h1>Merhaba, Kerem.</h1>
+          <h1><TimeGreeting name="Kerem" /></h1>
           <p>{hidden ? "Panel verileri gizlendi. Görüntülemek için üst bardaki göz simgesine dokunun." : <><strong>13 siparişin teslim tarihi geçti</strong>, 44 sipariş için süre yaklaşıyor. Bir teklif de ücretlendirme bekliyor.</>}</p>
         </div>
         <div className="brief-stats" aria-label="Bekleyen işlemler">

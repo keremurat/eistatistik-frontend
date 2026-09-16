@@ -355,7 +355,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </button>
           <FavoritesMenu />
           <NotificationMenu role={isEditor ? "editor" : "admin"} />
-          <ProfileMenu roleLabel={isEditor ? "Editör hesabı" : "Yönetici"} ordersHref={isEditor ? "/editor/siparisler" : "/admin/siparisler"} ordersLabel="Sipariş Yönetimi" name={isEditor ? "eistatistik Editör" : undefined} email={isEditor ? "editor@eistatistik.com" : undefined} initials={isEditor ? "EE" : undefined} />
+          <ProfileMenu roleLabel={isEditor ? "Editör hesabı" : "Yönetici"} settingsHref={isEditor ? "/editor/ayarlar" : "/admin/ayarlar"} ordersHref={isEditor ? "/editor/siparisler" : "/admin/siparisler"} ordersLabel="Sipariş Yönetimi" name={isEditor ? "eistatistik Editör" : undefined} email={isEditor ? "editor@eistatistik.com" : undefined} initials={isEditor ? "EE" : undefined} />
         </div>
       </header>
       <main id="admin-main" className={`admin-dash${isManagementPage ? " admin-management-page" : ""}`} data-hidden={dataHidden ? "true" : undefined}>

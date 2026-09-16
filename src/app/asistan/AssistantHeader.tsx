@@ -126,7 +126,7 @@ export function AssistantHeader() {
     <div className="top-actions">
       <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a>
       <NotificationMenu role="asistan" />
-      <ProfileMenu roleLabel="Asistan hesabı" ordersHref="/asistan/siparisler" ordersLabel="Siparişler" name="eistatistik Asistan" email="asistan@eistatistik.com" initials="EA" />
+      <ProfileMenu roleLabel="Asistan hesabı" settingsHref="/asistan/ayarlar" ordersHref="/asistan/siparisler" ordersLabel="Siparişler" name="eistatistik Asistan" email="asistan@eistatistik.com" initials="EA" />
     </div>
   </header>;
 }

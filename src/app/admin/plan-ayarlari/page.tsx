@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AdminShell } from "../AdminShell";
+import { useToast } from "../../components/ToastProvider";
 
 type IconName = "info" | "check";
 function Icon({ name, size = 15 }: { name: IconName; size?: number }) {
@@ -24,7 +25,7 @@ export default function PlanAyarlariPage() {
   const [aciklama,  setAciklama]  = useState("");
   const [aylikUcret, setAylikUcret] = useState("2400");
   const [satisAcik, setSatisAcik] = useState(false);
-  const [saved,     setSaved]     = useState(false);
+  const toast = useToast();
   const [error,     setError]     = useState("");
 
   const ucretNum   = Number(aylikUcret) || 0;
@@ -35,8 +36,7 @@ export default function PlanAyarlariPage() {
   function handleSave() {
     if (!planAdi.trim()) { setError("Plan adı boş bırakılamaz."); return; }
     setError("");
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+    toast.success("Plan ayarları kaydedildi.");
   }
 
   return (
@@ -112,9 +112,7 @@ export default function PlanAyarlariPage() {
               <span>Aylık gelir, aktif abone sayısı ile aylık ücretin çarpımıdır.</span>
             </div>
             {error && <p style={{ margin: "0 1rem .7rem", fontSize: ".64rem", color: "#c85a51", fontWeight: 700, lineHeight: 1.45 }}>{error}</p>}
-            <button className={`edu-preview-save${saved ? " saved" : ""}`} onClick={handleSave}>
-              {saved ? <><Icon name="check" size={15} /> Kaydedildi</> : "Kaydet"}
-            </button>
+            <button className="edu-preview-save" onClick={handleSave}>Kaydet</button>
           </aside>
         </div>
       </div>

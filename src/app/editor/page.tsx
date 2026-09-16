@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AdminShell } from "../admin/AdminShell";
+import { TimeGreeting } from "../components/TimeGreeting";
 
 export default function EditorPage() {
   return (
@@ -8,7 +9,7 @@ export default function EditorPage() {
       <section className="daily-brief admin-brief">
         <div className="brief-copy">
           <p className="eyebrow light">EDİTÖR ÇALIŞMA ALANI</p>
-          <h1>Günaydın.</h1>
+          <h1><TimeGreeting name="Editör" /></h1>
           <p>Sipariş, eğitim ve içerik operasyonlarındaki güncel işleri buradan takip edebilirsiniz.</p>
         </div>
         <div className="brief-stats" aria-label="Editör çalışma özeti">

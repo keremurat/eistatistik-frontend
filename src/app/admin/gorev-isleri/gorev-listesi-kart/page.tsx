@@ -5,6 +5,8 @@ import { createPortal } from "react-dom";
 import { AdminShell } from "../../AdminShell";
 import { DatePicker } from "../../../components/DatePicker";
 import { TimePicker } from "../../../components/TimePicker";
+import { readOrderTasks } from "../../orderActionData";
+import { useToast } from "../../../components/ToastProvider";
 
 // ── Tipler ────────────────────────────────────────────────────────────────────
 type EtiketKey = "Acil" | "Arama Talebi" | "Önemli" | "Düşük Öncelikli" | "Hatırlatma";
@@ -293,6 +295,7 @@ function GorevModal({ panolar, initial, onClose, onSave }: {
   onClose: () => void;
   onSave: (g: Omit<Gorev, "id"> & { id?: number }) => void;
 }) {
+  const toast = useToast();
   const isEdit = !!initial;
 
   function parseTarihSaat(tarih: string) {
@@ -310,7 +313,6 @@ function GorevModal({ panolar, initial, onClose, onSave }: {
   const [etiket,     setEtiket]     = useState<EtiketKey>((initial?.etiket as EtiketKey) ?? ETIKET_LIST[0]);
   const [aciklama,   setAciklama]   = useState(initial?.aciklama ?? "");
   const [yapilanlar, setYapilanlar] = useState<YapilanItem[]>(initial?.yapilanlar ?? []);
-  const [saved,      setSaved]      = useState(false);
 
   function addYapilanlar() {
     setYapilanlar(prev => [...prev, { id: Date.now(), metin: "", tamamlandi: false }]);
@@ -336,8 +338,8 @@ function GorevModal({ panolar, initial, onClose, onSave }: {
       yapilanlar: yapilanlar.filter(y => y.metin.trim()),
       ...(isEdit ? { siparisKodu: initial!.siparisKodu, musteriAdi: initial!.musteriAdi, musteriTel: initial!.musteriTel } : {}),
     });
-    setSaved(true);
-    setTimeout(() => { setSaved(false); onClose(); }, 700);
+    toast.success(isEdit ? "Görev güncellendi." : "Görev oluşturuldu.");
+    onClose();
   }
 
   const panoOptions   = panolar.map(p => ({ value: p.key, label: p.baslik }));
@@ -423,10 +425,8 @@ function GorevModal({ panolar, initial, onClose, onSave }: {
         <footer className="admin-modal-foot">
           <button className="btn-cancel" onClick={onClose}>Kapat</button>
           <button className="btn-save" onClick={handleSave} disabled={!baslik.trim()}
-            style={saved ? { background: "#287a55" } : {}}>
-            {saved
-              ? <><Icon name="check" size={14} /> {isEdit ? "Güncellendi" : "Kaydedildi"}</>
-              : isEdit ? "Güncelle" : "Kaydet"}
+            >
+            {isEdit ? "Güncelle" : "Kaydet"}
           </button>
         </footer>
       </section>
@@ -440,16 +440,16 @@ function PanoEkleModal({ onClose, onSave, mevcutSira }: {
   onSave: (p: Omit<Pano, "key">) => void;
   mevcutSira: number;
 }) {
+  const toast = useToast();
   const [baslik,   setBaslik]   = useState("");
   const [sira,     setSira]     = useState(String(mevcutSira + 1));
   const [aciklama, setAciklama] = useState("");
-  const [saved,    setSaved]    = useState(false);
 
   function handleSave() {
     if (!baslik.trim()) return;
     onSave({ baslik: baslik.trim().toUpperCase(), sira: parseInt(sira) || mevcutSira + 1 });
-    setSaved(true);
-    setTimeout(() => { setSaved(false); onClose(); }, 700);
+    toast.success("Pano oluşturuldu.");
+    onClose();
   }
 
   return (
@@ -486,8 +486,8 @@ function PanoEkleModal({ onClose, onSave, mevcutSira }: {
         <footer className="admin-modal-foot">
           <button className="btn-cancel" onClick={onClose}>Kapat</button>
           <button className="btn-save" onClick={handleSave} disabled={!baslik.trim()}
-            style={saved ? { background: "#287a55" } : {}}>
-            {saved ? <><Icon name="check" size={14} /> Kaydedildi</> : "Kaydet"}
+            >
+            Kaydet
           </button>
         </footer>
       </section>
@@ -502,6 +502,12 @@ export function TaskKanbanContent() {
   const [gorevModal,   setGorevModal]   = useState(false);
   const [editingGorev, setEditingGorev] = useState<Gorev | null>(null);
   const [panoModal,    setPanoModal]    = useState(false);
+
+  useEffect(() => {
+    const saved = readOrderTasks().map((task, index): Gorev => ({ id: -(index + 1), baslik: task.title, pano: "yapilacaklar", etiket: "Önemli", tarih: task.dueDate, siparisKodu: task.orderCode, aciklama: task.description, atanan: task.assignee, yapilanlar: [] }));
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hesap bazlı tarayıcı kayıtları hydration sonrasında yüklenir
+    setGorevler([...saved, ...INIT_GOREVLER]);
+  }, []);
 
   const maxSira = panolar.reduce((m, p) => Math.max(m, p.sira), 0);
 

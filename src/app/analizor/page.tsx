@@ -6,6 +6,7 @@ import { useState } from "react";
 import { NotificationMenu } from "../components/NotificationMenu";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { CustomerEducationMenu } from "../components/CustomerEducationMenu";
+import { TimeGreeting } from "../components/TimeGreeting";
 
 type IconName = "arrow" | "calendar" | "check" | "clock" | "file" | "home" | "message" | "tasks" | "video";
 
@@ -66,7 +67,7 @@ export default function AnalystDashboardPage() {
             <Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} />
           </a>
           <NotificationMenu role="analizor" />
-          <ProfileMenu roleLabel="Analizör hesabı" ordersHref="/analizor/islerim" ordersLabel="İşlerim" name="Naci Yılmaz" email="analizor@eistatistik.com" initials="NY" />
+          <ProfileMenu roleLabel="Analizör hesabı" settingsHref="/analizor/ayarlar" ordersHref="/analizor/islerim" ordersLabel="İşlerim" name="Naci Yılmaz" email="analizor@eistatistik.com" initials="NY" />
         </div>
       </header>
 
@@ -74,7 +75,7 @@ export default function AnalystDashboardPage() {
         <section className="daily-brief analyst-brief">
           <div className="brief-copy">
             <p className="eyebrow light">PAZARTESİ · 3 AĞUSTOS 2026</p>
-            <h1>Günaydın, Naci.</h1>
+            <h1><TimeGreeting name="Naci" /></h1>
             <p>Bugün <strong>2 tesliminiz</strong> ve <strong>14:30’da bir görüşmeniz</strong> var.</p>
           </div>
           <div className="brief-stats analyst-brief-stats" aria-label="Analizör iş özeti">

@@ -8,6 +8,7 @@ import { BrandLogo } from "../../components/BrandLogo";
 import { CustomerEducationMenu } from "../../components/CustomerEducationMenu";
 import { useEffect, useRef, useState } from "react";
 import { copyText } from "../../utils/clipboard";
+import { useToast } from "../../components/ToastProvider";
 
 type Section = "overview" | "files" | "payment" | "messages" | "deliveries" | "appointments" | "invoice" | "extra";
 type IconName = "arrow" | "back" | "bell" | "book" | "calendar" | "card" | "check" | "clock" | "copy" | "download" | "file" | "home" | "invoice" | "message" | "plus" | "search" | "spark" | "upload" | "video";
@@ -239,6 +240,7 @@ function Files() {
 }
 
 function Payment({ method, onMethod }: { method: "transfer" | "card"; onMethod: (value: "transfer" | "card") => void }) {
+  const toast = useToast();
   const [discountOpen, setDiscountOpen] = useState(false);
   const [discountCode, setDiscountCode] = useState("");
   const [discountState, setDiscountState] = useState<"idle" | "success" | "error">("idle");
@@ -249,7 +251,12 @@ function Payment({ method, onMethod }: { method: "transfer" | "card"; onMethod: 
   const [copiedField, setCopiedField] = useState<"iban" | "code" | null>(null);
   const [receiptName, setReceiptName] = useState("");
   const receiptInputRef = useRef<HTMLInputElement>(null);
-  const applyDiscount = () => setDiscountState(discountCode.trim().toLocaleUpperCase("tr") === "EISTATISTIK10" ? "success" : "error");
+  const applyDiscount = () => {
+    const valid = discountCode.trim().toLocaleUpperCase("tr") === "EISTATISTIK10";
+    setDiscountState(valid ? "success" : "error");
+    if (valid) toast.success("İndirim kodu uygulandı.");
+    else toast.error("İndirim kodu geçerli değil.");
+  };
   async function copyBankValue(field: "iban" | "code", value: string) {
     if (!await copyText(value)) return;
     setCopiedField(field);
@@ -292,8 +299,6 @@ function Payment({ method, onMethod }: { method: "transfer" | "card"; onMethod: 
       {discountOpen && <div className="discount-form">
         <label><span>İndirim kodu</span><input value={discountCode} onChange={event => { setDiscountCode(event.target.value); setDiscountState("idle"); }} placeholder="Kodunuzu yazın" /></label>
         <button onClick={applyDiscount} disabled={!discountCode.trim()}>Uygula</button>
-        {discountState === "success" && <p className="success">Kod uygulandı.</p>}
-        {discountState === "error" && <p className="error">Kod geçerli değil.</p>}
       </div>}
     </div>
     <dl className="payment-total"><div className="total"><dt>Toplam</dt><dd>{discountState === "success" ? "4.500 TL" : "5.000 TL"}</dd></div></dl>
@@ -354,6 +359,7 @@ function PaymentAgreementModal({ context, onClose, onAccept }: { context: "card"
 }
 
 function Messages() {
+  const toast = useToast();
   const [message, setMessage] = useState("");
   const [sentMessages, setSentMessages] = useState<string[]>([]);
 
@@ -362,6 +368,7 @@ function Messages() {
     if (!cleanMessage) return;
     setSentMessages((current) => [...current, cleanMessage]);
     setMessage("");
+    toast.success("Mesaj gönderildi.");
   }
 
   return <section className="detail-panel messages-panel panel-direct" aria-label="Sipariş yazışmaları">

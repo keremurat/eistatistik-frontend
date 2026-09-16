@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useRef } from "react";
 import { AdminShell } from "../../../AdminShell";
 import { lessons } from "../../ders-listesi/data";
+import { useToast } from "../../../../components/ToastProvider";
 
 type IconName = "back" | "check";
 function Icon({ name, size = 17 }: { name: IconName; size?: number }) {
@@ -26,7 +27,7 @@ function AddForm() {
   const [driveUrl, setDriveUrl] = useState("");
   const [dersler,  setDersler]  = useState<string[]>([]);
   const [dersInput, setDersInput] = useState("");
-  const [saved,    setSaved]    = useState(false);
+  const toast = useToast();
 
   const dersInputRef = useRef<HTMLInputElement>(null);
 
@@ -50,8 +51,7 @@ function AddForm() {
   }
 
   function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+    toast.success("Modül kaydedildi.");
   }
 
   return (
@@ -124,9 +124,7 @@ function AddForm() {
         </div>
 
         <div className="create-onepage-actions">
-          <button className={`edu-form-save${saved ? " saved" : ""}`} onClick={handleSave}>
-            {saved ? <><Icon name="check" size={16} /> Kaydedildi</> : "Kaydet"}
-          </button>
+          <button className="edu-form-save" onClick={handleSave}>Kaydet</button>
         </div>
       </section>
     </div>

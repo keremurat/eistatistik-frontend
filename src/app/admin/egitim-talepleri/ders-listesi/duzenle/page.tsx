@@ -5,6 +5,7 @@ import { Suspense, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { AdminShell } from "../../../AdminShell";
 import { lessons } from "../data";
+import { useToast } from "../../../../components/ToastProvider";
 
 type IconName = "back" | "check" | "cloud" | "unlink";
 function Icon({ name, size = 17 }: { name: IconName; size?: number }) {
@@ -37,7 +38,7 @@ function EditForm() {
   const [ytUrl,     setYtUrl]     = useState(base.youtubeUrl);
   const [ytInput,   setYtInput]   = useState("");
   const [files,     setFiles]     = useState<string[]>([]);
-  const [saved,     setSaved]     = useState(false);
+  const toast = useToast();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const thumbUrl     = ytUrl ? getYoutubeThumbnail(ytUrl) : "";
@@ -58,8 +59,7 @@ function EditForm() {
   }
 
   function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+    toast.success("Ders güncellendi.");
   }
 
   return (
@@ -153,9 +153,7 @@ function EditForm() {
             </div>
           </div>
 
-          <button className={`edu-form-save${saved ? " saved" : ""}`} onClick={handleSave}>
-            {saved ? <><Icon name="check" size={16} /> Kaydedildi</> : "Kaydet"}
-          </button>
+          <button className="edu-form-save" onClick={handleSave}>Kaydet</button>
 
         </div>
       </section>

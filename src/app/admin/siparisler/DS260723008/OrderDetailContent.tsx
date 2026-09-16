@@ -3,12 +3,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
 import { MaskedNum } from "../../AdminShell";
 import { DatePicker } from "../../../components/DatePicker";
 import { MessageTemplatePicker } from "../../../components/MessageTemplatePicker";
+import { SystemDropdown } from "../../../components/SystemDropdown";
+import { useToast } from "../../../components/ToastProvider";
 import { copyText } from "../../../utils/clipboard";
+import { useFavorites } from "../../FavoritesContext";
+import { saveOrderDiscount, saveOrderTask } from "../../orderActionData";
 
 type AdminSection = "overview" | "settings" | "items" | "pricing" | "payment" | "messages" | "proforma" | "results" | "analyst" | "delivery" | "notes" | "appointments";
 type IconName = "arrow" | "assign" | "back" | "card" | "chart" | "check" | "chevron" | "clock" | "cloudUp" | "copy" | "download" | "eye" | "file" | "invoice" | "link" | "list" | "message" | "note" | "package" | "percent" | "plus" | "search" | "settings" | "star" | "tag" | "upload" | "user" | "video" | "x";
@@ -96,7 +100,6 @@ function CollapsibleSettingsPanel({ id, eyebrow, title, children }: { id: string
 
 const sidebarItems: { key: AdminSection; icon: IconName; label: string; badge?: number }[] = [
   { key: "overview",  icon: "file",    label: "Sipariş Ayrıntıları" },
-  { key: "settings",  icon: "settings",label: "Özel Ayarlar" },
   { key: "items",     icon: "list",    label: "Sipariş Kalemleri" },
   { key: "pricing",   icon: "tag",     label: "Güncel Ücret Belirle" },
   { key: "payment",   icon: "card",    label: "Ödeme" },
@@ -107,8 +110,10 @@ const sidebarItems: { key: AdminSection; icon: IconName; label: string; badge?: 
   { key: "delivery",  icon: "package", label: "Teslimat İşlemleri" },
   { key: "notes",     icon: "note",    label: "Görev/Görüşme Notları" },
   { key: "appointments", icon: "clock", label: "Randevu" },
+  { key: "settings",  icon: "settings",label: "Özel Ayarlar" },
 ];
 
+const adminSidebarItems = sidebarItems.filter((item) => item.key !== "proforma");
 const analystSidebarItems = sidebarItems.filter((item) => ["overview", "items", "messages", "proforma", "results", "delivery", "notes", "appointments"].includes(item.key));
 const staffSidebarItems = sidebarItems.filter((item) => item.key !== "settings");
 
@@ -121,15 +126,100 @@ const timelineSteps = [
   { label: "Teslim Edildi",   sub: "06.08.2026",        state: ""        as const },
 ];
 
+const assigneeOptions = [
+  { value: "KEREM MURAT", label: "Kerem Murat" },
+  { value: "NACİ MURAT", label: "Naci Murat" },
+  { value: "SÜMEYYE İNAN", label: "Sümeyye İnan" },
+  { value: "MEHMET MEŞE", label: "Mehmet Meşe" },
+  { value: "ALİHSAN ŞÜKÜR", label: "Alihsan Şükür" },
+  { value: "EMRE KAYA", label: "Emre Kaya" },
+];
+
+function DiscountModal({ orderCode, onClose, onSaved }: { orderCode: string; onClose: () => void; onSaved: (message: string) => void }) {
+  const [code, setCode] = useState(() => `${orderCode.slice(0, 4)}${Math.floor(1000 + Math.random() * 9000)}`);
+  const [type, setType] = useState<"percentage" | "amount">("percentage");
+  const [value, setValue] = useState("10");
+  const [expiresAt, setExpiresAt] = useState("");
+
+  function save() {
+    const numericValue = Number(value.replace(",", "."));
+    if (!code.trim() || !Number.isFinite(numericValue) || numericValue <= 0 || !expiresAt) return;
+    saveOrderDiscount({ id: crypto.randomUUID(), orderCode, code: code.trim().toUpperCase(), type, value: numericValue, expiresAt, createdAt: new Date().toISOString() });
+    onSaved(`${code.trim().toUpperCase()} indirim kodu siparişe tanımlandı.`);
+    onClose();
+  }
+
+  const invalid = !code.trim() || Number(value.replace(",", ".")) <= 0 || !expiresAt;
+  return <div className="admin-modal-backdrop" role="presentation" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <section className="admin-modal order-action-modal" role="dialog" aria-modal="true" aria-labelledby="discount-modal-title">
+      <header className="admin-modal-head"><div><p className="eyebrow">{orderCode}</p><h2 id="discount-modal-title">İndirim kodu tanımla</h2></div><button className="admin-modal-close" onClick={onClose} aria-label="Kapat">×</button></header>
+      <div className="admin-modal-body">
+        <div className="admin-modal-grid-2">
+          <div className="form-field"><label htmlFor="discount-code">İndirim kodu</label><input id="discount-code" value={code} onChange={(event) => setCode(event.target.value)} /></div>
+          <div className="form-field"><label>İndirim türü</label><SystemDropdown value={type} onChange={(next) => setType(next as "percentage" | "amount")} options={[{ value: "percentage", label: "Yüzde" }, { value: "amount", label: "Sabit tutar" }]} /></div>
+        </div>
+        <div className="admin-modal-grid-2">
+          <div className="form-field"><label htmlFor="discount-value">{type === "percentage" ? "İndirim oranı (%)" : "İndirim tutarı (TL)"}</label><input id="discount-value" inputMode="decimal" value={value} onChange={(event) => setValue(event.target.value)} /></div>
+          <div className="form-field"><label>Son kullanım tarihi</label><DatePicker value={expiresAt} onChange={setExpiresAt} placeholder="GG.AA.YYYY" /></div>
+        </div>
+        <p className="order-action-note">Kod yalnızca {orderCode} numaralı sipariş için geçerli olacaktır.</p>
+      </div>
+      <footer className="admin-modal-foot"><button className="btn-cancel" onClick={onClose}>Vazgeç</button><button className="btn-save" disabled={invalid} onClick={save}><Icon name="check" size={14} />Kodu tanımla</button></footer>
+    </section>
+  </div>;
+}
+
+function AssignmentModal({ orderCode, orderTitle, onClose, onSaved }: { orderCode: string; orderTitle: string; onClose: () => void; onSaved: (message: string) => void }) {
+  const [title, setTitle] = useState(`${orderCode} siparişini takip et`);
+  const [assignee, setAssignee] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [description, setDescription] = useState(orderTitle);
+
+  function save() {
+    if (!title.trim() || !assignee || !dueDate) return;
+    saveOrderTask({ id: crypto.randomUUID(), orderCode, title: title.trim(), assignee, dueDate, description: description.trim(), createdAt: new Date().toISOString() });
+    onSaved(`Görev ${assigneeOptions.find((item) => item.value === assignee)?.label ?? assignee} kullanıcısına atandı.`);
+    onClose();
+  }
+
+  return <div className="admin-modal-backdrop" role="presentation" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <section className="admin-modal order-action-modal" role="dialog" aria-modal="true" aria-labelledby="assignment-modal-title">
+      <header className="admin-modal-head"><div><p className="eyebrow">{orderCode}</p><h2 id="assignment-modal-title">Görev ata</h2></div><button className="admin-modal-close" onClick={onClose} aria-label="Kapat">×</button></header>
+      <div className="admin-modal-body">
+        <div className="form-field"><label htmlFor="assignment-title">Görev başlığı</label><input id="assignment-title" value={title} onChange={(event) => setTitle(event.target.value)} /></div>
+        <div className="admin-modal-grid-2">
+          <div className="form-field"><label>Atanacak kişi</label><SystemDropdown value={assignee} onChange={setAssignee} options={assigneeOptions} placeholder="Kişi seçin…" searchable /></div>
+          <div className="form-field"><label>Son tarih</label><DatePicker value={dueDate} onChange={setDueDate} placeholder="GG.AA.YYYY" /></div>
+        </div>
+        <div className="form-field"><label htmlFor="assignment-description">Açıklama</label><textarea id="assignment-description" rows={4} value={description} onChange={(event) => setDescription(event.target.value)} /></div>
+      </div>
+      <footer className="admin-modal-foot"><button className="btn-cancel" onClick={onClose}>Vazgeç</button><button className="btn-save" disabled={!title.trim() || !assignee || !dueDate} onClick={save}><Icon name="check" size={14} />Görevi oluştur</button></footer>
+    </section>
+  </div>;
+}
+
 /* ─── Paylaşılan sipariş detay çalışma alanı ──────────────────── */
 export function SharedOrderDetail({ audience = "admin", orderCode = "PA260731006", orderTitle = "Yetişkinlerde Oral Hijyen Davranışları, Algılanan Engeller ve Motivasyon: Kesitsel Bir Anket Çalışması" }: { audience?: "admin" | "analizor" | "asistan" | "editor"; orderCode?: string; orderTitle?: string }) {
   const params  = useSearchParams();
-  const initSec = (params.get("section") ?? "overview") as AdminSection;
+  const pathname = usePathname();
+  const requestedSection = (params.get("section") ?? "overview") as AdminSection;
+  const initSec = audience === "admin" && requestedSection === "proforma" ? "overview" : requestedSection;
   const [section, setSection] = useState<AdminSection>(initSec);
   const [paymentMethod, setPaymentMethod] = useState<"transfer" | "card">("transfer");
   const [servicePrice, setServicePrice] = useState("7.700,00");
-  const visibleSidebarItems = audience === "analizor" ? analystSidebarItems : audience === "admin" ? sidebarItems : staffSidebarItems;
+  const [actionModal, setActionModal] = useState<"discount" | "assignment" | null>(null);
+  const toast = useToast();
+  const { isFav, toggle: toggleFavorite } = useFavorites();
+  const favorite = isFav(orderCode);
+  const visibleSidebarItems = audience === "analizor" ? analystSidebarItems : audience === "admin" ? adminSidebarItems : staffSidebarItems;
   const backHref = audience === "analizor" ? "/analizor/islerim" : audience === "asistan" ? "/asistan/siparisler" : audience === "editor" ? "/editor/siparisler" : "/admin/siparisler";
+
+  useEffect(() => {
+    if (!actionModal) return;
+    function closeOnEscape(event: KeyboardEvent) { if (event.key === "Escape") setActionModal(null); }
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [actionModal]);
 
   return (
       <div className="detail-page shared-order-detail">
@@ -151,9 +241,9 @@ export function SharedOrderDetail({ audience = "admin", orderCode = "PA260731006
             </div>
           </div>
           <div className="admin-hero-actions">
-            <button className="admin-action-btn"><Icon name="star" size={15} />Favorilere Ekle</button>
-            <button className="admin-action-btn"><Icon name="percent" size={15} />İndirim Kodu Tanımla</button>
-            <button className="admin-action-btn accent"><Icon name="assign" size={15} />Görev Ata</button>
+            <button className={`admin-action-btn favorite-action${favorite ? " selected" : ""}`} aria-pressed={favorite} onClick={() => { toggleFavorite({ id: orderCode, label: orderTitle, sub: orderCode, href: pathname }); toast.success(favorite ? "Sipariş favorilerden çıkarıldı." : "Sipariş favorilere eklendi."); }}><Icon name="star" size={15} />{favorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}</button>
+            <button className="admin-action-btn" onClick={() => setActionModal("discount")}><Icon name="percent" size={15} />İndirim Kodu Tanımla</button>
+            <button className="admin-action-btn accent" onClick={() => setActionModal("assignment")}><Icon name="assign" size={15} />Görev Ata</button>
           </div>
         </header>
 
@@ -177,7 +267,7 @@ export function SharedOrderDetail({ audience = "admin", orderCode = "PA260731006
             {audience !== "analizor" && section === "pricing" && <PricingSection price={servicePrice} onSave={setServicePrice} />}
             {audience !== "analizor" && section === "payment" && <PaymentSection method={paymentMethod} onMethod={setPaymentMethod} price={servicePrice} />}
             {section === "messages"  && <MessagesSection />}
-            {section === "proforma"  && <ProformaInvoiceSection />}
+            {audience !== "admin" && section === "proforma" && <ProformaInvoiceSection />}
             {section === "results"   && <AnalysisResultsSection />}
             {audience !== "analizor" && section === "analyst" && <AnalystSection />}
             {section === "delivery"  && <DeliverySection />}
@@ -185,6 +275,8 @@ export function SharedOrderDetail({ audience = "admin", orderCode = "PA260731006
             {section === "appointments" && <AdminAppointmentsSection />}
           </section>
         </div>
+        {actionModal === "discount" && <DiscountModal orderCode={orderCode} onClose={() => setActionModal(null)} onSaved={toast.success} />}
+        {actionModal === "assignment" && <AssignmentModal orderCode={orderCode} orderTitle={orderTitle} onClose={() => setActionModal(null)} onSaved={toast.success} />}
       </div>
   );
 }
@@ -275,6 +367,7 @@ const DELIVERY_DURATIONS = ["12 saat"];
 const RELATED_ORDERS = ["PA260731006 · Yetişkinlerde Oral Hijyen Davranışları", "SA260723002 · Yüksek lisans tezi veri analizi"];
 
 function SpecialSettingsSection({ orderTitle }: { orderTitle: string }) {
+  const toast = useToast();
   const [workType, setWorkType] = useState("");
   const [orderStatus, setOrderStatus] = useState("Teslim Edildi");
   const [deliveryType, setDeliveryType] = useState("Proforma fatura gönderimi");
@@ -290,7 +383,6 @@ function SpecialSettingsSection({ orderTitle }: { orderTitle: string }) {
   const [certificateName, setCertificateName] = useState("Kerem Murat");
   const [certificateDate, setCertificateDate] = useState("23.07.2026");
   const [relatedOrder, setRelatedOrder] = useState("");
-  const [saved, setSaved] = useState(false);
 
   const parsedQuantity = Number(quantity.replace(",", ".")) || 0;
   const parsedPrice = Number(unitPrice.replace(/\./g, "").replace(",", ".")) || 0;
@@ -300,8 +392,7 @@ function SpecialSettingsSection({ orderTitle }: { orderTitle: string }) {
   const money = (value: number) => `${value.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`;
 
   function saveSettings() {
-    setSaved(true);
-    window.setTimeout(() => setSaved(false), 2500);
+    toast.success("Özel ayarlar kaydedildi.");
   }
 
   return (
@@ -357,7 +448,7 @@ function SpecialSettingsSection({ orderTitle }: { orderTitle: string }) {
 
       <CollapsibleSettingsPanel id="related-order" eyebrow="BAĞLANTI" title="Bağlantılı Sipariş">
         <div className="settings-panel-body"><div className="form-field"><label>İlişkili sipariş</label><CustomDropdown value={relatedOrder} onChange={setRelatedOrder} options={RELATED_ORDERS} placeholder="Sipariş seçin" /></div></div>
-        <footer className="settings-actions"><span className={`settings-note${saved ? " success" : ""}`}>{saved ? "Özel ayarlar kaydedildi." : "Değişiklikler kaydedilene kadar müşteriye yansımaz."}</span><button className="settings-save" type="button" onClick={saveSettings}><Icon name={saved ? "check" : "settings"} size={16} />{saved ? "Kaydedildi" : "Değişiklikleri kaydet"}</button></footer>
+        <footer className="settings-actions"><span className="settings-note">Değişiklikler kaydedilene kadar müşteriye yansımaz.</span><button className="settings-save" type="button" onClick={saveSettings}><Icon name="settings" size={16} />Değişiklikleri kaydet</button></footer>
       </CollapsibleSettingsPanel>
     </div>
   );
@@ -408,13 +499,12 @@ function FilesSection() {
 
 /* ─── Güncel Ücret Belirle ────────────────────────────────────── */
 function PricingSection({ price, onSave }: { price: string; onSave: (v: string) => void }) {
+  const toast = useToast();
   const [draft, setDraft] = useState(price);
-  const [saved, setSaved] = useState(false);
   function save() {
     if (!draft.trim()) return;
     onSave(draft.trim());
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    toast.success("Güncel ücret kaydedildi.");
   }
   return (
     <section className="detail-panel panel-direct" aria-label="Güncel ücret belirle">
@@ -426,7 +516,7 @@ function PricingSection({ price, onSave }: { price: string; onSave: (v: string) 
             <span>TL</span>
           </div>
           <button className="pricing-save-btn" onClick={save}>
-            {saved ? <><Icon name="check" size={15} />Kaydedildi</> : <>Kaydet</>}
+            Kaydet
           </button>
         </div>
       </div>
@@ -526,9 +616,10 @@ function AdminPaymentApprovalModal({ price, onClose, onAccept }: { price: string
 
 /* ─── Yazışma ─────────────────────────────────────────────────── */
 function MessagesSection() {
+  const toast = useToast();
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState<string[]>([]);
-  function send() { const t = message.trim(); if (!t) return; setSent((c) => [...c, t]); setMessage(""); }
+  function send() { const t = message.trim(); if (!t) return; setSent((c) => [...c, t]); setMessage(""); toast.success("Mesaj gönderildi."); }
   return (
     <section className="detail-panel messages-panel panel-direct" aria-label="Sipariş yazışmaları">
       <div className="message-composer">
@@ -693,13 +784,13 @@ type TaskEntry = { assignee: string; board: string; description: string; respons
 type MeetingNote = { text: string; createdAt: string; };
 
 function NotesSection() {
+  const toast = useToast();
   const [tab,           setTab]          = useState<"task" | "meeting">("task");
   const [tasks,         setTasks]        = useState<TaskEntry[]>([]);
   const [adding,        setAdding]       = useState(false);
   const [draft,         setDraft]        = useState<Partial<TaskEntry>>({ assignee: ANALYSTS[0], board: "", description: "", response: "", deadline: "" });
   const [meetingNotes,  setMeetingNotes] = useState<MeetingNote[]>([]);
   const [noteText,      setNoteText]     = useState("");
-  const [noteSaved,     setNoteSaved]    = useState(false);
 
   function fmtNow() {
     const d = new Date();
@@ -717,6 +808,7 @@ function NotesSection() {
     }]);
     setDraft({ assignee: ANALYSTS[0], board: "", description: "", response: "", deadline: "" });
     setAdding(false);
+    toast.success("Görev kaydedildi.");
   }
 
   function saveMeetingNote() {
@@ -724,8 +816,7 @@ function NotesSection() {
     if (!text) return;
     setMeetingNotes((cur) => [{ text, createdAt: fmtNow() }, ...cur]);
     setNoteText("");
-    setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2000);
+    toast.success("Görüşme notu eklendi.");
   }
 
   function fmtDeadline(v: string) { return v || "—"; }
@@ -825,7 +916,7 @@ function NotesSection() {
                 onKeyDown={(e) => { if (e.key === "Enter" && e.ctrlKey) saveMeetingNote(); }}
               />
               <button className="meeting-save-btn" type="button" onClick={saveMeetingNote} disabled={!noteText.trim()}>
-                {noteSaved ? <><Icon name="check" size={15} />Kaydedildi</> : <>Not Ekle</>}
+                Not Ekle
               </button>
             </div>
 
@@ -1053,6 +1144,7 @@ function DateRangePicker({ value, onChange }: { value: { start: Date; end: Date 
 const DEFAULT_MESSAGE = "Sayın hocam istenilen analizler ekte sunulmuştur. Ek istek analizlerinizi sistem üzerinden girebilirsiniz. eistatistik'i tercih ettiğiniz için teşekkür eder çalışmalarınızda yanınızda olduğumuzu hatırlatırız.";
 
 function DeliverySection() {
+  const toast = useToast();
   const [tab,           setTab]           = useState<"customer" | "analyst">("customer");
   const [files,         setFiles]         = useState<{ name: string; size: string }[]>([]);
   const [dragOver,      setDragOver]      = useState(false);
@@ -1105,7 +1197,7 @@ function DeliverySection() {
 
   function removeVideo(i: number) { setVideos((cur) => cur.filter((_, j) => j !== i)); }
 
-  function submit() { setDone(true); }
+  function submit() { setDone(true); toast.success("Teslimat dosyaları eklendi."); }
 
   const canSubmit = files.length > 0 || videos.length > 0;
 
@@ -1245,7 +1337,7 @@ function DeliverySection() {
             <button
               type="button"
               className={`delivery-submit-btn ${analystDone ? "done" : ""}`}
-              onClick={() => setAnalystDone(true)}
+              onClick={() => { setAnalystDone(true); toast.success("Analiz dosyaları kaydedildi."); }}
               disabled={analystFiles.length === 0}
             >
               {analystDone
@@ -1263,6 +1355,7 @@ function DeliverySection() {
 type LogEntry = { name: string; fee: string; assignedAt: string; range: string };
 
 function AnalystSection() {
+  const toast = useToast();
   const [tab,       setTab]       = useState<"assign" | "review">("assign");
   const [analyst,   setAnalyst]   = useState("YASİN YILDIRIM");
   const [fee,       setFee]       = useState("");
@@ -1270,7 +1363,6 @@ function AnalystSection() {
   const [log,       setLog]       = useState<LogEntry[]>([
     { name: "YASİN YILDIRIM", fee: "0.0", assignedAt: "31/07/2026 14:37", range: "07/31/2026 – 08/06/2026" },
   ]);
-  const [saved, setSaved] = useState(false);
 
   function fmtDate(d: Date) { return `${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getDate()).padStart(2,"0")}/${d.getFullYear()}`; }
   function fmtNow() {
@@ -1281,7 +1373,7 @@ function AnalystSection() {
   function save() {
     if (!analyst) return;
     setLog((cur) => [{ name: analyst, fee: fee || "0.0", assignedAt: fmtNow(), range: `${fmtDate(dateRange.start)} – ${fmtDate(dateRange.end)}` }, ...cur]);
-    setSaved(true); setTimeout(() => setSaved(false), 2500);
+    toast.success("Analizör ataması kaydedildi.");
   }
 
   return (
@@ -1310,7 +1402,7 @@ function AnalystSection() {
               <DateRangePicker value={dateRange} onChange={setDateRange} />
             </div>
             <button type="button" className="analyst-save-btn" onClick={save}>
-              {saved ? <><Icon name="check" size={16} />Kaydedildi</> : "Kaydet"}
+              Kaydet
             </button>
           </div>
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useRef } from "react";
 import { AdminShell } from "../../../AdminShell";
+import { useToast } from "../../../../components/ToastProvider";
 
 type IconName = "back" | "check" | "cloud" | "unlink" | "plus" | "video" | "file" | "info";
 function Icon({ name, size = 17 }: { name: IconName; size?: number }) {
@@ -72,7 +73,7 @@ function AddForm() {
   const [ytInput,   setYtInput]   = useState("");
   const [videos,    setVideos]    = useState<string[]>([]);
   const [files,     setFiles]     = useState<UploadedFile[]>([]);
-  const [saved,     setSaved]     = useState(false);
+  const toast = useToast();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -93,8 +94,7 @@ function AddForm() {
   }
 
   function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+    toast.success("Ders kaydedildi.");
   }
 
   return (
@@ -220,9 +220,7 @@ function AddForm() {
                 <Icon name="info" size={14} />
                 <span>Dosya boyutu 10 MB sınırını aşmamalıdır.</span>
               </div>
-              <button className={`edu-form-save${saved ? " saved" : ""}`} onClick={handleSave}>
-                {saved ? <><Icon name="check" size={16} /> Kaydedildi</> : "Kaydet"}
-              </button>
+              <button className="edu-form-save" onClick={handleSave}>Kaydet</button>
             </div>
           </section>
 

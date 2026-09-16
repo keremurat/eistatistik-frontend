@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState, useSyncExternalStore } from "react";
+import { useRouter } from "next/navigation";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { NotificationMenu } from "../components/NotificationMenu";
 import { BrandLogo } from "../components/BrandLogo";
 import { CustomerEducationMenu } from "../components/CustomerEducationMenu";
+import { useToast } from "../components/ToastProvider";
 
 type Section = "account" | "billing" | "security";
 type BillingType = "individual" | "corporate";
@@ -17,6 +19,18 @@ const navItems: { key: Section; label: string; icon: IconName }[] = [
   { key: "billing", label: "Fatura bilgileri", icon: "invoice" },
   { key: "security", label: "Güvenlik", icon: "shield" },
 ];
+
+const roleHome: Record<string, string> = {
+  admin: "/admin",
+  editor: "/editor",
+  analizor: "/analizor",
+  asistan: "/asistan",
+};
+
+function subscribeToRole(callback: () => void) {
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+}
 
 function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, React.ReactNode> = {
@@ -41,7 +55,20 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 }
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const role = useSyncExternalStore(
+    subscribeToRole,
+    () => localStorage.getItem("eistatistik_role"),
+    () => null,
+  );
   const [section, setSection] = useState<Section>("account");
+
+  useEffect(() => {
+    if (role === null || role === "musteri") return;
+    router.replace(roleHome[role] ?? "/giris");
+  }, [role, router]);
+
+  if (role !== "musteri") return null;
 
   return (
     <div className="app-shell">
@@ -92,6 +119,7 @@ function useSavedNote() {
 }
 
 function AccountSection() {
+  const toast = useToast();
   const [fullName, setFullName] = useState("Kerem Murat");
   const [email, setEmail] = useState("kerem@example.com");
   const [phone, setPhone] = useState("");
@@ -107,7 +135,7 @@ function AccountSection() {
       flash("error", "Ad Soyad ve geçerli bir e-posta gerekli.");
       return;
     }
-    flash("success", "Hesap bilgileriniz kaydedildi.");
+    toast.success("Hesap bilgileriniz kaydedildi.");
   }
 
   return <form className="detail-stack" onSubmit={handleSubmit}>
@@ -139,6 +167,7 @@ function AccountSection() {
 }
 
 function BillingSection() {
+  const toast = useToast();
   const [billingType, setBillingType] = useState<BillingType>("individual");
   const [tcNo, setTcNo] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -159,7 +188,7 @@ function BillingSection() {
       flash("error", "Firma ünvanı ve vergi numarası gereklidir.");
       return;
     }
-    flash("success", "Fatura bilgileriniz kaydedildi.");
+    toast.success("Fatura bilgileriniz kaydedildi.");
   }
 
   return <form className="detail-stack" onSubmit={handleSubmit}>
@@ -191,6 +220,7 @@ function BillingSection() {
 }
 
 function SecuritySection() {
+  const toast = useToast();
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -201,7 +231,7 @@ function SecuritySection() {
     if (!current) { flash("error", "Mevcut parolanızı girin."); return; }
     if (next.length < 6) { flash("error", "Yeni parola en az 6 karakter olmalı."); return; }
     if (next !== confirm) { flash("error", "Yeni parolalar eşleşmiyor."); return; }
-    flash("success", "Parolanız güncellendi.");
+    toast.success("Parolanız güncellendi.");
     setCurrent(""); setNext(""); setConfirm("");
   }
 

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { AdminShell } from "../../AdminShell";
+import { useToast } from "../../../components/ToastProvider";
 import { CATEGORIES, ALL_PERMS, PermCategory } from "../data";
 
 type IconName = "back" | "check" | "plus" | "search" | "x";
@@ -61,19 +62,20 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 }
 
 export default function RolEklePage() {
+  const toast = useToast();
   const [adi,          setAdi]          = useState("");
   const [aciklama,     setAciklama]     = useState("");
   const [gorevAtamasi, setGorevAtamasi] = useState(false);
   const [perms,        setPerms]        = useState<Set<string>>(new Set());
   const [activeTab,    setActiveTab]    = useState<PermCategory>("menu");
   const [search,       setSearch]       = useState("");
-  const [saved,        setSaved]        = useState(false);
   const [error,        setError]        = useState("");
 
   function togglePerm(key: string) {
     setPerms((prev) => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   }
@@ -81,8 +83,7 @@ export default function RolEklePage() {
   function handleSave() {
     if (!adi.trim()) { setError("Rol adı boş bırakılamaz."); return; }
     setError("");
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+    toast.success("Rol oluşturuldu.");
   }
 
   const tabPerms = ALL_PERMS.filter((p) => {
@@ -327,13 +328,11 @@ export default function RolEklePage() {
               style={{
                 display: "inline-flex", alignItems: "center", gap: ".4rem",
                 minHeight: 40, padding: "0 1.5rem", border: 0, borderRadius: 8,
-                background: saved ? "#287a55" : "var(--navy)",
+                background: "var(--navy)",
                 color: "#fff", font: "inherit", fontSize: ".72rem", fontWeight: 800,
                 cursor: "pointer", transition: ".15s",
               }}>
-              {saved
-                ? <><Icon name="check" size={15} />Oluşturuldu</>
-                : <><Icon name="plus" size={15} />Rol Oluştur</>}
+              <><Icon name="plus" size={15} />Rol Oluştur</>
             </button>
           </div>
         </section>

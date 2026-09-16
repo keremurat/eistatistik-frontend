@@ -140,6 +140,33 @@ function ProductScene({ active }: { active: number }) {
   );
 }
 
+export function LandingHeroPreview() {
+  return (
+    <div className="landing-product-scene landing-hero-preview-scene">
+      <SceneHeader active={0} />
+      <div className="scene-canvas overview-scene">
+        <section className="scene-welcome">
+          <div><small>ÇALIŞMA ALANI</small><h4>Çalışma alanınız hazır</h4><p>Analiz sürecinizi tek ekrandan takip edin.</p></div>
+          <dl><div><dt>1</dt><dd>aktif çalışma</dd></div><div><dt>2</dt><dd>yeni mesaj</dd></div></dl>
+        </section>
+        <div className="overview-columns">
+          <section className="scene-panel scene-agenda">
+            <header><span>Aktif çalışma</span><b>SA260916004</b></header>
+            <h5>Regresyon analizi</h5>
+            <article><time>18 Eyl</time><i /><div><small>SON TESLİM</small><strong>Raporlama ve son kontrol</strong><span>6 dosya · Uzman incelemesinde</span></div></article>
+          </section>
+          <section className="scene-panel scene-status hero-preview-status">
+            <header><span>İlerleme</span><b>%68</b></header>
+            <h5>Analiz süreci</h5>
+            <div className="scene-progress"><i /></div>
+            <p>Çalışmayı görüntüle →</p>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function OverviewScene() {
   return (
     <div className="scene-canvas overview-scene">

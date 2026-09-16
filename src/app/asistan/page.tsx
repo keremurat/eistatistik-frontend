@@ -1,6 +1,7 @@
 "use client";
 
 import { AssistantHeader } from "./AssistantHeader";
+import { TimeGreeting } from "../components/TimeGreeting";
 
 type IconName = "arrow" | "calendar" | "check" | "clock" | "education" | "file" | "home" | "message" | "orders" | "tasks";
 
@@ -36,7 +37,7 @@ export default function AssistantHomePage() {
         <section className="daily-brief assistant-brief">
           <div className="brief-copy">
             <p className="eyebrow light">CUMA · 7 AĞUSTOS 2026</p>
-            <h1>Günaydın.</h1>
+            <h1><TimeGreeting name="Asistan" /></h1>
             <p>Bugün <strong>10 geciken teslim</strong> ve <strong>3 müşteri yanıtı</strong> öncelikli görünüyor.</p>
           </div>
           <div className="brief-stats assistant-brief-stats" aria-label="Asistan operasyon özeti">

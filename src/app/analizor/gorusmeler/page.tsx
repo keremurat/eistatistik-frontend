@@ -82,7 +82,7 @@ export default function AnalystMeetingsPage() {
       <div className="top-actions">
         <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a>
         <NotificationMenu role="analizor" />
-        <ProfileMenu roleLabel="Analizör hesabı" ordersHref="/analizor/islerim" ordersLabel="İşlerim" name="Naci Yılmaz" email="analizor@eistatistik.com" initials="NY" />
+        <ProfileMenu roleLabel="Analizör hesabı" settingsHref="/analizor/ayarlar" ordersHref="/analizor/islerim" ordersLabel="İşlerim" name="Naci Yılmaz" email="analizor@eistatistik.com" initials="NY" />
       </div>
     </header>
 

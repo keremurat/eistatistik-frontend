@@ -68,7 +68,7 @@ export function EducationShell({ children }: { children: React.ReactNode }) {
         </a>
         <NotificationMenu role={isAnalyst ? "analizor" : "musteri"} />
         {isAnalyst
-          ? <ProfileMenu roleLabel="Analizör hesabı" ordersHref="/analizor/islerim" ordersLabel="İşlerim" name="Naci Yılmaz" email="analizor@eistatistik.com" initials="NY" />
+          ? <ProfileMenu roleLabel="Analizör hesabı" settingsHref="/analizor/ayarlar" ordersHref="/analizor/islerim" ordersLabel="İşlerim" name="Naci Yılmaz" email="analizor@eistatistik.com" initials="NY" />
           : <ProfileMenu />}
       </div>
     </header>

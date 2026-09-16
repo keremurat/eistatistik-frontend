@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { AdminShell } from "../AdminShell";
+import { useToast } from "../../components/ToastProvider";
 
 // ── Sabitler ──────────────────────────────────────────────────────────────────
 const ISLEM_TIPLERI = ["Gelen", "Giden"];
@@ -132,7 +133,8 @@ const EMPTY: FormState = { projeAdi: "", islemTipi: "", birim: "", tutar: "", ku
 
 export default function ProjeMuhasebesiPage() {
   const [form, setForm]   = useState<FormState>(EMPTY);
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "error">("idle");
+  const toast = useToast();
 
   function set(key: keyof FormState, val: string) {
     setForm(f => ({ ...f, [key]: val }));
@@ -144,7 +146,8 @@ export default function ProjeMuhasebesiPage() {
       setStatus("error");
       return;
     }
-    setStatus("success");
+    setStatus("idle");
+    toast.success("Muhasebe kaydı oluşturuldu.");
     setForm(EMPTY);
   }
 
@@ -235,9 +238,6 @@ export default function ProjeMuhasebesiPage() {
 
           {/* Kaydet satırı */}
           <div className="settings-actions" style={{ borderTop: "1px solid var(--line)", paddingTop: "1.1rem" }}>
-            {status === "success" && (
-              <span className="settings-note success"><Icon name="check" size={13} /> Kaydedildi.</span>
-            )}
             {status === "error" && (
               <span className="settings-note error">Lütfen zorunlu alanları doldurun.</span>
             )}

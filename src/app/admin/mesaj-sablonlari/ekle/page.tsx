@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useRef, useState } from "react";
 import { AdminShell } from "../../AdminShell";
+import { useToast } from "../../../components/ToastProvider";
 
 type IconName = "back" | "check" | "save";
 function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
@@ -17,7 +18,7 @@ function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
 export default function MesajSablonuEklePage() {
   const [baslik, setBaslik] = useState("");
   const [icerik, setIcerik] = useState("");
-  const [saved,  setSaved]  = useState(false);
+  const toast = useToast();
   const editorRef = useRef<HTMLTextAreaElement>(null);
 
   const canSave = baslik.trim() && icerik.trim();
@@ -25,8 +26,7 @@ export default function MesajSablonuEklePage() {
   function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canSave) return;
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+    toast.success("Mesaj şablonu kaydedildi.");
   }
 
   function insertVariable(variable: string) {
@@ -95,14 +95,12 @@ export default function MesajSablonuEklePage() {
           </div>
 
           <div className="settings-actions">
-            <p className={`settings-note${saved ? " success" : ""}`} aria-live="polite">
-              {saved ? "Mesaj şablonu kaydedildi." : "Başlık ve mesaj şablonu alanları zorunludur."}
-            </p>
+            <p className="settings-note">Başlık ve mesaj şablonu alanları zorunludur.</p>
             <Link className="favorite-category-cancel" href="/admin/mesaj-sablonlari">
               <Icon name="back" size={15} />İptal
             </Link>
             <button className="settings-save" type="submit" disabled={!canSave}>
-              {saved ? <><Icon name="check" size={16} />Kaydedildi</> : <><Icon name="save" size={16} />Kaydet</>}
+              <Icon name="save" size={16} />Kaydet
             </button>
           </div>
         </form>

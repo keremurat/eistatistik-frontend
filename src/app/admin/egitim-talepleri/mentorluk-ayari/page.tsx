@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AdminShell } from "../../AdminShell";
+import { useToast } from "../../../components/ToastProvider";
 
 type IconName = "edit" | "save" | "check";
 function Icon({ name, size = 17 }: { name: IconName; size?: number }) {
@@ -21,17 +22,17 @@ const DEFAULT = {
 
 export default function MentorlukAyariPage() {
   const [isEditing, setIsEditing] = useState(false);
-  const [saved,     setSaved]     = useState(false);
+  const toast = useToast();
   const [values,    setValues]    = useState({ ...DEFAULT });
   const [draft,     setDraft]     = useState({ ...DEFAULT });
 
-  function startEdit() { setDraft({ ...values }); setIsEditing(true); setSaved(false); }
+  function startEdit() { setDraft({ ...values }); setIsEditing(true); }
   function cancel()    { setIsEditing(false); }
 
   function save() {
     setValues({ ...draft });
-    setSaved(true);
-    setTimeout(() => { setSaved(false); setIsEditing(false); }, 1500);
+    setIsEditing(false);
+    toast.success("Mentörlük ayarları kaydedildi.");
   }
 
   const canSave = draft.url.trim() && draft.aralik.trim() && draft.baslama.trim();
@@ -55,8 +56,8 @@ export default function MentorlukAyariPage() {
             ) : (
               <div style={{ display: "flex", gap: ".5rem" }}>
                 <button className="orders-create" onClick={save} disabled={!canSave}
-                  style={{ fontSize: ".65rem", background: saved ? "#287a55" : undefined }}>
-                  {saved ? <><Icon name="check" size={15} />Kaydedildi</> : <><Icon name="save" size={15} />Kaydet</>}
+                  style={{ fontSize: ".65rem" }}>
+                  <Icon name="save" size={15} />Kaydet
                 </button>
                 <button onClick={cancel} style={{ minHeight: 40, padding: "0 .85rem", border: "1px solid var(--line)", borderRadius: 8, background: "#fff", color: "#526a7d", fontSize: ".65rem", fontWeight: 800 }}>
                   Vazgeç

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { EducationIcon, EducationShell } from "../EducationShell";
 import { MessageTemplatePicker } from "../../components/MessageTemplatePicker";
+import { useToast } from "../../components/ToastProvider";
 
 type Tab = "overview" | "curriculum" | "payment" | "messages" | "content" | "invoice";
 
@@ -77,6 +78,7 @@ function Curriculum() {
 }
 
 function EducationPayment({ method, onMethod }: { method: "transfer" | "card"; onMethod: (value: "transfer" | "card") => void }) {
+  const toast = useToast();
   const [discountOpen, setDiscountOpen] = useState(false);
   const [discountCode, setDiscountCode] = useState("");
   const [discountState, setDiscountState] = useState<"idle" | "success" | "error">("idle");
@@ -86,7 +88,12 @@ function EducationPayment({ method, onMethod }: { method: "transfer" | "card"; o
   const [receiptName, setReceiptName] = useState("");
   const receiptInputRef = useRef<HTMLInputElement>(null);
   const agreementAccepted = method === "transfer" ? transferAccepted : cardAccepted;
-  const applyDiscount = () => setDiscountState(discountCode.trim().toLocaleUpperCase("tr") === "EISTATISTIK10" ? "success" : "error");
+  const applyDiscount = () => {
+    const valid = discountCode.trim().toLocaleUpperCase("tr") === "EISTATISTIK10";
+    setDiscountState(valid ? "success" : "error");
+    if (valid) toast.success("İndirim kodu uygulandı.");
+    else toast.error("İndirim kodu geçerli değil.");
+  };
 
   return <div className="payment-layout education-payment"><section className="detail-panel payment-main">
     <div className="payment-method-switch">
@@ -106,7 +113,7 @@ function EducationPayment({ method, onMethod }: { method: "transfer" | "card"; o
     <button className="pay-button" disabled={!agreementAccepted}>{method === "transfer" ? "Ödeme bildirimini gönder" : "Kredi Kartı ile Ödeme Yap"} <EducationIcon name="arrow" size={16} /></button>
   </section>
   <aside className="payment-summary"><p className="eyebrow">ÖDEME ÖZETİ</p><h2>5’i Bir Arada</h2><div className="education-summary-facts"><span>5 modül · 45 ders</span><span>41 saat video</span><span>12 ay erişim</span><span>Katılım sertifikası</span></div><dl className="payment-price-lines"><div><dt>Eğitim bedeli</dt><dd>9.000 TL</dd></div><div><dt>İndirim</dt><dd className={discountState === "success" ? "discounted" : ""}>{discountState === "success" ? "−900 TL" : "0 TL"}</dd></div></dl>
-    <div className={`discount-entry summary-discount ${discountOpen ? "open" : ""}`}><button className="discount-trigger" onClick={() => setDiscountOpen(value => !value)} aria-expanded={discountOpen}><span>%</span><strong>İndirim kodu gir</strong><i>{discountOpen ? "−" : "+"}</i></button>{discountOpen && <div className="discount-form"><label><span>İndirim kodu</span><input value={discountCode} onChange={event => { setDiscountCode(event.target.value); setDiscountState("idle"); }} placeholder="Kodunuzu yazın" /></label><button onClick={applyDiscount} disabled={!discountCode.trim()}>Uygula</button>{discountState === "success" && <p className="success">Kod uygulandı.</p>}{discountState === "error" && <p className="error">Kod geçerli değil.</p>}</div>}</div>
+    <div className={`discount-entry summary-discount ${discountOpen ? "open" : ""}`}><button className="discount-trigger" onClick={() => setDiscountOpen(value => !value)} aria-expanded={discountOpen}><span>%</span><strong>İndirim kodu gir</strong><i>{discountOpen ? "−" : "+"}</i></button>{discountOpen && <div className="discount-form"><label><span>İndirim kodu</span><input value={discountCode} onChange={event => { setDiscountCode(event.target.value); setDiscountState("idle"); }} placeholder="Kodunuzu yazın" /></label><button onClick={applyDiscount} disabled={!discountCode.trim()}>Uygula</button></div>}</div>
     <dl className="payment-total"><div className="total"><dt>Toplam</dt><dd>{discountState === "success" ? "8.100 TL" : "9.000 TL"}</dd></div></dl>
     <p>Fatura bilgilerinizi ödeme tamamlanmadan önce düzenleyebilirsiniz.</p></aside>
     {agreementOpen && <EducationAgreementModal method={method} onClose={() => setAgreementOpen(false)} onAccept={() => { if (method === "transfer") setTransferAccepted(true); else setCardAccepted(true); setAgreementOpen(false); }} />}
@@ -147,6 +154,7 @@ function EducationAgreementModal({ method, onClose, onAccept }: { method: "trans
 }
 
 function EducationMessages() {
+  const toast = useToast();
   const [message, setMessage] = useState("");
   const [sentMessages, setSentMessages] = useState<string[]>([]);
   const isAnalyst = useSyncExternalStore(
@@ -160,6 +168,7 @@ function EducationMessages() {
     if (!cleanMessage) return;
     setSentMessages((current) => [...current, cleanMessage]);
     setMessage("");
+    toast.success("Mesaj gönderildi.");
   }
 
   return <section className="detail-panel messages-panel">

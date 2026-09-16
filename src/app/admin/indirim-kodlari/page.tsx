@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { AdminShell } from "../AdminShell";
+import { readOrderDiscounts } from "../orderActionData";
 
 type KodTip = "percentage" | "amount";
 type IndirimKodu = {
-  id: number;
+  id: number | string;
   kod: string;
   aciklama: string;
   aciklamaLink: boolean;
@@ -65,9 +66,26 @@ function formatTutar(k: IndirimKodu) {
 export default function IndirimKoduListesiPage() {
   const [page,  setPage]  = useState(1);
   const [query, setQuery] = useState("");
+  const [orderCodes, setOrderCodes] = useState<IndirimKodu[]>([]);
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const [perPage, setPerPage] = useState(FALLBACK_PER_PAGE);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hesap bazlı tarayıcı kayıtları hydration sonrasında yüklenir
+    setOrderCodes(readOrderDiscounts().map((record) => ({
+      id: record.id,
+      kod: record.code,
+      aciklama: `${record.orderCode} nolu sipariş üzerinden oluşturuldu`,
+      aciklamaLink: true,
+      tip: record.type,
+      tutar: record.value,
+      limit: 1,
+      kullanilan: 0,
+      baslama: new Date(record.createdAt).toLocaleDateString("tr-TR"),
+      bitis: record.expiresAt,
+    })));
+  }, []);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -89,7 +107,7 @@ export default function IndirimKoduListesiPage() {
     return () => { ro.disconnect(); desktop.removeEventListener("change", recompute); };
   }, []);
 
-  const filtered = DATA.filter((k) => {
+  const filtered = [...orderCodes, ...DATA].filter((k) => {
     if (query && !`${k.kod} ${k.aciklama}`.toLowerCase().includes(query.toLowerCase())) return false;
     return true;
   });

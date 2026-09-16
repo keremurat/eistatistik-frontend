@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { AdminShell } from "../AdminShell";
 import { DatePicker } from "../../components/DatePicker";
+import { useToast } from "../../components/ToastProvider";
 
 // ── İkon ─────────────────────────────────────────────────────────────────────
 type IconName = "check" | "send" | "x" | "info";
@@ -165,7 +166,7 @@ export default function TopluMesajPage() {
   const [siparis,       setSiparis]       = useState("");
   const [mailBilgi,     setMailBilgi]     = useState("bildirilsin");
   const [mesaj,         setMesaj]         = useState("");
-  const [sent,          setSent]          = useState(false);
+  const toast = useToast();
   const [error,         setError]         = useState("");
 
   // Siparişleri tür ve duruma göre filtrele
@@ -183,8 +184,7 @@ export default function TopluMesajPage() {
   function handleGonder() {
     if (!mesaj.trim()) { setError("Mesaj alanı boş bırakılamaz."); return; }
     setError("");
-    setSent(true);
-    setTimeout(() => setSent(false), 2500);
+    toast.success("Mesaj gönderim kuyruğuna alındı.");
   }
 
   const turLabel   = SIPARIS_TURLERI.find((o) => o.value === siparisTuru)?.label ?? "—";
@@ -331,12 +331,7 @@ export default function TopluMesajPage() {
               <Icon name="info" size={14} />
               <span>Filtre seçildiğinde siparişler otomatik yüklenir. Mesaj kuyruğa alınır.</span>
             </div>
-            {sent && (
-              <div className="tm-sent"><Icon name="check" size={14} />Mesaj gönderildi.</div>
-            )}
-            <button className={`edu-preview-save${sent ? " saved" : ""}`} onClick={handleGonder} disabled={!mesaj.trim()}>
-              {sent ? "Gönderildi" : "Gönder"}
-            </button>
+            <button className="edu-preview-save" onClick={handleGonder} disabled={!mesaj.trim()}>Gönder</button>
           </aside>
         </div>
       </div>

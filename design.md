@@ -463,8 +463,9 @@ Birden çok panel dikeyde `.detail-stack` (gap:1rem) ile dizilir.
   (ikon + h3 + açıklama + "Ödemeye git" butonu). Kompakt varyant `.locked-state.compact`.
 - **Dosya satırı:** `FileTypeIcon` (uzantıya göre PNG ikon) + ad/meta + indir butonu.
 
-**Proforma Faturanız:** Yönetici sipariş detayında `messages` sonrasında ayrı bir `proforma`
-sekmesidir. İçerik `.detail-stack` içinde aynı `.detail-panel`, `.detail-panel-heading` ve
+**Proforma Faturanız:** Yönetici sipariş detayında ayrı bir menü öğesi olarak gösterilmez;
+proforma bağımsız hizmet akışından yönetilir. Paylaşılan personel detaylarında kullanılan içerik
+`.detail-stack` içinde aynı `.detail-panel`, `.detail-panel-heading` ve
 `.result-file-row` kalıplarını kullanır. İlk panel teslim edilen proforma PDF'yi, teslim mesajını
 ve indirme aksiyonunu gösterir. Devamındaki paneller ek analiz ve analizör raporlarını aynı dosya
 satırı düzeninde gösterir; dosya yoksa sade `.proforma-report-empty` durum satırı kullanılır.
@@ -478,10 +479,29 @@ yeni görüşme oluşturabilir. Müşteri sipariş detayında aynı kayıtlar sa
 sekmesinde görünür. Müşteri menüsündeki belge sekmesi `Fatura` değil `Proforma Faturanız` olarak
 adlandırılır ve teslim edilen PDF'yi mevcut dosya satırı kalıbıyla sunar.
 
+**Yönetici sipariş aksiyonları:** Sipariş detayının hero alanındaki `Favorilere Ekle`, `İndirim
+Kodu Tanımla` ve `Görev Ata` kontrolleri ölü buton değildir. Favori, mevcut `FavoritesContext`
+üzerinden aktif hesaba özel tarayıcı kaydına yazılır ve buton seçili durumunu gösterir. Favori
+butonu iki durumda da aynı genişliği korur; metin değişimi hero yüksekliğini veya başlık ölçüsünü
+değiştirmez. İndirim ve
+görev formları mevcut `.admin-modal`, `.form-field`, `SystemDropdown` ve `DatePicker` kalıplarını
+kullanır; başarılı işlem uygulamanın ortak toast altyapısıyla bildirilir. Prototip
+kayıtları hesap kimliğiyle ayrıştırılmış `localStorage` anahtarlarında saklanır.
+
+### 5.0.1 Geçici toast bildirimleri
+
+Kullanıcının yaptığı bir işlem sonucundaki kısa başarı, hata, uyarı ve bilgi mesajları normal belge
+akışına satır olarak eklenmez. Kök `ToastProvider` üzerinden çağrılır ve `.toast-viewport` içinde
+ekranın alt-orta kısmında gösterilir. Toast sayfa ölçüsünü değiştirmez; en fazla üç bildirim üst üste
+görünür, varsayılan olarak 3 saniye sonra kendiliğinden kapanır ve kullanıcı tarafından ayrıca
+kapatılabilir. Hareket İstabot referansındaki gibi alttan yükselerek giriş ve hafif yukarı hareketle
+çıkıştır; `prefers-reduced-motion` tercihinde animasyon kaldırılır. Kalıcı doğrulama açıklamaları,
+form alanı hataları ve sayfa içeriğinin kendisi olan başarı ekranları toast'a dönüştürülmez.
+
 ### 5.1 Yönetici özel ayarları
 
-Yönetici sipariş detayında `Sipariş Ayrıntıları` bağlantısının hemen altında `Özel Ayarlar`
-bulunur. Bu bölüm yalnızca `audience="admin"` için gösterilir; analizör, asistan ve editörün
+Yönetici sipariş detayında `Özel Ayarlar` sol menünün en alt öğesidir. Bu bölüm yalnızca
+`audience="admin"` için gösterilir; analizör, asistan ve editörün
 paylaşılan detay menüsüne eklenmez. İçerik yeni bir sayfa değildir, mevcut `detail-content`
 alanında `detail-stack` ve `detail-panel` kalıplarıyla açılır.
 
@@ -641,6 +661,12 @@ Footer içeriği landing genişlik sözleşmesine göre `1480px` içinde merkezl
 Landing hero'nun sağındaki platform önizlemesi üzerinde, kullanılan analiz yazılımlarını
 gösteren tek bir `.landing-float-card.float-tools` bulunur. Kart mevcut yüzen kart yüzeyini,
 radius ve gölgesini yeniden kullanır; yeni renk veya ikon sistemi eklemez.
+
+Hero içindeki platform yüzeyi gerçek `/dashboard` rotasını iframe ile çizmez. Bunun yerine
+`LandingHeroPreview`, mevcut `landing-product-scene`, `product-scene-header`, `scene-welcome`,
+`scene-panel` ve ilerleme kalıplarını kullanarak kişisiz bir çalışma alanı örneği gösterir.
+Başlık “Çalışma alanınız hazır”dır; aktif çalışma, teslim tarihi, mesaj sayısı ve ilerleme özeti
+ziyaretçiye ürünün değerini anlatır. Gerçek hesap adı veya oturum verisi landing hero'da gösterilmez.
 
 - Araçlar: SPSS, R, Python, STATA, AMOS, LISREL ve Minitab.
 - Masaüstünde platform görselinin sağ üstünde konumlanır.
@@ -807,6 +833,15 @@ aynı sorgu değeriyle forma doğrudan bağlanabilir.
 
 Kaynak: [src/app/ayarlar/page.tsx](src/app/ayarlar/page.tsx). Profil dropdown'ındaki **Ayarlar**
 öğesi buraya gider (`/ayarlar`). Kullanıcı yalnızca **kendi** bilgilerini günceller.
+Bu rota yalnızca `musteri` rolüne açıktır. Diğer roller kendi kabuklarındaki `/admin/ayarlar`,
+`/editor/ayarlar`, `/analizor/ayarlar` ve `/asistan/ayarlar` rotalarını kullanır; farklı bir rolün
+ayar rotası doğrudan yazılırsa kullanıcı kendi rol ana sayfasına yönlendirilir.
+
+Rol ayar ekranları ortak `RoleSettingsContent` bileşenini ve mevcut `detail-page`, `detail-hero`,
+`detail-workspace`, `detail-sidebar`, `detail-panel`, `settings-panel-body` kalıplarını kullanır.
+Yönetici ekranında ek bir **Sistem ayarları** bölümü vardır. `.settings-hub-list`, mevcut yönetim
+ayarlarına giden iki kolonlu bağlantı listesidir; mobilde tek kolona düşer. Bu merkez ayar verisini
+ikinci kez üretmez, ilgili yönetim ekranlarına yönlendirir.
 
 - **Düzen §5'i yeniden kullanır:** `detail-page` → `detail-hero` (başlık + `detail-current-state`
   hesap özeti) → `detail-workspace` (koyu `detail-sidebar` + `detail-content`).
@@ -851,6 +886,10 @@ fark, veri yoğun "yönetim" düzeni ve custom SVG grafiklerdir.
      Üç kart **eşit yükseklikte** (`align-items:stretch` + flex kolon kartlar); referans/en uzun kart
      Kullanıcılar'dır (`.user-spark` flex ile kalan alanı doldurur), diğer ikisi ona uzar, footer'lar alta yaslanır.
   5. Son siparişler `.admin-table` (`.t-status` rozetleri: action/active/completed).
+- Müşteri, analizör, asistan, editör ve yönetici ana ekranlarındaki `daily-brief` başlığı ortak
+  `TimeGreeting` bileşenini kullanır. Kullanıcının yerel saatine göre 06.00–11.59 “Günaydın”,
+  12.00–17.59 “Tünaydın”, 18.00–05.59 “İyi akşamlar” gösterilir. İsim verilen rollerde selamlama
+  adla tamamlanır; sayfa açık kaldığında dakika bazında kendiliğinden güncellenir.
 - Paneller mevcut `detail-panel` + `.detail-panel-heading` kalıbını kullanır; gövde `.admin-panel-body`
   / `.donut-panel-body`, panel altı hızlı bağlantılar `.admin-panel-foot` (orijinal Ciro/Kullanıcı
   istatistik linkleri buraya gömülür). Grafik renkleri ve durum tonları §1 token/paletinden gelir.
@@ -984,5 +1023,8 @@ silme işlemi yalnızca ikonlu küçük destructive butonla yapılır.
 
 Hizmet kartları bu ekranda ikinci kez düzenlenmez; ilgili panel yalnızca `/admin/siparis-turleri`
 ekranına yönlendirir. Açılır alanların tamamı sistemin `SystemDropdown` bileşenini kullanır. Ayarlar
-prototip aşamasında `localStorage` üzerinde saklanır; kaydetme sonucu form içinde bildirilir, tarayıcı
-`alert` kullanılmaz. Önizleme landing sayfasını yeni sekmede açar.
+prototip aşamasında `localStorage` üzerinde saklanır. Kaydetme, gönderme, oluşturma ve güncelleme gibi
+geçici işlem sonuçları ortak `ToastProvider` üzerinden ekranın alt-ortasında bildirilir; işlem butonunun
+metni, rengi veya ölçüsü başarı durumunda değişmez. Alan doğrulama hataları ilgili formun yanında,
+dosya yükleme sonuçları dosya alanında ve tamamlanmış çok adımlı akışların sonuç ekranları kendi
+bağlamında kalır. Tarayıcı `alert` kullanılmaz. Önizleme landing sayfasını yeni sekmede açar.

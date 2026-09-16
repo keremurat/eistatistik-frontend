@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { CURRENT_ACCOUNT_KEY } from "../lib/accountStorage";
 
 type MenuIcon = "settings" | "orders" | "logout";
 
@@ -17,6 +18,7 @@ function ProfileMenuIcon({ name }: { name: MenuIcon }) {
 
 interface ProfileMenuProps {
   roleLabel?: string;
+  settingsHref?: string | null;
   ordersHref?: string;
   ordersLabel?: string;
   name?: string;
@@ -24,7 +26,7 @@ interface ProfileMenuProps {
   initials?: string;
 }
 
-export function ProfileMenu({ roleLabel = "Müşteri hesabı", ordersHref = "/siparislerim", ordersLabel = "Siparişler", name = "Kerem Murat", email = "kerem@example.com", initials = "KM" }: ProfileMenuProps = {}) {
+export function ProfileMenu({ roleLabel = "Müşteri hesabı", settingsHref = "/ayarlar", ordersHref = "/siparislerim", ordersLabel = "Siparişler", name = "Kerem Murat", email = "kerem@example.com", initials = "KM" }: ProfileMenuProps = {}) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -66,9 +68,9 @@ export function ProfileMenu({ roleLabel = "Müşteri hesabı", ordersHref = "/si
             <span><strong>{name}</strong><small>{email}</small></span>
           </div>
           <nav aria-label="Profil işlemleri">
-            <Link href="/ayarlar" role="menuitem" onClick={() => setOpen(false)}><ProfileMenuIcon name="settings" /><span>Ayarlar</span></Link>
+            {settingsHref && <Link href={settingsHref} role="menuitem" onClick={() => setOpen(false)}><ProfileMenuIcon name="settings" /><span>Ayarlar</span></Link>}
             <Link href={ordersHref} role="menuitem" onClick={() => setOpen(false)}><ProfileMenuIcon name="orders" /><span>{ordersLabel}</span></Link>
-            <Link className="logout" href="/giris" role="menuitem" onClick={() => { localStorage.removeItem("eistatistik_role"); setOpen(false); }}><ProfileMenuIcon name="logout" /><span>Çıkış yap</span></Link>
+            <Link className="logout" href="/giris" role="menuitem" onClick={() => { localStorage.removeItem("eistatistik_role"); localStorage.removeItem(CURRENT_ACCOUNT_KEY); setOpen(false); }}><ProfileMenuIcon name="logout" /><span>Çıkış yap</span></Link>
           </nav>
         </div>
       )}

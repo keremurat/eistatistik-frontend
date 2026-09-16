@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, ReactNode, useEffect, useState } from "react";
 import { SystemDropdown } from "../../components/SystemDropdown";
+import { useToast } from "../../components/ToastProvider";
 import { AdminShell } from "../AdminShell";
 import { defaultHomeSettings, HomeSettings, readHomeSettings, writeHomeSettings } from "./homeSettingsData";
 
@@ -33,9 +34,9 @@ const uid = (prefix:string) => `${prefix}-${Date.now()}-${Math.random().toString
 
 export default function HomeSettingsPage() {
   const [settings,setSettings] = useState<HomeSettings>(defaultHomeSettings);
-  const [saved,setSaved] = useState(false);
+  const toast = useToast();
   useEffect(() => setSettings(readHomeSettings()),[]);
-  function commit(event:FormEvent) { event.preventDefault(); writeHomeSettings(settings); setSaved(true); window.setTimeout(() => setSaved(false),2400); }
+  function commit(event:FormEvent) { event.preventDefault(); writeHomeSettings(settings); toast.success("Anasayfa ayarları kaydedildi."); }
   const setHero = (key:keyof HomeSettings["hero"],value:string) => setSettings(current => ({...current,hero:{...current.hero,[key]:value}}));
   const setContact = (key:keyof HomeSettings["contact"],value:string) => setSettings(current => ({...current,contact:{...current.contact,[key]:value}}));
   const setCorporate = (key:keyof HomeSettings["corporate"],value:string) => setSettings(current => ({...current,corporate:{...current.corporate,[key]:value}}));
@@ -74,7 +75,7 @@ export default function HomeSettingsPage() {
         <Section icon="message" title="Müşteri yorumları"><div className="home-settings-repeat review-repeat">{settings.reviews.map((review,index)=><div className="review-editor" key={review.id}><header><strong>Yorum {index+1}</strong><button type="button" className="repeat-delete" onClick={()=>setSettings(s=>({...s,reviews:s.reviews.filter(x=>x.id!==review.id)}))} aria-label="Yorumu kaldır"><Icon name="trash"/></button></header><div className="form-grid"><Field label="Ad soyad"><input value={review.name} onChange={e=>setSettings(s=>({...s,reviews:s.reviews.map(x=>x.id===review.id?{...x,name:e.target.value}:x)}))}/></Field><Field label="Rol"><input value={review.role} onChange={e=>setSettings(s=>({...s,reviews:s.reviews.map(x=>x.id===review.id?{...x,role:e.target.value}:x)}))}/></Field><Field label="Kurum"><input value={review.institution} onChange={e=>setSettings(s=>({...s,reviews:s.reviews.map(x=>x.id===review.id?{...x,institution:e.target.value}:x)}))}/></Field><Field label="Puan"><SystemDropdown value={review.rating} onChange={value=>setSettings(s=>({...s,reviews:s.reviews.map(x=>x.id===review.id?{...x,rating:value}:x)}))} options={[1,2,3,4,5].map(value=>({value:String(value),label:`${value} yıldız`}))}/></Field></div><Field label="Yorum"><textarea className="small" value={review.quote} onChange={e=>setSettings(s=>({...s,reviews:s.reviews.map(x=>x.id===review.id?{...x,quote:e.target.value}:x)}))}/></Field><Field label="Avatar URL (opsiyonel)"><input value={review.avatarUrl} onChange={e=>setSettings(s=>({...s,reviews:s.reviews.map(x=>x.id===review.id?{...x,avatarUrl:e.target.value}:x)}))}/></Field></div>)}</div><button className="home-settings-add" type="button" onClick={()=>setSettings(s=>({...s,reviews:[...s.reviews,{id:uid("review"),name:"",role:"",institution:"",quote:"",rating:"5",avatarUrl:""}]}))}><Icon name="plus"/>Yorum ekle</button></Section>
       </div>
 
-      <aside className="detail-panel home-settings-summary"><div className="home-settings-summary-head"><Icon name="save"/><strong>Kaydet ve önizle</strong></div><p>Değişiklikler kaydedildikten sonra landing önizlemesini açabilirsiniz.</p><dl><div><dt>Bireysel eğitim</dt><dd>{settings.educations.length}</dd></div><div><dt>Adım sayısı</dt><dd>{settings.process.steps.length}</dd></div><div><dt>Müşteri yorumu</dt><dd>{settings.reviews.length}</dd></div><div><dt>SSS soru sayısı</dt><dd>{settings.faqs.length}</dd></div><div><dt>Yorum videosu</dt><dd>{settings.videos.length}</dd></div></dl>{saved&&<span className="home-settings-saved" role="status">Değişiklikler kaydedildi.</span>}<button type="submit"><Icon name="save"/>Kaydet</button><a href="/" target="_blank" rel="noopener noreferrer"><Icon name="eye"/>Önizle</a></aside>
+      <aside className="detail-panel home-settings-summary"><div className="home-settings-summary-head"><Icon name="save"/><strong>Kaydet ve önizle</strong></div><p>Değişiklikler kaydedildikten sonra landing önizlemesini açabilirsiniz.</p><dl><div><dt>Bireysel eğitim</dt><dd>{settings.educations.length}</dd></div><div><dt>Adım sayısı</dt><dd>{settings.process.steps.length}</dd></div><div><dt>Müşteri yorumu</dt><dd>{settings.reviews.length}</dd></div><div><dt>SSS soru sayısı</dt><dd>{settings.faqs.length}</dd></div><div><dt>Yorum videosu</dt><dd>{settings.videos.length}</dd></div></dl><button type="submit"><Icon name="save"/>Kaydet</button><a href="/" target="_blank" rel="noopener noreferrer"><Icon name="eye"/>Önizle</a></aside>
     </div>
   </form></AdminShell>;
 }

@@ -511,6 +511,7 @@ export function SharedOrdersList({ basePath = "/admin/siparisler" }: { basePath?
   const [confirmCfg,     setConfirmCfg]     = useState<ConfirmCfg | null>(null);
   const [page,           setPage]           = useState(1);
   const detailHref = `${basePath}/DS260723008`;
+  const createHref = basePath.startsWith("/editor/") ? "/editor/yeni-analiz-talebi" : "/admin/yeni-analiz-talebi";
   const showAnalystFilter = basePath.startsWith("/admin/");
 
   // Sayfa başına satır: masaüstünde tablo alanının boş yüksekliğine göre dinamik
@@ -608,7 +609,7 @@ export function SharedOrdersList({ basePath = "/admin/siparisler" }: { basePath?
               <p className="eyebrow">SİPARİŞ YÖNETİMİ</p>
               <h1>Mevcut Siparişler</h1>
             </div>
-            <a className="orders-create" href="#"><Icon name="plus" size={16} />Sipariş Ver</a>
+            <Link className="orders-create" href={createHref}><Icon name="plus" size={16} />Sipariş Ver</Link>
           </header>
 
           <nav className="order-tabs" aria-label="Sipariş durumları">

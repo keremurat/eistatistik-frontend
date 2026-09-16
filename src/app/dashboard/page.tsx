@@ -7,6 +7,7 @@ import { ProfileMenu } from "../components/ProfileMenu";
 import { NotificationMenu } from "../components/NotificationMenu";
 import { BrandLogo } from "../components/BrandLogo";
 import { CustomerEducationMenu } from "../components/CustomerEducationMenu";
+import { TimeGreeting } from "../components/TimeGreeting";
 
 type IconName = "arrow" | "bell" | "book" | "calendar" | "check" | "chevron" | "clock" | "file" | "home" | "message" | "plus" | "search" | "spark";
 
@@ -135,7 +136,7 @@ export default function DashboardPage() {
         <section className="daily-brief">
           <div className="brief-copy">
             <p className="eyebrow light">CUMA · 24 TEMMUZ 2026</p>
-            <h1>Günaydın, Kerem.</h1>
+            <h1><TimeGreeting name="Kerem" /></h1>
             <p>Bugün <strong>14:30’da bir görüşmeniz</strong> var. Bir teklif de onayınızı bekliyor.</p>
           </div>
           <div className="brief-stats" aria-label="Günlük hesap özeti">

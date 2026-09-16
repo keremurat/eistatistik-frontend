@@ -7,6 +7,7 @@ import { AdminShell } from "../../../AdminShell";
 import { trainings, EgitimTur, EsnekKota, EgitimDurum, Sertifika } from "../data";
 import { DatePicker } from "../../../../components/DatePicker";
 import { SystemDropdown } from "../../../../components/SystemDropdown";
+import { useToast } from "../../../../components/ToastProvider";
 
 type IconName = "back" | "check";
 function Icon({ name, size = 17 }: { name: IconName; size?: number }) {
@@ -49,7 +50,7 @@ function EditForm() {
   const [erisimZamani, setErisimZamani] = useState(String(base.erisimZamani));
   const [durum,        setDurum]        = useState<EgitimDurum>(base.durum);
   const [sertifika,    setSertifika]    = useState<Sertifika>(base.sertifika);
-  const [saved,        setSaved]        = useState(false);
+  const toast = useToast();
 
   const fileInputRef  = useRef<HTMLInputElement>(null);
   const modulInputRef = useRef<HTMLInputElement>(null);
@@ -71,8 +72,7 @@ function EditForm() {
   }
 
   function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+    toast.success("Eğitim güncellendi.");
   }
 
   const suggestedModules = AVAILABLE_MODULES.filter(
@@ -266,9 +266,7 @@ function EditForm() {
               <span className="edu-preview-val">{sertifika}</span>
             </div>
           </div>
-          <button className={`edu-preview-save${saved ? " saved" : ""}`} onClick={handleSave}>
-            {saved ? <><Icon name="check" size={16} /> Kaydedildi</> : "Kaydet"}
-          </button>
+          <button className="edu-preview-save" onClick={handleSave}>Kaydet</button>
         </div>
       </div>
     </div>

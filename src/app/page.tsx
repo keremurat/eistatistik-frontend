@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { LandingExperience } from "./components/LandingExperience";
+import { LandingExperience, LandingHeroPreview } from "./components/LandingExperience";
 import { LandingFaq } from "./components/LandingFaq";
 import { LandingHeader } from "./components/LandingHeader";
 import { LandingContact } from "./components/LandingContact";
@@ -92,9 +92,9 @@ export default function LandingPage() {
           <div className="landing-hero-product" aria-label="eistatistik müşteri çalışma alanı önizlemesi">
             <div className="landing-hero-browser">
               <div className="landing-browser-bar"><span /><span /><span /><b>app.eistatistik.com</b></div>
-              <div className="landing-browser-screen"><iframe src="/dashboard" title="eistatistik çalışma alanı" tabIndex={-1} /></div>
+              <div className="landing-browser-screen"><LandingHeroPreview /></div>
             </div>
-            <div className="landing-float-card float-meeting"><strong>14:30</strong><span>Uzman görüşmeniz</span></div>
+            <div className="landing-float-card float-meeting"><strong>2 yeni</strong><span>Uzman mesajı</span></div>
             <div className="landing-float-card float-tools">
               <span>ANALİZ ARAÇLARI</span>
               <div>{["SPSS", "R", "Python", "STATA", "AMOS", "LISREL", "Minitab"].map((tool) => <strong key={tool}>{tool}</strong>)}</div>

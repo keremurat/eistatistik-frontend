@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { AdminShell } from "../../../AdminShell";
 import { modules } from "../data";
 import { lessons } from "../../ders-listesi/data";
+import { useToast } from "../../../../components/ToastProvider";
 
 type IconName = "back" | "check";
 function Icon({ name, size = 17 }: { name: IconName; size?: number }) {
@@ -34,7 +35,7 @@ function EditForm() {
   const [driveUrl, setDriveUrl] = useState(base.driveUrl);
   const [dersler,  setDersler]  = useState<string[]>(baseLessons);
   const [dersInput, setDersInput] = useState("");
-  const [saved,    setSaved]    = useState(false);
+  const toast = useToast();
 
   const dersInputRef = useRef<HTMLInputElement>(null);
 
@@ -58,8 +59,7 @@ function EditForm() {
   }
 
   function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+    toast.success("Modül güncellendi.");
   }
 
   return (
@@ -132,9 +132,7 @@ function EditForm() {
             )}
           </div>
 
-          <button className={`edu-form-save${saved ? " saved" : ""}`} onClick={handleSave}>
-            {saved ? <><Icon name="check" size={16} /> Kaydedildi</> : "Kaydet"}
-          </button>
+          <button className="edu-form-save" onClick={handleSave}>Kaydet</button>
 
         </div>
       </section>

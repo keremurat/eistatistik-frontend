@@ -5,6 +5,7 @@ import { useState } from "react";
 import { AdminShell } from "../../AdminShell";
 import { DatePicker } from "../../../components/DatePicker";
 import { SystemDropdown } from "../../../components/SystemDropdown";
+import { useToast } from "../../../components/ToastProvider";
 
 type IconName = "back" | "check" | "info";
 function Icon({ name, size = 17 }: { name: IconName; size?: number }) {
@@ -34,14 +35,13 @@ export default function IndirimKoduEklePage() {
   const [limit,    setLimit]    = useState("");
   const [baslama,  setBaslama]  = useState("");
   const [bitis,    setBitis]    = useState("");
-  const [saved,    setSaved]    = useState(false);
+  const toast = useToast();
 
   const canSave = !!(aciklama && tip && tutar && limit && baslama && bitis);
 
   function handleSave() {
     if (!canSave) return;
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+    toast.success("İndirim kodu kaydedildi.");
   }
 
   const tipLabel   = TIPLER.find((t) => t.value === tip)?.label ?? "";
@@ -143,9 +143,7 @@ export default function IndirimKoduEklePage() {
               <Icon name="info" size={14} />
               <span>Kod boş bırakılırsa sistem otomatik olarak benzersiz bir kod oluşturur.</span>
             </div>
-            <button className={`edu-preview-save${saved ? " saved" : ""}`} onClick={handleSave} disabled={!canSave}>
-              {saved ? <>Kaydedildi</> : "Kaydet"}
-            </button>
+            <button className="edu-preview-save" onClick={handleSave} disabled={!canSave}>Kaydet</button>
           </aside>
         </div>
       </div>

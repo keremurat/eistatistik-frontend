@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { AdminShell } from "../AdminShell";
 import { SystemDropdown } from "../../components/SystemDropdown";
+import { useToast } from "../../components/ToastProvider";
 
 type IconName = "user" | "transfer" | "arrow" | "orders" | "warning" | "check";
 
@@ -38,7 +39,7 @@ export default function AnalizorDegistirPage() {
   const [sourceId, setSourceId] = useState("");
   const [targetId, setTargetId] = useState("");
   const [approved, setApproved] = useState(false);
-  const [message, setMessage] = useState("");
+  const toast = useToast();
 
   const source = analysts.find((item) => item.id === sourceId);
   const target = analysts.find((item) => item.id === targetId);
@@ -55,13 +56,11 @@ export default function AnalizorDegistirPage() {
     setSourceId(value);
     if (targetId === value) setTargetId("");
     setApproved(false);
-    setMessage("");
   }
 
   function changeTarget(value: string) {
     setTargetId(value);
     setApproved(false);
-    setMessage("");
   }
 
   function transferOrders() {
@@ -72,7 +71,7 @@ export default function AnalizorDegistirPage() {
       if (item.id === target.id) return { ...item, activeOrders: item.activeOrders + transferred };
       return item;
     }));
-    setMessage(`${transferred} aktif sipariş ${target.name} hesabına aktarıldı.`);
+    toast.success(`${transferred} aktif sipariş ${target.name} hesabına aktarıldı.`);
     setApproved(false);
   }
 
@@ -81,8 +80,6 @@ export default function AnalizorDegistirPage() {
   return <AdminShell>
     <main className="orders-page analyst-transfer-page">
       <header className="orders-hero"><h1>Analizör değiştir</h1></header>
-
-      {message && <div className="analyst-transfer-success" role="status"><Icon name="check" size={16} /><span>{message}</span></div>}
 
       <div className="analyst-transfer-layout">
         <section className="analyst-transfer-form" aria-label="Analizör aktarım seçimleri">

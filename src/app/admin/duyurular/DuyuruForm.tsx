@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRef, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { AdminShell } from "../AdminShell";
+import { useToast } from "../../components/ToastProvider";
 import { DatePicker } from "../../components/DatePicker";
 import { TimePicker } from "../../components/TimePicker";
 import { Duyuru } from "./data";
@@ -134,6 +135,7 @@ type Props = {
 };
 
 export function DuyuruForm({ mode, initial = {}, basePath = "/admin/duyurular", embedded = false }: Props) {
+  const toast = useToast();
   const today = new Date();
   const todayStr = `${String(today.getDate()).padStart(2, "0")}.${String(today.getMonth() + 1).padStart(2, "0")}.${today.getFullYear()}`;
 
@@ -148,7 +150,6 @@ export function DuyuruForm({ mode, initial = {}, basePath = "/admin/duyurular", 
   const [modal,       setModal]       = useState(initial.modalGoster ?? false);
   const [icerik,      setIcerik]      = useState(initial.icerik      ?? "");
   const [bgImage,     setBgImage]     = useState<string | null>(null);
-  const [saved,       setSaved]       = useState(false);
   const [error,       setError]       = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileRef     = useRef<HTMLInputElement>(null);
@@ -175,8 +176,7 @@ export function DuyuruForm({ mode, initial = {}, basePath = "/admin/duyurular", 
     if (!baslik.trim()) { setError("Duyuru başlığı boş bırakılamaz."); return; }
     if (!icerik.trim()) { setError("Duyuru içeriği boş bırakılamaz."); return; }
     setError("");
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    toast.success(mode === "duzenle" ? "Duyuru güncellendi." : "Duyuru oluşturuldu.");
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -428,8 +428,8 @@ export function DuyuruForm({ mode, initial = {}, basePath = "/admin/duyurular", 
             <span>Duyuru içeriği Markdown formatında yazılabilir.</span>
           </div>
           {error && <p style={{ margin: "0 1rem .7rem", fontSize: ".64rem", color: "#c85a51", fontWeight: 700, lineHeight: 1.45 }}>{error}</p>}
-          <button className={`edu-preview-save${saved ? " saved" : ""}`} onClick={handleSave}>
-            {saved ? "Kaydedildi" : "Kaydet"}
+          <button className="edu-preview-save" onClick={handleSave}>
+            Kaydet
           </button>
         </aside>
       </div>

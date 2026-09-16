@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AdminShell } from "../../AdminShell";
+import { useToast } from "../../../components/ToastProvider";
 import { ROLLER, CATEGORIES, ALL_PERMS, RolKey, PermCategory } from "../data";
 
 type IconName = "back" | "check" | "shield" | "search" | "x";
@@ -64,6 +65,7 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 
 // ── Ana form ──────────────────────────────────────────────────────────────────
 function EditForm() {
+  const toast = useToast();
   const params  = useSearchParams();
   const rolKey  = (params.get("rol") ?? "admin") as RolKey;
   const base    = ROLLER.find((r) => r.key === rolKey) ?? ROLLER[0];
@@ -74,19 +76,18 @@ function EditForm() {
   const [perms,        setPerms]        = useState<Set<string>>(new Set(base.perms));
   const [activeTab,    setActiveTab]    = useState<PermCategory>("menu");
   const [search,       setSearch]       = useState("");
-  const [saved,        setSaved]        = useState(false);
 
   function togglePerm(key: string) {
     setPerms((prev) => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   }
 
   function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+    toast.success("Rol güncellendi.");
   }
 
   const tabPerms = ALL_PERMS.filter((p) => {
@@ -281,8 +282,8 @@ function EditForm() {
               <textarea id="rol-aciklama" value={aciklama} rows={3}
                 onChange={(e) => setAciklama(e.target.value)} style={{ resize: "vertical" }} />
             </div>
-            <button className={`edu-form-save${saved ? " saved" : ""}`} onClick={handleSave} style={{ marginTop: ".3rem" }}>
-              {saved ? <><Icon name="check" size={15} /> Kaydedildi</> : "Kaydet"}
+            <button className="edu-form-save" onClick={handleSave} style={{ marginTop: ".3rem" }}>
+              Kaydet
             </button>
           </div>
         </section>

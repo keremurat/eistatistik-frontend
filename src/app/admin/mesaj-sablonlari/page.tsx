@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { AdminShell } from "../AdminShell";
+import { useToast } from "../../components/ToastProvider";
 
 type IconName = "plus" | "edit" | "trash";
 function Icon({ name, size = 17 }: { name: IconName; size?: number }) {
@@ -71,6 +72,7 @@ const allTemplates: Template[] = [
 const PER_PAGE = 7;
 
 export default function MesajSablonlariPage() {
+  const toast = useToast();
   const [page, setPage]         = useState(1);
   const [deletedIds, setDeletedIds] = useState(new Set<number>());
   const [confirmId, setConfirmId]   = useState<number | null>(null);
@@ -78,7 +80,6 @@ export default function MesajSablonlariPage() {
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editBody,  setEditBody]  = useState("");
-  const [editSaved, setEditSaved] = useState(false);
 
   const displayTemplates = allTemplates
     .map((t) => overrides.get(t.id) ?? t)
@@ -92,7 +93,6 @@ export default function MesajSablonlariPage() {
     setEditingTemplate(t);
     setEditTitle(t.title);
     setEditBody(t.body);
-    setEditSaved(false);
   }
 
   function saveEdit() {
@@ -102,8 +102,8 @@ export default function MesajSablonlariPage() {
       next.set(editingTemplate.id, { ...editingTemplate, title: editTitle.trim(), body: editBody });
       return next;
     });
-    setEditSaved(true);
-    setTimeout(() => { setEditSaved(false); setEditingTemplate(null); }, 1500);
+    toast.success("Mesaj şablonu güncellendi.");
+    setEditingTemplate(null);
   }
 
   function doDelete(id: number) {
@@ -218,11 +218,11 @@ export default function MesajSablonlariPage() {
                 <div>
                   <button className="legal-cancel" onClick={() => setEditingTemplate(null)}>Vazgeç</button>
                   <button
-                    className={`legal-accept${editSaved ? " saved" : ""}`}
+                    className="legal-accept"
                     disabled={!editTitle.trim() || !editBody.trim()}
                     onClick={saveEdit}
                   >
-                    {editSaved ? "Kaydedildi ✓" : "Kaydet"}
+                    Kaydet
                   </button>
                 </div>
               </footer>

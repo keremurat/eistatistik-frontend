@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { use, useState } from "react";
 import { AdminShell } from "../../AdminShell";
+import { useToast } from "../../../components/ToastProvider";
 import { KULLANICILAR, Kullanici, KullaniciRol } from "../data";
 import { SystemDropdown } from "../../../components/SystemDropdown";
 
@@ -319,6 +320,7 @@ function CariSection({ u }: { u: Kullanici }) {
 }
 
 function DuzenleSection({ u }: { u: Kullanici }) {
+  const toast = useToast();
   const [adi,       setAdi]       = useState(u.adSoyad);
   const [eposta,    setEposta]    = useState(u.eposta);
   const [gsm,       setGsm]       = useState(u.gsm);
@@ -330,14 +332,12 @@ function DuzenleSection({ u }: { u: Kullanici }) {
   const [bolum,     setBolum]     = useState(u.bolum ?? "");
   const [rol,       setRol]       = useState<KullaniciRol>(u.rol);
   const [durum,     setDurum]     = useState(u.durum);
-  const [saved,     setSaved]     = useState(false);
   const [showDel,   setShowDel]   = useState(false);
 
   const ROLLER: KullaniciRol[] = ["Müşteri", "Analist", "Editör", "Asistan", "Admin"];
 
   function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+    toast.success("Kullanıcı bilgileri güncellendi.");
   }
 
   return (
@@ -395,14 +395,12 @@ function DuzenleSection({ u }: { u: Kullanici }) {
             </div>
           </div>
           <div className="settings-actions">
-            <span className={`settings-note${saved ? " success" : ""}`} role="status">
-              {saved ? <><Icon name="check" size={13} /> Kaydedildi</> : ""}
-            </span>
+            <span />
             <button type="button" onClick={handleSave}
               className="settings-save"
-              style={{ background: saved ? "#287a55" : undefined }}>
-              <Icon name={saved ? "check" : "save"} size={14} />
-              {saved ? "Kaydedildi" : "Kaydet"}
+              >
+              <Icon name="save" size={14} />
+              Kaydet
             </button>
           </div>
         </div>

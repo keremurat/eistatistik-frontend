@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { AdminShell } from "../../../AdminShell";
 import { MessageTemplatePicker } from "../../../../components/MessageTemplatePicker";
+import { useToast } from "../../../../components/ToastProvider";
 
 type Section = "overview" | "payment" | "messages" | "content" | "invoice" | "tasks" | "activity" | "products";
 
@@ -75,6 +76,7 @@ export default function AdminPurchasedEducationDetail() {
 }
 
 export function PurchasedEducationDetailContent({ basePath = "/admin/egitimler" }: { basePath?: string }) {
+  const toast = useToast();
   const params = useParams<{ code: string }>();
   const query = useSearchParams();
   const requested = query.get("section") as Section | null;
@@ -84,7 +86,7 @@ export function PurchasedEducationDetailContent({ basePath = "/admin/egitimler" 
   const code = params.code;
   const record = records[code] ?? { student: "Beyza Nur Can", email: "beyza.can@example.com", education: "Modül 6. Meta Analizi Eğitimi", date: "31 Temmuz 2026 · 12:36", price: "4.000 TL", access: "12 ay", status: "pending" as const };
   const state = statusText[record.status];
-  const sendMessage = () => { const clean = message.trim(); if (!clean) return; setSentMessages(current => [...current, clean]); setMessage(""); };
+  const sendMessage = () => { const clean = message.trim(); if (!clean) return; setSentMessages(current => [...current, clean]); setMessage(""); toast.success("Mesaj gönderildi."); };
 
   return <div className="detail-page shared-order-detail education-detail-page">
     <header className="detail-hero admin-detail-hero">

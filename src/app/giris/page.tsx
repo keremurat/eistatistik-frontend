@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { findDemoAccount } from "../lib/demoAccounts";
+import { CURRENT_ACCOUNT_KEY } from "../lib/accountStorage";
 
 type IconName = "arrow" | "eye" | "eyeOff" | "lock" | "mail" | "shield" | "user";
 type LegalDocument = "membership" | "kvkk";
@@ -58,6 +59,7 @@ export default function AuthPage() {
     }
     setLoading(true);
     localStorage.setItem("eistatistik_role", account.role);
+    localStorage.setItem(CURRENT_ACCOUNT_KEY, account.email);
     window.setTimeout(() => router.push(account.landing), 650);
   }
 
@@ -68,6 +70,7 @@ export default function AuthPage() {
     if (!valid) return;
     setLoading(true);
     localStorage.setItem("eistatistik_role", "musteri");
+    localStorage.setItem(CURRENT_ACCOUNT_KEY, register.email.trim().toLowerCase());
     window.setTimeout(() => router.push("/dashboard"), 650);
   }
 
