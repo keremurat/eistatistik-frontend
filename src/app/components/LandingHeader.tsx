@@ -7,7 +7,6 @@ import { useEffect, useRef, useState } from "react";
 
 export function LandingHeader() {
   const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<"services" | "education" | null>(null);
   const headerRef = useRef<HTMLElement | null>(null);
   const pathname = usePathname();
@@ -49,25 +48,8 @@ export function LandingHeader() {
     };
   }, []);
 
-  useEffect(() => {
-    let frame = 0;
-    const updateHeader = () => {
-      const currentY = Math.max(window.scrollY, 0);
-      setScrolled(currentY > 48);
-      frame = 0;
-    };
-    const handleScroll = () => {
-      if (!frame) frame = window.requestAnimationFrame(updateHeader);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, []);
-
   return (
-    <header ref={headerRef} className={`landing-header${scrolled ? " is-scrolled" : ""}`}>
+    <header ref={headerRef} className="landing-header">
       <div className="landing-nav-shell">
         <Link href="/" className="landing-logo" aria-label="eistatistik ana sayfa">
           <Image src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} priority />

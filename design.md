@@ -294,6 +294,8 @@ Kurallar:
 - Topbar grid: `auto 1fr auto` (marka / nav / aksiyonlar), `position: sticky; top: 0`.
 - Geniş landing header `1600px` üst sınır kullanır; `1681px+` görünümde orta kolon
   `minmax(0,1fr)` olur ve menü aralıkları sıkılaşır. Sağ aksiyon grubu küçülmez veya taşmaz.
+- Landing header sayfa kaydırıldığında ölçü, logo genişliği veya aksiyon yüksekliği değiştirmez;
+  ilk görünümdeki boyutlarını korur. Scroll konumu için ayrı bir `is-scrolled` varyantı kullanılmaz.
 - Marka logosu koyu sayfalarda `Siyah e-istatistik.png`, koyu zeminlerde (auth) `Beyaz…`.
 - Auth ekranında beyaz logo ve solundaki sade `auth-back-home` oku tek `auth-logo-shortcut`
   bağlantısıdır; grubun herhangi bir yerine tıklamak landing page'e (`/`) döner.
@@ -671,6 +673,15 @@ kartlarıyla sunulur. Kart yüzeyi mevcut `landing-service-card` sınır, radius
   içerir. Mikro arayüz dekor değil; dosya durumu, sipariş adımları veya uzman mesajını gösterir.
 - Masaüstünde yatay üç kolon, tablet ve mobilde tek kolon kullanılır. Mobilde mikro arayüz
   metinden sonra gelir ve yatay taşma oluşturmaz.
+
+### 8.4.1 Landing “Nasıl Çalışır?” video aksiyonu
+
+`LandingProcess` adım kartlarının altında dekoratif grafik veya sahte arayüz önizlemesi bulunmaz.
+Her kartın son satırında `.landing-process-tutorial` video bağlantısı yer alır: solda
+“Nasıl Yapılır?” metni, sağda inline SVG oynat simgesi bulunur. Bağlantı yeni sekmede açılır,
+adım adını içeren açıklayıcı `aria-label` taşır ve klavye odağında görünür focus halkası gösterir.
+Kart içerikleri flex kolonla düzenlenir; video aksiyonu metin uzunluğünden bağımsız olarak kartın
+altına hizalanır.
 
 ### 8.5 Landing kullanıcı yorumları — `landing-testimonials-shell`
 

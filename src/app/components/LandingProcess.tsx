@@ -8,39 +8,35 @@ const steps = [
     title: "Talep et",
     body: "Üyelik ile giriş yaparak size uygun analiz türünü seçip kolayca talep oluşturabilirsiniz. Size uygun teslim süresini ve sonuçlarınızı almak istediğiniz formatı belirleyebilirsiniz.",
     meta: "Hizmet · Dosyalar · Teslim",
-    visual: "request",
   },
   {
     title: "Ücret belirlenmesi",
     body: "İsteklerinizi ayrıntılı biçimde inceliyor, çalışma kapsamını sizinle görüşüyor ve alanınıza uygun uzmanla eşleştiriyoruz. Hazırlanan fiyat teklifini hesabınız ve e-posta üzerinden iletiyoruz.",
     meta: "Uzman değerlendirmesi",
-    visual: "review",
   },
   {
     title: "Analiz süreci",
     body: "Onayınızın ardından belirlediğiniz çalışma takvimi başlar. Analizleriniz, alanında uzman ekibimiz tarafından hazırlanır ve süreç boyunca hesabınızdan takip edilebilir.",
     meta: "Planlanan çalışma",
-    visual: "track",
   },
   {
     title: "Rapor teslimi",
     body: "Raporunuzu seçtiğiniz süre içinde, talep ettiğiniz tablo, yorum ve grafik formatlarıyla hesabınıza teslim ediyoruz.",
     meta: "Rapor · Tablo · Video",
-    visual: "result",
   },
   {
     title: "Ücretsiz ek analiz talebi",
     body: "Teslim edilen raporu inceledikten sonra ihtiyaç duyduğunuz tamamlayıcı analizleri siparişiniz üzerinden ek analiz talebi olarak iletebilirsiniz.",
     meta: "Teslim sonrası destek",
-    visual: "request",
   },
   {
     title: "Sürekli iletişim",
     body: "Analiz talebinizden tez veya makale sürecinizin tamamlanmasına kadar ekibimize yazışma ve görüşme araçları üzerinden ulaşabilirsiniz.",
     meta: "Yazışma · Görüşme",
-    visual: "review",
   },
 ];
+
+const tutorialVideoUrl = "https://www.youtube.com/watch?v=HN2KNjCArLA";
 
 export function LandingProcess() {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -130,9 +126,20 @@ export function LandingProcess() {
               <small>{step.meta}</small>
               <h3>{step.title}</h3>
               <p>{step.body}</p>
-              <div className={`landing-process-visual visual-${step.visual}`} aria-hidden="true">
-                <span /><span /><span /><span />
-              </div>
+              <a
+                className="landing-process-tutorial"
+                href={tutorialVideoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${step.title}: Nasıl Yapılır videosunu izle`}
+              >
+                <span>Nasıl Yapılır?</span>
+                <i aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m9 7 8 5-8 5z" />
+                  </svg>
+                </i>
+              </a>
             </div>
           </article>
         ))}
