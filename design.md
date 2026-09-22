@@ -703,9 +703,11 @@ kartlarıyla sunulur. Kart yüzeyi mevcut `landing-service-card` sınır, radius
 ### 8.4.1 Landing “Nasıl Çalışır?” video aksiyonu
 
 `LandingProcess` adım kartlarının altında dekoratif grafik veya sahte arayüz önizlemesi bulunmaz.
-Her kartın son satırında `.landing-process-tutorial` video bağlantısı yer alır: solda
-“Nasıl Yapılır?” metni, sağda inline SVG oynat simgesi bulunur. Bağlantı yeni sekmede açılır,
-adım adını içeren açıklayıcı `aria-label` taşır ve klavye odağında görünür focus halkası gösterir.
+Her kartın son satırında `.landing-process-tutorial` video aksiyonu yer alır: solda
+“Nasıl Yapılır?” metni, sağda inline SVG oynat simgesi bulunur. Video içerikleri yayına alınana
+kadar aksiyon semantik olarak `disabled` butondur; bağlantı açmaz, pasif renk ve `not-allowed`
+imleci kullanır. Aktif edildiğinde adım adını içeren açıklayıcı `aria-label` taşımalı ve klavye
+odağında görünür focus halkası göstermelidir.
 Kart içerikleri flex kolonla düzenlenir; video aksiyonu metin uzunluğünden bağımsız olarak kartın
 altına hizalanır.
 

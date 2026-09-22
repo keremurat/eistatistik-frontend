@@ -3661,6 +3661,10 @@ button:focus-visible,a:focus-visible { outline:3px solid #69b9dc; outline-offset
 .landing-process-tutorial:hover i { background:var(--landing-blue); transform:scale(1.06); }
 .landing-process-tutorial:active i { transform:scale(.96); }
 .landing-process-tutorial:focus-visible { outline:3px solid rgba(22,126,175,.24); outline-offset:5px; border-radius:6px; }
+.landing-process-tutorial.disabled { width:100%; border-right:0; border-bottom:0; border-left:0; background:transparent; color:#8b9ba5; cursor:not-allowed; }
+.landing-process-tutorial.disabled i { background:#9cabb3; }
+.landing-process-tutorial.disabled:hover { color:#8b9ba5; }
+.landing-process-tutorial.disabled:hover i,.landing-process-tutorial.disabled:active i { background:#9cabb3; transform:none; }
 .landing-process-end { width:min(980px,100%); margin:0 auto; padding:clamp(6.75rem,8vw,8rem) 0 0; position:relative; z-index:2; text-align:center; }
 .landing-process-end-node { width:54px; height:54px; position:absolute; top:0; left:50%; z-index:3; display:grid; place-items:center; border:1px solid rgba(255,255,255,.75); border-radius:50%; color:#0b6896; background:#fff; box-shadow:0 0 0 8px rgba(255,255,255,.16),0 12px 30px rgba(18,87,117,.2); font-size:.7rem; font-weight:850; transform:translateX(-50%); }
 .landing-process-end .landing-kicker { position:relative; color:#1680ae; }

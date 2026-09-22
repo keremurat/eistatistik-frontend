@@ -36,8 +36,6 @@ const steps = [
   },
 ];
 
-const tutorialVideoUrl = "https://www.youtube.com/watch?v=HN2KNjCArLA";
-
 export function LandingProcess() {
   const sectionRef = useRef<HTMLElement | null>(null);
 
@@ -126,12 +124,12 @@ export function LandingProcess() {
               <small>{step.meta}</small>
               <h3>{step.title}</h3>
               <p>{step.body}</p>
-              <a
-                className="landing-process-tutorial"
-                href={tutorialVideoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`${step.title}: Nasıl Yapılır videosunu izle`}
+              <button
+                className="landing-process-tutorial disabled"
+                type="button"
+                disabled
+                aria-label={`${step.title}: Nasıl Yapılır videosu şu anda kullanılamıyor`}
+                title="Video yakında kullanıma açılacak"
               >
                 <span>Nasıl Yapılır?</span>
                 <i aria-hidden="true">
@@ -139,7 +137,7 @@ export function LandingProcess() {
                     <path d="m9 7 8 5-8 5z" />
                   </svg>
                 </i>
-              </a>
+              </button>
             </div>
           </article>
         ))}
