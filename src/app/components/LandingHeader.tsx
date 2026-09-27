@@ -84,6 +84,7 @@ export function LandingHeader() {
           <Link href="/#process" onClick={closeNavigation}>Nasıl çalışır?</Link>
           <Link href="/#yorumlar" onClick={closeNavigation}>Yorumlar</Link>
           <Link href="/#faq" onClick={closeNavigation}>Merak edilenler</Link>
+          <Link href="/blog" className={pathname === "/blog" ? "active" : undefined} onClick={closeNavigation}>Blog</Link>
           <Link href="/#iletisim" onClick={closeNavigation}>İletişim</Link>
         </nav>
         <div className="landing-nav-actions">

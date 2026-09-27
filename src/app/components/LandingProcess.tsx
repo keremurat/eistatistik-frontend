@@ -124,20 +124,6 @@ export function LandingProcess() {
               <small>{step.meta}</small>
               <h3>{step.title}</h3>
               <p>{step.body}</p>
-              <button
-                className="landing-process-tutorial disabled"
-                type="button"
-                disabled
-                aria-label={`${step.title}: Nasıl Yapılır videosu şu anda kullanılamıyor`}
-                title="Video yakında kullanıma açılacak"
-              >
-                <span>Nasıl Yapılır?</span>
-                <i aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m9 7 8 5-8 5z" />
-                  </svg>
-                </i>
-              </button>
             </div>
           </article>
         ))}

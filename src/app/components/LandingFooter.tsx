@@ -30,7 +30,7 @@ export function LandingFooter() {
           <Link href="/#process">Nasıl çalışır?</Link>
           <Link href="/#yorumlar">Yorumlar</Link>
           <Link href="/#faq">Merak edilenler</Link>
-          <Link href="/#faq">Blog</Link>
+          <Link href="/blog">Blog</Link>
           <Link href="/neler-yaptik/davetli-konusmalar">Neler Yaptık?</Link>
           <Link href="/#iletisim">İletişim</Link>
         </nav>

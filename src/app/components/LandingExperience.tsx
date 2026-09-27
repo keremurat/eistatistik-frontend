@@ -8,25 +8,21 @@ const scenes = [
     label: "Gününüzü görün",
     title: "Her şey tek bakışta önünüzde.",
     body: "Yaklaşan görüşmeler, bekleyen teklifler ve devam eden analizler çalışma alanınızda bir araya gelir.",
-    route: "/dashboard",
   },
   {
     label: "Süreci izleyin",
     title: "Talebiniz hangi aşamada, bilin.",
     body: "Sipariş durumunu, seçtiğiniz teslim süresini, dosyaları ve uzman mesajlarını aynı akıştan takip edin.",
-    route: "/siparislerim",
   },
   {
     label: "Talebinizi oluşturun",
     title: "İhtiyacınızı adım adım anlatın.",
     body: "Hizmeti seçin, çalışma bilgilerini girin ve dosyalarınızı yükleyin. Uzman ekip talebinizi değerlendirsin.",
-    route: "/yeni-analiz-talebi",
   },
   {
     label: "Bilginizi geliştirin",
     title: "Analizden eğitime aynı hesap.",
     body: "Satın aldığınız eğitimlere devam edin, dokümanlara erişin ve akademik sürecinizi kesintisiz yönetin.",
-    route: "/egitimler",
   },
 ];
 
@@ -102,7 +98,6 @@ export function LandingExperience() {
               <span>{scene.label}</span>
               <h3>{scene.title}</h3>
               <p>{scene.body}</p>
-              <a href={scene.route}>Ekranı inceleyin <b aria-hidden="true">→</b></a>
             </article>
           ))}
         </div>
