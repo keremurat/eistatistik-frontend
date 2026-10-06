@@ -64,10 +64,10 @@ function EditForm() {
 
   return (
     <div className="st-page">
-      <header className="orders-hero" style={{ marginBottom: "1rem" }}>
+      <header className="orders-hero">
         <div>
           <p className="eyebrow">YÖNETİM · DERS LİSTESİ</p>
-          <h1 style={{ fontSize: "1.2rem" }}>Ders Düzenle</h1>
+          <h1>Ders Düzenle</h1>
         </div>
         <Link className="back-link" href="/admin/egitim-talepleri/ders-listesi">
           <Icon name="back" size={15} />Listeye dön

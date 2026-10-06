@@ -511,7 +511,7 @@ export function TaskBoardContent() {
     <>
       <div className="gorev-liste-page">
         {/* Başlık / aksiyonlar */}
-        <header className="orders-hero" style={{ alignItems: "flex-end" }}>
+        <header className="orders-hero">
           <div>
             <p className="eyebrow">YÖNETİM</p>
             <h1>Görev Listesi</h1>

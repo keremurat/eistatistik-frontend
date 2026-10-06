@@ -149,6 +149,11 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
 
 ### Yönetim mega menüsü
 
+- Yönetici üst barındaki `Sipariş Yönetimi`, `Eğitimler` ve `Yönetim` açılır menüleri tek görsel
+  sözleşmeyi paylaşır: aynı panel yüzeyi, grup başlığı, sol aksan çizgisi, anlamlı satır ikonları,
+  tipografi, satır yüksekliği ve `--blue-soft` hover durumu kullanılır. İçeriği kısa olan ilk iki
+  menü tek sütunlu `.admin-section-menu`, yoğun `Yönetim` menüsü iki sütunlu
+  `.admin-management-menu` olarak akar; sütun sayısı dışında görsel dil değişmez.
 - Yönetici üst barındaki `Yönetim` açılır alanı iç içe flyout kullanmaz. İçerik; Sipariş Ayarları,
   Eğitim Talepleri, Kullanıcı Yönetimi, Abonelik, Şablon Ayarları, Görev İşlemleri ve Site Ayarları
   başlıklarına ayrılır. Kategoriler `.admin-management-menu` içinde iki sütunlu (`column-count:2`) bir
@@ -903,8 +908,27 @@ fark, veri yoğun "yönetim" düzeni ve custom SVG grafiklerdir.
   `DataHiddenContext` ile sayfaya taşır (`useDataHidden()`). Gizliyken **veriler blur değil, gerçekten
   maskelenir**: sayılar `•` ile değişir, grafikler sıfırlanmış veriyle boşalır (donut boş halka, area/spark
   düz çizgi, barlar 0), tablo "Veriler gizlendi" satırına döner. Etiket/başlıklar okunur kalır; göz açılınca
-  orijinal veriler geri gelir.
+  orijinal veriler geri gelir. Yönetici kabuğu ilk açıldığında veriler varsayılan olarak gizlidir;
+  kullanıcı göz düğmesiyle görünürlüğü isteğe bağlı olarak açar.
 - **Alt sayfalar** `AdminShell` içinde kurulur. Üst kısımda `.admin-breadcrumb` (Anasayfa · bölüm · **sayfa**).
+- **Sayfa başlığı sözleşmesi:** Giriş sonrası müşteri, analizör, asistan, editör ve yönetici
+  rotalarının görünür ana başlığı semantik olarak tek bir `h1` olur. Liste, oluşturma ve düzenleme ekranlarındaki `orders-hero`,
+  `favorite-category-create-header`, `guide-create-header` ve `education-heading` başlık kabukları
+  aynı `68px` minimum yüksekliği, aynı `h1` tipografi ölçeğini ve aynı üst başlangıç çizgisini
+  paylaşır. Uygulama üst barı ile `dashboard`, `orders-page`, `detail-page`, `request-page`,
+  `education-page` ve `admin-dash` içerik başlangıcı arasındaki üst boşluk masaüstü ve mobilde
+  `.45rem`dir; çocuk sayfa kabukları ikinci bir üst padding veya tekil inline margin üretmez.
+  `h2` panel/bölüm, `h3` ise kart/satır alt başlığıdır. Detay ekranlarında veriyle değişen çalışma
+  adı da sayfanın tek `h1`idir. Landing ve hizmet tanıtım sayfalarının pazarlama hero'ları bu giriş
+  sonrası uygulama sözleşmesinin dışındadır.
+- **Breadcrumb sözleşmesi:** Giriş sonrası tüm müşteri, analizör, asistan, editör ve yönetici
+  rotalarında üst bar ile sayfa başlığı arasında ortak `AppBreadcrumbs` bileşeni gösterilir.
+  Yol her zaman rolün kendi `Anasayfa` bağlantısıyla başlar, URL hiyerarşisindeki ilişkili liste ve
+  grup adımlarıyla devam eder; son öğe bağlantı değildir ve `aria-current="page"` taşır. Gerçek bir
+  ekranı olmayan salt grup adımları metin olarak gösterilir. Ayırıcı, sistemin 24px inline-SVG ikon
+  sözleşmesini izleyen küçük chevron'dur. Breadcrumb tek satır kalır, dar ekranda kendi içinde yatay
+  kayar ve sayfanın yatay taşmasına neden olmaz. Landing, blog, giriş ve hizmet/eğitim tanıtım
+  sayfaları giriş sonrası uygulama navigasyonu olmadıkları için bu kalıbın dışındadır.
 - **Yönetim alt sayfası düşey ritmi:** Üst bardaki `Yönetim` menüsünden açılan rotalarda
   `AdminShell`, ana içerik yüzeyine `.admin-management-page` modifier'ını ekler. Bu modifier genel
   `.admin-dash` üst padding'ini `.45rem` seviyesine indirir ve doğrudan çocuk sayfanın ikinci bir
@@ -1000,9 +1024,31 @@ asistan rotalarında bu yönetici filtresi gösterilmez.
 | İptal edilen (cancelled) | iptal | `state-dot cancelled` (kırmızı) |
 
 Filtre: tabs (durum grubu) + tek arama input'u (`kod · müşteri · analizör · platform` üzerinde).
-Sayfalama yoktur; tab seçimi ve arama satır sayısını yönetir.
+Liste, aşağıdaki ortak ekran-duyarlı sayfalama sözleşmesini kullanır.
+
+### 7.6.2 Ortak liste ve sayfalama sözleşmesi
+
+- Giriş sonrası sistemde kayıt koleksiyonu gösteren bütün yönetim, sipariş, eğitim ve kullanıcı
+  listeleri Eğitim Listesi ekranını kanonik kalıp olarak kullanır: `.education-list-page`,
+  `.st-list-panel`, `.ur-table.edu-table` ve `.ms-pagination`.
+- Masaüstünde liste paneli üst barın altında kalan görünür yüksekliği kullanır. Satırlar `64px`
+  yüksekliğindedir; `useResponsivePagination` panelin gerçek yüksekliğini `ResizeObserver` ile ölçer
+  ve o ekrana sığan kayıt sayısını hesaplar. Dar ekranda güvenli varsayılan kayıt sayısı kullanılır.
+- Son sayfadaki eksik satırlar görünmez placeholder satırlarla tamamlanır; böylece sayfalar arasında
+  tablo, pagination ve alt sınır konumu değişmez. İçeriğin uzunluğu satır yüksekliğini büyütmez;
+  birincil ve ikincil metinler ellipsis ile sınırlandırılır.
+- Filtre, arama, silme veya veri değişikliği aktif sayfayı geçersiz kılarsa sayfa güvenli aralığa
+  çekilir. Birden fazla sayfa varsa ortak `ListPagination` Önceki, numaralı sayfalar ve Sonraki
+  kontrollerini gösterir; tek sayfalık listede gereksiz kontrol çizilmez.
 
 ---
+
+### 7.7 Landing Dynamic Island navigasyonu
+
+Landing üst navigasyonunda birinci seviye bağlantılar ve dropdown başlıkları aynı tipografiyi
+kullanır. Masaüstü temel değeri `.78rem / 760`, geniş ekranlarda `.76rem`, 1281–1600px aralığında
+`.70–.74rem` ölçeğidir. Metinler koyu ve okunaklı kalmalı; sığdırmak amacıyla `.70rem` altına
+indirilmemelidir. Mobil açılır menü kendi mevcut `.74rem` değerini korur.
 
 ## 8. Yeni bir şey eklerken
 

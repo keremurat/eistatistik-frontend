@@ -425,5 +425,5 @@ export function CalendarContent({ basePath = "/admin/siparisler", showOwner = fa
 }
 
 export default function TakvimPage() {
-  return <AdminShell><CalendarContent /></AdminShell>;
+  return <AdminShell><div className="st-page"><header className="orders-hero"><h1>Takvim</h1></header><CalendarContent /></div></AdminShell>;
 }

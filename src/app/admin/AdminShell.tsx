@@ -118,7 +118,7 @@ function FavoritesMenu() {
 }
 
 type MenuKey = "orders" | "education" | "manage";
-type MenuItemDef = { label: string; href: string; subItems?: { label: string; href: string }[] };
+type MenuItemDef = { label: string; href: string; icon?: AdminIconName; subItems?: { label: string; href: string }[] };
 type ManagementGroup = { label: string; items: { label: string; href: string; icon: AdminIconName }[] };
 
 const managementGroups: ManagementGroup[] = [
@@ -166,15 +166,15 @@ const managementGroups: ManagementGroup[] = [
 ];
 const adminMenus: { key: MenuKey; label: string; icon: AdminIconName; items: MenuItemDef[] }[] = [
   { key: "orders", label: "Sipariş Yönetimi", icon: "orders", items: [
-    { label: "Mevcut Siparişler / Analizler", href: "/admin/siparisler" },
-    { label: "Yeni Analiz Talebi Oluştur", href: "/admin/yeni-analiz-talebi" },
-    { label: "Arşiv", href: "/admin/arsiv" },
+    { label: "Mevcut Siparişler / Analizler", href: "/admin/siparisler", icon: "orders" },
+    { label: "Yeni Analiz Talebi Oluştur", href: "/admin/yeni-analiz-talebi", icon: "layers" },
+    { label: "Arşiv", href: "/admin/arsiv", icon: "inbox" },
   ] },
   { key: "education", label: "Eğitimler", icon: "education", items: [
-    { label: "Satın Alınan Eğitimler", href: "/admin/egitimler/satin-alinan" },
-    { label: "Yeni Eğitim Satın Al", href: "/admin/egitimler/yeni" },
-    { label: "Eğitim İstekleri", href: "/admin/egitimler/istekler" },
-    { label: "Arşiv", href: "/admin/egitimler/arsiv" },
+    { label: "Satın Alınan Eğitimler", href: "/admin/egitimler/satin-alinan", icon: "education" },
+    { label: "Yeni Eğitim Satın Al", href: "/admin/egitimler/yeni", icon: "book" },
+    { label: "Eğitim İstekleri", href: "/admin/egitimler/istekler", icon: "message" },
+    { label: "Arşiv", href: "/admin/egitimler/arsiv", icon: "inbox" },
   ] },
   { key: "manage", label: "Yönetim", icon: "manage", items: [
     { label: "Sipariş Türleri", href: "/admin/siparis-turleri" },
@@ -204,12 +204,12 @@ const adminMenus: { key: MenuKey; label: string; icon: AdminIconName; items: Men
 
 const editorMenus: typeof adminMenus = [
   { key: "orders", label: "Sipariş Yönetimi", icon: "orders", items: [
-    { label: "Mevcut Siparişler / Analizler", href: "/editor/siparisler" },
-    { label: "Yeni Analiz Talebi Oluştur", href: "/editor/yeni-analiz-talebi" },
+    { label: "Mevcut Siparişler / Analizler", href: "/editor/siparisler", icon: "orders" },
+    { label: "Yeni Analiz Talebi Oluştur", href: "/editor/yeni-analiz-talebi", icon: "layers" },
   ] },
   { key: "education", label: "Eğitimler", icon: "education", items: [
-    { label: "Satın Alınan Eğitimler", href: "/editor/egitimler/satin-alinan" },
-    { label: "Yeni Eğitim Satın Al", href: "/editor/egitimler/yeni" },
+    { label: "Satın Alınan Eğitimler", href: "/editor/egitimler/satin-alinan", icon: "education" },
+    { label: "Yeni Eğitim Satın Al", href: "/editor/egitimler/yeni", icon: "book" },
   ] },
   { key: "manage", label: "Yönetim", icon: "manage", items: [
     { label: "Eğitim Talepleri", href: "#", subItems: [
@@ -234,7 +234,7 @@ const editorMenus: typeof adminMenus = [
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const [openMenu, setOpenMenu]       = useState<MenuKey | null>(null);
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
-  const [dataHidden, setDataHidden]   = useState(false);
+  const [dataHidden, setDataHidden]   = useState(true);
   const navRef          = useRef<HTMLElement>(null);
   const menuCloseTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
   const subCloseTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -307,8 +307,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                     <h2>{group.label}</h2>
                     <div>{group.items.map((item) => <Link key={item.label} role="menuitem" href={item.href} onClick={() => setOpenMenu(null)}><AdminIcon name={item.icon} size={16} /><span>{item.label}</span></Link>)}</div>
                   </section>)}
-                </div> : <div className="admin-menu" role="menu">
-                  {menu.items.map((item) => {
+                </div> : <div className="admin-menu admin-section-menu" role="menu">
+                  <section className="admin-management-group">
+                    <h2>{menu.label}</h2>
+                    <div>{menu.items.map((item) => {
                     if (item.subItems) {
                       return (
                         <div
@@ -339,8 +341,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                         </div>
                       );
                     }
-                    return <Link key={item.label} role="menuitem" href={item.href} onClick={() => setOpenMenu(null)}>{item.label}</Link>;
-                  })}
+                    return <Link key={item.label} role="menuitem" href={item.href} onClick={() => setOpenMenu(null)}>{item.icon && <AdminIcon name={item.icon} size={16} />}<span>{item.label}</span></Link>;
+                  })}</div>
+                  </section>
                 </div>
               )}
             </div>

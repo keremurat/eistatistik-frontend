@@ -81,10 +81,10 @@ function EditForm() {
 
   return (
     <div className="st-page">
-      <header className="orders-hero" style={{ marginBottom: "1rem" }}>
+      <header className="orders-hero">
         <div>
           <p className="eyebrow">YÖNETİM · EĞİTİM LİSTESİ</p>
-          <h1 style={{ fontSize: "1.2rem" }}>Eğitim Düzenle</h1>
+          <h1>Eğitim Düzenle</h1>
         </div>
         <Link className="back-link" href="/admin/egitim-talepleri/egitim-listesi">
           <Icon name="back" size={15} />Listeye dön

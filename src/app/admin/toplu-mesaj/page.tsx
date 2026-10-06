@@ -195,7 +195,7 @@ export default function TopluMesajPage() {
   return (
     <AdminShell>
       <div className="st-page">
-        <header className="orders-hero" style={{ marginBottom: "1rem" }}>
+        <header className="orders-hero">
           <div>
             <p className="eyebrow">KULLANICI YÖNETİMİ</p>
             <h1>Toplu Mesaj Gönder</h1>
