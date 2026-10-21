@@ -929,6 +929,12 @@ fark, veri yoğun "yönetim" düzeni ve custom SVG grafiklerdir.
   sözleşmesini izleyen küçük chevron'dur. Breadcrumb tek satır kalır, dar ekranda kendi içinde yatay
   kayar ve sayfanın yatay taşmasına neden olmaz. Landing, blog, giriş ve hizmet/eğitim tanıtım
   sayfaları giriş sonrası uygulama navigasyonu olmadıkları için bu kalıbın dışındadır.
+- **IAMX konuşma asistanı:** IAMX üzerinde yayınlanan `eistatistik` karakteri ortak
+  `IamxChatbot` bileşeniyle sistemin tüm sayfalarında gösterilir. Entegrasyon IAMX'in güncel
+  `iamx-widget.js` yükleyicisini, `round` (Portrait Bubble) şablonunu, `compact` boyutunu ve başlangıçta küçültülmüş
+  durumu kullanır. Böylece tam konuşma panelindeki test/teknik kontroller uygulama arayüzüne taşınmaz;
+  açma, kapatma, mobil yerleşim, mikrofon ve erişilebilirlik davranışları resmi widget tarafından
+  yönetilir. Marka vurgu rengi `--blue` tokenıyla aynı değerdedir ve istemciye API anahtarı yazılmaz.
 - **Yönetim alt sayfası düşey ritmi:** Üst bardaki `Yönetim` menüsünden açılan rotalarda
   `AdminShell`, ana içerik yüzeyine `.admin-management-page` modifier'ını ekler. Bu modifier genel
   `.admin-dash` üst padding'ini `.45rem` seviyesine indirir ve doğrudan çocuk sayfanın ikinci bir

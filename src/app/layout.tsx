@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "./components/ToastProvider";
 import { AppBreadcrumbs } from "./components/AppBreadcrumbs";
+import { IamxChatbot } from "./components/IamxChatbot";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -22,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col"><ToastProvider><AppBreadcrumbs />{children}</ToastProvider></body>
+      <body className="min-h-full flex flex-col"><ToastProvider><AppBreadcrumbs />{children}<IamxChatbot /></ToastProvider></body>
     </html>
   );
 }
