@@ -9,7 +9,7 @@ export function IamxChatbot() {
     id="iamx-website-assistant"
     src="https://iamxlive.com/iamx-widget.js"
     data-character={IAMX_CHARACTER_ID}
-    data-template="round"
+    data-template="floating"
     data-size="compact"
     data-open="minimized"
     data-accent="#197fb5"

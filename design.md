@@ -931,7 +931,7 @@ fark, veri yoğun "yönetim" düzeni ve custom SVG grafiklerdir.
   sayfaları giriş sonrası uygulama navigasyonu olmadıkları için bu kalıbın dışındadır.
 - **IAMX konuşma asistanı:** IAMX üzerinde yayınlanan `eistatistik` karakteri ortak
   `IamxChatbot` bileşeniyle sistemin tüm sayfalarında gösterilir. Entegrasyon IAMX'in güncel
-  `iamx-widget.js` yükleyicisini, `round` (Portrait Bubble) şablonunu, `compact` boyutunu ve başlangıçta küçültülmüş
+  `iamx-widget.js` yükleyicisini, `floating` (Floating Companion) şablonunu, `compact` boyutunu ve başlangıçta küçültülmüş
   durumu kullanır. Böylece tam konuşma panelindeki test/teknik kontroller uygulama arayüzüne taşınmaz;
   açma, kapatma, mobil yerleşim, mikrofon ve erişilebilirlik davranışları resmi widget tarafından
   yönetilir. Marka vurgu rengi `--blue` tokenıyla aynı değerdedir ve istemciye API anahtarı yazılmaz.
@@ -1055,6 +1055,9 @@ Landing üst navigasyonunda birinci seviye bağlantılar ve dropdown başlıklar
 kullanır. Masaüstü temel değeri `.78rem / 760`, geniş ekranlarda `.76rem`, 1281–1600px aralığında
 `.70–.74rem` ölçeğidir. Metinler koyu ve okunaklı kalmalı; sığdırmak amacıyla `.70rem` altına
 indirilmemelidir. Mobil açılır menü kendi mevcut `.74rem` değerini korur.
+Dynamic Island yüzeyi tüm ekran boyutlarında opak beyazdır; arkasındaki hero görselini gösteren
+saydamlık, blur veya backdrop-filter kullanılmaz. İnce sınır ve mevcut hafif gölge yüzey ayrımını
+sağlar.
 
 ## 8. Yeni bir şey eklerken
 
