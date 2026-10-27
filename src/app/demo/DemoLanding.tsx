@@ -5,17 +5,22 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import styles from "./demo.module.css";
 
-type IconName = "arrow" | "bars" | "close" | "check" | "chart" | "download" | "file" | "message" | "play" | "shield" | "lock" | "key";
+type IconName = "arrow" | "bars" | "calendar" | "card" | "clock" | "close" | "check" | "chart" | "download" | "file" | "home" | "invoice" | "message" | "play" | "shield" | "lock" | "key";
 
 function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, React.ReactNode> = {
     arrow: <><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>,
+    calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>,
+    card: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18" /></>,
+    clock: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
     bars: <><path d="M4 7h16" /><path d="M4 12h16" /><path d="M4 17h16" /></>,
     close: <><path d="m6 6 12 12" /><path d="m18 6-12 12" /></>,
     check: <path d="m5 12 4 4L19 6" />,
     chart: <><path d="M4 19V9" /><path d="M10 19V5" /><path d="M16 19v-7" /><path d="M22 19H2" /></>,
     download: <><path d="M12 4v11" /><path d="m7 11 5 5 5-5" /><path d="M5 20h14" /></>,
     file: <><path d="M6 2h8l4 4v16H6z" /><path d="M14 2v5h5" /><path d="M9 13h6" /><path d="M9 17h4" /></>,
+    home: <><path d="m3 11 9-8 9 8" /><path d="M5 10v11h14V10M9 21v-7h6v7" /></>,
+    invoice: <><path d="M5 3h14v18l-3-2-4 2-4-2-3 2z" /><path d="M8 8h8M8 12h8M8 16h5" /></>,
     message: <><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" /><path d="M8 10h8" /><path d="M8 14h5" /></>,
     play: <path d="m9 7 8 5-8 5z" />,
     shield: <><path d="M12 3 5 6v6c0 4.2 2.8 7.2 7 8.5 4.2-1.3 7-4.3 7-8.5V6z" /><path d="m9 12 2 2 4-4" /></>,
@@ -335,6 +340,184 @@ const logos = [
   { src: "/davet-transparent/ktü.png", alt: "Karadeniz Teknik Üniversitesi", height: 42 },
 ];
 
+const orderBeats = [
+  { front: "screen", section: "overview", chat: 1 },
+  { front: "screen", section: "files", chat: 2 },
+  { front: "phone", section: "files", chat: 2 },
+  { front: "phone", section: "files", chat: 3 },
+  { front: "screen", section: "payment", chat: 3 },
+  { front: "screen", section: "meetings", chat: 3 },
+] as const;
+
+const orderMenu: { key: (typeof orderBeats)[number]["section"] | "messages" | "deliveries" | "invoice"; label: string; icon: IconName; badge?: string }[] = [
+  { key: "overview", label: "Genel bakış", icon: "home" },
+  { key: "files", label: "Sipariş Kalemleri", icon: "file" },
+  { key: "payment", label: "Ödeme", icon: "card", badge: "1" },
+  { key: "messages", label: "Yazışmalar", icon: "message" },
+  { key: "deliveries", label: "Teslimatlar", icon: "download" },
+  { key: "meetings", label: "Görüşmeler", icon: "calendar" },
+  { key: "invoice", label: "Proforma Faturanız", icon: "invoice" },
+];
+
+const orderSteps = [
+  ["Talep oluşturuldu", "23 Tem · 23:11", "done"],
+  ["Teklif hazırlandı", "24 Tem · 09:18", "now"],
+  ["Ödeme", "Bekleniyor", ""],
+  ["Analiz", "Sırada", ""],
+  ["Teslim", "Planlandı", ""],
+] as const;
+
+const threadItems = [
+  { kind: "note" as const, text: "orneklem_verileri.xlsx dosyası Sipariş Kalemleri’ne eklendi", time: "09:35" },
+  { kind: "you" as const, name: "Siz", time: "09:34", text: "Merhaba, güncel Excel dosyasını Sipariş Kalemleri bölümüne ekledim." },
+  { kind: "expert" as const, name: "Dr. Naci Yılmaz", time: "09:21", text: "Merhaba Kerem Bey, dosyanızı inceledim. Analiz öncesinde grup dağılımlarını doğrulamamız gerekiyor." },
+];
+
+function HeroMock() {
+  const [beat, setBeat] = useState(orderBeats.length - 1);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let timer = 0;
+    const tick = () => setBeat((current) => (current + 1) % orderBeats.length);
+    const start = () => {
+      window.clearInterval(timer);
+      timer = window.setInterval(tick, 2800);
+    };
+    const stop = () => window.clearInterval(timer);
+    const sync = () => {
+      if (document.hidden) stop();
+      else start();
+    };
+    const frame = window.requestAnimationFrame(() => setBeat(0));
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) sync();
+      else stop();
+    });
+    if (rootRef.current) observer.observe(rootRef.current);
+    document.addEventListener("visibilitychange", sync);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      stop();
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", sync);
+    };
+  }, []);
+
+  const scene = orderBeats[beat];
+  const visibleThread = threadItems.slice(-scene.chat);
+  return <div ref={rootRef} className={styles.heroMock} data-front={scene.front} data-section={scene.section}>
+    <div className={styles.laptopBezel} aria-hidden="true" />
+    <div className={styles.analysisWindow}>
+      <div className={styles.appScreen}>
+        <div className={styles.appHero}>
+          <span className={styles.appFile}><Icon name="file" size={14} /></span>
+          <div>
+            <small>DS260723008 · 23 TEMMUZ 2026</small>
+            <strong>Güç analizi danışmanlığı</strong>
+            <em><i />Mevcut durum</em>
+            <b>Ücret teklifiniz hazır</b>
+          </div>
+          <span className={styles.appAction}>Ödemeye git <Icon name="arrow" size={11} /></span>
+        </div>
+        <div className={styles.appWork}>
+          <aside className={styles.appMenu}>
+            <p>Sipariş menüsü</p>
+            {orderMenu.map((item) => <span className={item.key === scene.section ? styles.menuOn : ""} key={item.label}><Icon name={item.icon} size={11} />{item.label}{item.badge && <i>{item.badge}</i>}</span>)}
+          </aside>
+          <div className={styles.appMain} key={scene.section}>
+            {scene.section === "overview" && <>
+              <div className={styles.appBanner}>
+                <div>
+                  <small>Sonraki adım</small>
+                  <strong>Teklifinizi inceleyip ödemeyi tamamlayın</strong>
+                  <p>Ödemeniz onaylandığında analiz süreci otomatik olarak başlayacak.</p>
+                </div>
+                <span>5.000 TL öde <Icon name="arrow" size={11} /></span>
+              </div>
+              <div className={styles.appPanel}>
+                <small>Süreç</small>
+                <strong>Sipariş durumu</strong>
+                <ol className={styles.appTimeline}>
+                  {orderSteps.map(([label, when, state]) => <li className={state === "done" ? styles.stepDone : state === "now" ? styles.stepNow : ""} key={label}><i>{state === "done" ? <Icon name="check" size={9} /> : null}</i><b>{label}</b><small>{when}</small></li>)}
+                </ol>
+              </div>
+              <div className={styles.appFileRow}>
+                <Image src="/icons/icons8-microsoft-excel-2019-48.png" alt="" width={22} height={22} />
+                <p><b>orneklem_verileri.xlsx</b><small>1,8 MB · 23 Temmuz 2026</small></p>
+                <span>İndir</span>
+              </div>
+            </>}
+            {scene.section === "files" && <div className={styles.appPanel}>
+              <small>Sipariş kalemleri</small>
+              <strong>Çalışma dosyaları</strong>
+              <div className={styles.fileFilters}><b>Tümü · 2</b><span>Benim yüklediklerim</span><span>Uzman dosyaları</span></div>
+              <div className={styles.appFileRow}>
+                <Image src="/icons/icons8-microsoft-excel-2019-48.png" alt="" width={22} height={22} />
+                <p><b>orneklem_verileri.xlsx</b><small>Sizin yüklediğiniz · 23 Temmuz · 1,8 MB</small></p>
+                <span>İndir</span>
+              </div>
+              <div className={styles.appFileRow}>
+                <Image src="/icons/icons8-microsoft-word-2025-48.png" alt="" width={22} height={22} />
+                <p><b>analiz_plani.docx</b><small>Uzman tarafından · Bugün · 420 KB</small></p>
+                <span>İndir</span>
+              </div>
+            </div>}
+            {scene.section === "payment" && <div className={styles.appPanel}>
+              <small>Ödeme</small>
+              <strong>Havale / EFT</strong>
+              <div className={styles.payMethods}><b>Havale / EFT</b><span>Kredi kartı</span></div>
+              <dl className={styles.payLines}>
+                <div><dt>Banka</dt><dd>Akbank</dd></div>
+                <div><dt>IBAN</dt><dd>TR64 0004 6013 8988 8000 0143 16</dd></div>
+                <div><dt>Açıklama</dt><dd>DS260723008</dd></div>
+                <div><dt>Toplam</dt><dd>5.000 TL</dd></div>
+              </dl>
+            </div>}
+            {scene.section === "meetings" && <div className={styles.appPanel}>
+              <small>Görüşmeler</small>
+              <strong>Planlanan görüşmeler</strong>
+              <div className={styles.meetCard}>
+                <span><b>30</b><small>TEM</small></span>
+                <div>
+                  <small>11:00 · 30 dakika · Google Meet</small>
+                  <b>Analiz öncesi değerlendirme</b>
+                  <p>Dr. Naci Yılmaz ile çevrim içi görüşme</p>
+                </div>
+                <em>Takvime ekle</em>
+              </div>
+            </div>}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div className={styles.phoneWindow} aria-hidden="true">
+      <span className={styles.phoneSpeaker} />
+      <div className={styles.msgScreen}>
+        <div className={styles.msgGuide}>
+          <span><Icon name="message" size={13} /></span>
+          <div><b>Yeni analiz talepleri için ayrı talep oluşturun</b><p>Bu alan mevcut siparişinizle ilgili soru, dosya ve bilgilendirmeler içindir.</p></div>
+        </div>
+        <div className={styles.msgComposer}>
+          <small>Mesajınız</small>
+          <span>Uzmanınıza mesajınızı yazın…</span>
+          <div><em>Gönder <Icon name="arrow" size={10} /></em></div>
+        </div>
+        <p className={styles.msgWait}><Icon name="clock" size={11} /><span><b>Yanıt süresi:</b> Mesai saatlerinde ortalama 1 saat.</span></p>
+        <div className={styles.msgThread}>
+          <span className={styles.msgDay}>Bugün</span>
+          {visibleThread.map((item) => {
+            if (item.kind === "note") return <p className={styles.msgNote} key={item.time}><Icon name="file" size={10} />{item.text} <time>{item.time}</time></p>;
+            if (item.kind === "you") return <article className={styles.msgYou} key={item.time}><b>Siz <small>{item.time}</small></b><p>{item.text}</p></article>;
+            return <article className={styles.msgExpert} key={item.time}><i>NY</i><div><b>{item.name} <small>{item.time}</small></b><p>{item.text}</p></div></article>;
+          })}
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
 function AnimatedHeadline() {
   const [phraseIndex, setPhraseIndex] = useState(0);
 
@@ -498,40 +681,7 @@ export function DemoLanding() {
             </div>
 
             <div className={`${styles.heroVisual} ${styles.reveal}`} aria-label="eistatistik analiz çalışma alanı temsili">
-              <div className={styles.analysisWindow}>
-                <header><div><i /><i /><i /></div><span>Analiz çalışma alanı</span><b>Canlı</b></header>
-                <div className={styles.windowBody}>
-                  <aside>
-                    <span className={styles.sideActive}><Icon name="chart" size={17} /></span>
-                    <span><Icon name="file" size={17} /></span>
-                    <span><Icon name="message" size={17} /></span>
-                  </aside>
-                  <div className={styles.dashboard}>
-                    <div className={styles.dashboardHead}><div><small>ÇALIŞMA</small><strong>Regresyon analizi</strong></div><span>Analiz sürüyor</span></div>
-                    <div className={styles.metricRow}>
-                      <div><small>Gözlem</small><strong>n = 248</strong></div>
-                      <div><small>Değişken</small><strong>12</strong></div>
-                      <div><small>Model</small><strong>R² 0.64</strong></div>
-                    </div>
-                    <div className={styles.chartBox}>
-                      <div className={styles.chartTitle}><span>Model uyumu</span><small>Son kontrol</small></div>
-                      <svg viewBox="0 0 520 190" role="img" aria-label="Yükselen model uyumu grafiği">
-                        <defs><linearGradient id="demo-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1775a9" stopOpacity=".42" /><stop offset="1" stopColor="#1775a9" stopOpacity="0" /></linearGradient></defs>
-                        <path className={styles.gridLine} d="M0 35H520M0 90H520M0 145H520" />
-                        <path className={styles.area} d="M0 151 C55 145 78 116 122 123 S188 96 232 105 S296 79 340 84 S411 47 455 58 S493 28 520 31 V190H0Z" />
-                        <path className={styles.line} d="M0 151 C55 145 78 116 122 123 S188 96 232 105 S296 79 340 84 S411 47 455 58 S493 28 520 31" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className={styles.phoneWindow} aria-hidden="true">
-                <span className={styles.phoneSpeaker} />
-                <div className={styles.phoneHead}><small>ÇALIŞMA ALANI</small><strong>Analiz süreciniz</strong></div>
-                <div className={styles.phoneProgress}><span><i>✓</i><b>Talep alındı</b></span><span><i>✓</i><b>Uzman atandı</b></span><span className={styles.current}><i>3</i><b>Analiz sürüyor</b></span><span><i>4</i><b>Rapor teslimi</b></span></div>
-                <div className={styles.phoneExpert}><span>NA</span><div><small>İSTATİSTİK UZMANI</small><b>Nazlı A.</b></div><em>Çevrimiçi</em></div>
-                <button type="button" tabIndex={-1}>Uzmanınıza yazın <Icon name="arrow" size={15} /></button>
-              </div>
+              <HeroMock />
             </div>
           </div>
         </section>
