@@ -524,12 +524,12 @@
 .meetCard b{display:block;margin-top:.12rem;color:#132b46;font-size:.62rem}
 .meetCard p{margin:.12rem 0 0;color:#526a7d;font-size:.5rem}
 .meetCard em{padding:.28rem .45rem;border:1px solid #dce5ea;border-radius:6px;color:#536b7d;font-size:.46rem;font-style:normal;font-weight:700;white-space:nowrap}
-.heroMock .phoneWindow{display:flex;flex-direction:column;padding:1.15rem .38rem .35rem;overflow:hidden;background:#f7f9fa}
+.heroMock .phoneWindow{display:flex;flex-direction:column;padding:1.15rem .55rem 1.15rem;overflow:hidden;background:#f7f9fa}
 .msgScreen{flex:1;min-height:0;display:flex;flex-direction:column;gap:.26rem;overflow:hidden}
-.msgGuide{display:grid;grid-template-columns:20px minmax(0,1fr);gap:.28rem;padding:.3rem;border:1px solid #c9dce7;border-radius:8px;background:#f3f8fb}
+.msgGuide{display:grid;grid-template-columns:20px minmax(0,1fr);gap:.28rem;align-items:center;padding:.28rem;border:1px solid #c9dce7;border-radius:8px;background:#f3f8fb}
 .msgGuide>span{display:grid;place-items:center;width:20px;height:20px;border-radius:6px;background:#dcecf4;color:#1e709e}
 .msgGuide b{color:#132b46;font-size:.5rem;line-height:1.25}
-.msgGuide p{margin:.12rem 0 0;color:#708596;font-size:.46rem;line-height:1.3}
+.msgGuide p{display:none}
 .msgComposer{border:1px solid #dce5ea;border-radius:8px;background:#fff}
 .msgComposer>small{display:block;padding:.32rem .4rem 0;color:#738796;font-size:.44rem;font-weight:800}
 .msgComposer>span{display:block;padding:.12rem .4rem .28rem;color:#9aa8b3;font-size:.5rem}
@@ -538,17 +538,17 @@
 .msgWait{display:flex;align-items:center;gap:.28rem;margin:0;padding:.32rem .4rem;border-radius:6px;background:#f3f8fb;color:#718596;font-size:.46rem}
 .msgWait svg{flex:none;color:#2879a8}
 .msgWait b{color:#526b7e}
-.msgThread{display:flex;flex-direction:column;gap:.35rem;padding:.3rem .05rem 0;position:relative}
+.msgThread{flex:0 0 auto;display:flex;flex-direction:column;justify-content:flex-start;gap:.28rem;padding:.15rem .02rem 0;position:relative}
 .msgThread:before{content:"";position:absolute;top:0;bottom:0;left:50%;width:1px;background:#d9e4e9}
 .msgDay,.msgNote{align-self:center;z-index:1}
 .msgDay{padding:.12rem .4rem;border:1px solid #dce5ea;border-radius:99px;background:#f7f9fa;color:#7d8f9c;font-size:.44rem;font-weight:700}
 .msgNote{display:flex;align-items:center;gap:.25rem;margin:0;padding:.22rem .4rem;border:1px solid #dde7eb;border-radius:99px;background:#f7f9fa;color:#718796;font-size:.44rem;line-height:1.3;text-align:center;animation:mockIn .35s ease}
 .msgNote time{color:#9aa7b0}
 .msgYou,.msgExpert{z-index:1;max-width:92%;animation:mockIn .35s ease}
-.msgYou{align-self:flex-end;padding:.38rem .45rem;border:1px solid #cfe0e9;border-radius:10px 3px 10px 10px;background:#e7f2f7}
+.msgYou{align-self:flex-end;padding:.28rem .42rem;border:1px solid #cfe0e9;border-radius:10px 3px 10px 10px;background:#e7f2f7}
 .msgExpert{align-self:flex-start;display:flex;align-items:flex-start;gap:.28rem}
 .msgExpert>i{display:grid;place-items:center;width:18px;height:18px;flex:none;border-radius:5px;background:#132b46;color:#fff;font-size:.42rem;font-style:normal;font-weight:800}
-.msgExpert>div{padding:.38rem .42rem;border:1px solid #e1e8ec;border-radius:3px 10px 10px 10px;background:#fff}
+.msgExpert>div{padding:.28rem .42rem;border:1px solid #e1e8ec;border-radius:3px 10px 10px 10px;background:#fff}
 .msgYou b,.msgExpert b{color:#132b46;font-size:.48rem}
 .msgYou b small,.msgExpert b small{margin-left:.25rem;color:#96a3ae;font-weight:500}
-.msgYou p,.msgExpert p{margin:.15rem 0 0;color:#526a7d;font-size:.5rem;line-height:1.35}
+.msgYou p,.msgExpert p{margin:.08rem 0 0;color:#526a7d;font-size:.5rem;line-height:1.3}

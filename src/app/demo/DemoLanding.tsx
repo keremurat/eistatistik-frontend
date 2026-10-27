@@ -341,12 +341,12 @@ const logos = [
 ];
 
 const orderBeats = [
-  { front: "screen", section: "overview", chat: 1 },
-  { front: "screen", section: "files", chat: 2 },
-  { front: "phone", section: "files", chat: 2 },
-  { front: "phone", section: "files", chat: 3 },
-  { front: "screen", section: "payment", chat: 3 },
-  { front: "screen", section: "meetings", chat: 3 },
+  { front: "screen", section: "overview" },
+  { front: "screen", section: "files" },
+  { front: "phone", section: "files" },
+  { front: "phone", section: "files" },
+  { front: "screen", section: "payment" },
+  { front: "screen", section: "meetings" },
 ] as const;
 
 const orderMenu: { key: (typeof orderBeats)[number]["section"] | "messages" | "deliveries" | "invoice"; label: string; icon: IconName; badge?: string }[] = [
@@ -367,14 +367,18 @@ const orderSteps = [
   ["Teslim", "Planlandı", ""],
 ] as const;
 
-const threadItems = [
-  { kind: "note" as const, text: "orneklem_verileri.xlsx dosyası Sipariş Kalemleri’ne eklendi", time: "09:35" },
-  { kind: "you" as const, name: "Siz", time: "09:34", text: "Merhaba, güncel Excel dosyasını Sipariş Kalemleri bölümüne ekledim." },
-  { kind: "expert" as const, name: "Dr. Naci Yılmaz", time: "09:21", text: "Merhaba Kerem Bey, dosyanızı inceledim. Analiz öncesinde grup dağılımlarını doğrulamamız gerekiyor." },
+const chatScript = [
+  { kind: "expert" as const, time: "09:21", text: "Dosyanızı inceledim. Grupları birlikte netleştirelim." },
+  { kind: "you" as const, time: "09:34", text: "Güncel Excel dosyasını ekledim." },
+  { kind: "note" as const, time: "09:35", text: "orneklem_verileri.xlsx eklendi" },
+  { kind: "expert" as const, time: "09:41", text: "Aldım. İki grubu karşılaştırma için not ettim." },
+  { kind: "you" as const, time: "09:44", text: "Evet, grupları karşılaştırmak istiyorum." },
+  { kind: "expert" as const, time: "09:46", text: "Tamam. Ödeme sonrası teslimat 12 saat." },
 ];
 
 function HeroMock() {
   const [beat, setBeat] = useState(orderBeats.length - 1);
+  const [shownCount, setShownCount] = useState(chatScript.length);
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -386,27 +390,45 @@ function HeroMock() {
       timer = window.setInterval(tick, 2800);
     };
     const stop = () => window.clearInterval(timer);
-    const sync = () => {
-      if (document.hidden) stop();
-      else start();
+    let chatTimer = 0;
+    const startChat = () => {
+      window.clearInterval(chatTimer);
+      chatTimer = window.setInterval(() => setShownCount((current) => (current > chatScript.length ? 1 : current + 1)), 1600);
     };
-    const frame = window.requestAnimationFrame(() => setBeat(0));
+    const stopChat = () => window.clearInterval(chatTimer);
+    const sync = () => {
+      if (document.hidden) {
+        stop();
+        stopChat();
+      } else {
+        start();
+        startChat();
+      }
+    };
+    const frame = window.requestAnimationFrame(() => {
+      setBeat(0);
+      setShownCount(1);
+    });
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) sync();
-      else stop();
+      else {
+        stop();
+        stopChat();
+      }
     });
     if (rootRef.current) observer.observe(rootRef.current);
     document.addEventListener("visibilitychange", sync);
     return () => {
       window.cancelAnimationFrame(frame);
       stop();
+      stopChat();
       observer.disconnect();
       document.removeEventListener("visibilitychange", sync);
     };
   }, []);
 
   const scene = orderBeats[beat];
-  const visibleThread = threadItems.slice(-scene.chat);
+  const visibleThread = chatScript.slice(0, Math.min(shownCount, chatScript.length)).map((item, index) => ({ ...item, id: index }));
   return <div ref={rootRef} className={styles.heroMock} data-front={scene.front} data-section={scene.section}>
     <div className={styles.laptopBezel} aria-hidden="true" />
     <div className={styles.analysisWindow}>
@@ -483,7 +505,7 @@ function HeroMock() {
                 <div>
                   <small>11:00 · 30 dakika · Google Meet</small>
                   <b>Analiz öncesi değerlendirme</b>
-                  <p>Dr. Naci Yılmaz ile çevrim içi görüşme</p>
+                  <p>Analizör ile çevrim içi görüşme</p>
                 </div>
                 <em>Takvime ekle</em>
               </div>
@@ -508,9 +530,9 @@ function HeroMock() {
         <div className={styles.msgThread}>
           <span className={styles.msgDay}>Bugün</span>
           {visibleThread.map((item) => {
-            if (item.kind === "note") return <p className={styles.msgNote} key={item.time}><Icon name="file" size={10} />{item.text} <time>{item.time}</time></p>;
-            if (item.kind === "you") return <article className={styles.msgYou} key={item.time}><b>Siz <small>{item.time}</small></b><p>{item.text}</p></article>;
-            return <article className={styles.msgExpert} key={item.time}><i>NY</i><div><b>{item.name} <small>{item.time}</small></b><p>{item.text}</p></div></article>;
+            if (item.kind === "note") return <p className={styles.msgNote} key={item.id}><Icon name="file" size={10} />{item.text} <time>{item.time}</time></p>;
+            if (item.kind === "you") return <article className={styles.msgYou} key={item.id}><b>Siz <small>{item.time}</small></b><p>{item.text}</p></article>;
+            return <article className={styles.msgExpert} key={item.id}><i>A</i><div><b>Analizör <small>{item.time}</small></b><p>{item.text}</p></div></article>;
           })}
         </div>
       </div>
