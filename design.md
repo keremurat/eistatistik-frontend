@@ -1069,6 +1069,54 @@ sağlar.
 5. Erişilebilirlik mevcut seviyede korunur: `aria-*`, `role`, skip-link, focus/Escape/dış-tıklama
    davranışları eklenen her etkileşimde sürdürülür.
 
+### 8.2 İzole landing yeniden tasarım demosu — `/demo`
+
+- `/demo`, üretim anasayfasını değiştirmeden yeni pazarlama yönünü karşılaştırmak için kullanılan
+  izole bir tasarım demosudur. Uygulama/rol kabuklarına ait sınıfları değiştirmez ve kendi CSS Module
+  kapsamı içinde kalır.
+- Demo, aynı marka ailesindeki İstabot landing sayfasının açık ve ürün-odaklı kompozisyonunu
+  eistatistik'e uyarlar: opak beyaz üst bar, çok açık `--canvas` hero yüzeyi, `--navy` ana metin,
+  `--blue` vurgu ve beyaz ürün çerçeveleri kullanılır. Yeni bir ikinci vurgu rengi veya mor “AI
+  gradient” kullanılmaz.
+- İçerik genişliği `min(1240px, calc(100% - 2rem))`; bölüm aralıkları ferah, hero masaüstünde
+  asimetrik iki kolon, mobilde tek kolondur. Hero görseli hayali başarı metriği yerine mevcut hizmet
+  sürecini temsil eden, öndeki telefon ve arkadaki masaüstü çalışma alanından oluşan kodla çizilmiş
+  ürün kompozisyonudur.
+- Navigasyon masaüstünde tam genişlikli beyaz üst bar, mobilde erişilebilir açılır paneldir. Menü düğmesi
+  `aria-expanded` ve `aria-controls` taşır; Escape, dış tıklama ve bağlantı seçimi paneli kapatır.
+- Hizmetler eşit üçlü kart şablonu yerine asimetrik grid kullanır. Bütün hizmet adları ve bağlantıları
+  üretim landing içeriğinden gelir. Kurum/logolar yalnızca repoda bulunan gerçek varlıklardır; hayali
+  müşteri, sayı veya referans üretilmez.
+- Hareketler yalnızca `transform` ve `opacity` üzerinden 220–700ms aralığında çalışır. Scroll reveal,
+  grafik çizimi ve hover hareketleri `prefers-reduced-motion: reduce` altında kapatılır.
+- CTA ve bağlantılar gerçek `/giris`, hizmet, eğitim ve iletişim hedeflerine gider; `#` biçiminde ölü
+  bağlantı kullanılmaz. Sayfa semantik `header/main/section/footer` yapısını, görünür focus halkalarını
+  ve “İçeriğe geç” bağlantısını korur.
+- Sayfanın anlatı sırası İstabot denetimindeki ürün-odaklı ritmi eistatistik içeriğine uyarlar:
+  hero ve kurum kanıtı, asimetrik hizmetler, ürün/çalışma alanı kanıtı, dört adımlı süreç,
+  geleneksel dağınık iletişim ile eistatistik çalışma alanının karşılaştırması, SSS, final CTA ve
+  footer. Sabit fiyat veya doğrulanmamış başarı metriği üretilmez.
+- Ürün kanıtı `.demo-proof-grid` içinde bir büyük arayüz paneli ve dört kompakt işlev özeti taşır.
+  Karşılaştırma `.demo-comparison` içinde iki kolonlu başlık, erişilebilir satır listesi ve yalnızca
+  eistatistik tarafında kullanılan `--blue-soft` vurgusuyla kurulur. İki bölüm de beyaz/açık gri
+  yüzey, 21–28px dış radius, daha küçük iç radius ve düşük opaklıklı lacivert gölge sözleşmesini
+  kullanır.
+- SSS `.demo-faq` içinde gerçek üretim landing sorularından seçilir. Düğmeler `aria-expanded` ve
+  `aria-controls` taşır; paneller grid-row + opacity ile açılır, ilk soru başlangıçta açık olabilir.
+  Hareket azaltma tercihinde geçişler kapatılır.
+- Demo bölümlerinde İstabot denetiminden alınan ritim değerleri eistatistik tokenlarına çevrilir:
+  masaüstünde `96px 24px 112px`, mobilde `72px 16px 80px` bölüm boşluğu; dış yüzeylerde 26–28px,
+  iç yüzeylerde 18–22px radius; başlıklarda 600–700 ağırlık ve negatif harf aralığı. Renkler yine
+  yalnızca §1 eistatistik paletinden gelir.
+- Hizmet kartları yalnızca metin kutuları değildir; üretim anasayfasındaki gerçek
+  `/service-illustrations/*-v2.png` görsellerini kullanır. İlk kart geniş, diğer kartlar daha kompakt
+  görsel oranlarla akar; mobilde tamamı tek kolona iner.
+- İstabot fiyatlandırma ritmi sabit fiyat uydurmadan `.demo-engagements` bölümüne çevrilir. Bölüm,
+  eistatistik'in gerçek çalışma biçimlerini (analiz ve raporlama, birebir mentörlük, eğitim) üç
+  farklı genişlikte yüzeyde anlatır; fiyat yerine kapsamın nasıl belirlendiğini açıklar ve gerçek rotalara gider.
+- İstabot blog ritmi `.demo-insights` ile korunur. Repodaki gerçek `blog-research-desk.png` görseli,
+  `/blog` rotası ve mevcut blog başlıkları kullanılır; sahte yazar, tarih veya okunma verisi eklenmez.
+
 ### 8.1 Anasayfa ayarları — `/admin/anasayfa-ayarlari`
 
 Landing içeriği yönetimi, diğer yönetim formları gibi `AdminShell` ve `.st-page` içinde kurulur.
