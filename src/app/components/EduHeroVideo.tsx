@@ -23,10 +23,9 @@ export function EduHeroVideo() {
   return (
     <button
       type="button"
-      className="edu-video edu-video-facade"
+      className="edu-video edu-video-facade edu-video-facade-thumbnail"
       onClick={() => setPlaying(true)}
       aria-label="İlk Şarkımız videosunu oynat"
-      style={{ backgroundImage: "url(https://img.youtube.com/vi/SBU7TrPvlyA/maxresdefault.jpg)" }}
     >
       <span className="edu-video-tag"><i />İlk Şarkımız · eistatistik</span>
       <span className="edu-video-play" aria-hidden="true">

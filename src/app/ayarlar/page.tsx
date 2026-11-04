@@ -7,8 +7,10 @@ import { useRouter } from "next/navigation";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { NotificationMenu } from "../components/NotificationMenu";
 import { BrandLogo } from "../components/BrandLogo";
-import { CustomerEducationMenu } from "../components/CustomerEducationMenu";
+import { WorkspaceNav } from "../components/WorkspaceNav";
+import { SystemDropdown } from "../components/SystemDropdown";
 import { useToast } from "../components/ToastProvider";
+import { loadUniversityCatalog, universityLogoUrl, type CatalogUniversity } from "../lib/universityCatalog";
 
 type Section = "account" | "billing" | "security";
 type BillingType = "individual" | "corporate";
@@ -65,22 +67,17 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (role === null || role === "musteri") return;
-    router.replace(roleHome[role] ?? "/giris");
+    router.replace(localStorage.getItem("eistatistik_home") || roleHome[role] || "/giris");
   }, [role, router]);
 
-  if (role !== "musteri") return null;
+  if (role && role !== "musteri") return null;
 
   return (
-    <div className="app-shell">
+    <div className="app-shell customer-shell">
       <a className="skip-link" href="#main-content">İçeriğe geç</a>
       <header className="topbar">
         <BrandLogo />
-        <nav className="main-nav" aria-label="Ana navigasyon">
-          <Link href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
-          <Link href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
-          <CustomerEducationMenu />
-          <Link href="/hizmetler"><Icon name="spark" size={17} />Hizmetler</Link>
-        </nav>
+        <WorkspaceNav kind="customer" />
         <div className="top-actions">
           <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a>
           <NotificationMenu role="musteri" />
@@ -88,23 +85,29 @@ export default function SettingsPage() {
         </div>
       </header>
 
-      <main id="main-content" className="detail-page">
+      <main id="main-content" className="settings-page">
         <Link className="back-link" href="/dashboard"><Icon name="back" size={16} />Genel bakışa dön</Link>
-        <header className="detail-hero">
-          <div className="detail-title"><span className="detail-file-icon"><Icon name="user" size={22} /></span><div><p className="eyebrow">HESABIM</p><h1>Ayarlar</h1></div></div>
-          <div className="detail-current-state"><span className="state-pulse" /><div><small>HESAP SAHİBİ</small><strong>Kerem Murat</strong><span>kerem@example.com</span></div></div>
-        </header>
-
-        <div className="detail-workspace">
-          <aside className="detail-sidebar" aria-label="Ayarlar bölümleri">
-            <p>AYARLAR MENÜSÜ</p>
-            <nav>{navItems.map(item => <button key={item.key} className={section === item.key ? "active" : ""} onClick={() => setSection(item.key)}><Icon name={item.icon} size={17} /><span>{item.label}</span></button>)}</nav>
-            <div className="sidebar-help"><Icon name="message" size={17} /><div><strong>Yardıma mı ihtiyacınız var?</strong><span>Destek ekibine yazın</span></div></div>
+        <div className="settings-shell">
+          <aside className="settings-nav" aria-label="Ayarlar bölümleri">
+            <header>
+              <span className="settings-mark"><Icon name="user" size={18} /></span>
+              <strong>Ayarlar</strong>
+            </header>
+            <nav>
+              {navItems.map(item => (
+                <button key={item.key} type="button" className={section === item.key ? "active" : ""} aria-pressed={section === item.key} onClick={() => setSection(item.key)}>
+                  <Icon name={item.icon} size={18} /><span>{item.label}</span>
+                </button>
+              ))}
+            </nav>
           </aside>
-          <section className="detail-content">
-            {section === "account" && <AccountSection />}
-            {section === "billing" && <BillingSection />}
-            {section === "security" && <SecuritySection />}
+          <section className="settings-main">
+            <header><h1>{navItems.find(item => item.key === section)?.label}</h1></header>
+            <div className="settings-scroll">
+              {section === "account" && <AccountSection />}
+              {section === "billing" && <BillingSection />}
+              {section === "security" && <SecuritySection />}
+            </div>
           </section>
         </div>
       </main>
@@ -123,11 +126,24 @@ function AccountSection() {
   const [fullName, setFullName] = useState("Kerem Murat");
   const [email, setEmail] = useState("kerem@example.com");
   const [phone, setPhone] = useState("");
+  const [catalog, setCatalog] = useState<CatalogUniversity[] | null>(null);
+  const [catalogError, setCatalogError] = useState(false);
   const [university, setUniversity] = useState("");
   const [faculty, setFaculty] = useState("");
   const [department, setDepartment] = useState("");
   const [academicLevel, setAcademicLevel] = useState("");
   const { note, flash } = useSavedNote();
+  const selectedUniversity = catalog?.find(item => String(item.id) === university);
+  const faculties = selectedUniversity?.faculties ?? [];
+  const selectedFaculty = faculties.find(item => String(item.id) === faculty);
+
+  useEffect(() => {
+    let active = true;
+    loadUniversityCatalog()
+      .then(universities => { if (active) setCatalog(universities); })
+      .catch(() => { if (active) setCatalogError(true); });
+    return () => { active = false; };
+  }, []);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -140,7 +156,7 @@ function AccountSection() {
 
   return <form className="detail-stack" onSubmit={handleSubmit}>
     <section className="detail-panel">
-      <header className="detail-panel-heading"><div><p className="eyebrow">KİŞİSEL</p><h2>Hesap bilgileri</h2><span>Yalnızca kendi hesabınıza ait bilgileri güncelleyebilirsiniz.</span></div></header>
+      <header className="detail-panel-heading"><div><p className="eyebrow">KİŞİSEL</p><h2>Kişisel bilgiler</h2><span>Yalnızca kendi hesabınıza ait bilgileri güncelleyebilirsiniz.</span></div></header>
       <div className="settings-panel-body">
         <Field label="Ad Soyad *"><input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Örn. Kerem Murat" /></Field>
         <div className="form-grid">
@@ -155,11 +171,55 @@ function AccountSection() {
       <header className="detail-panel-heading"><div><p className="eyebrow">EK BİLGİLER</p><h2>Akademik bilgiler</h2><span>Bu bilgiler taleplerinizin doğru değerlendirilmesine yardımcı olur.</span></div></header>
       <div className="settings-panel-body">
         <ChoiceField label="Akademik seviye" options={["Lisans", "Yüksek lisans", "Doktora", "Akademik yayın"]} value={academicLevel} onChange={setAcademicLevel} />
-        <Field label="Üniversite"><input value={university} onChange={e => setUniversity(e.target.value)} placeholder="Üniversitenizi yazın" /></Field>
-        <div className="form-grid">
-          <Field label="Fakülte"><input value={faculty} onChange={e => setFaculty(e.target.value)} placeholder="Fakülteniz" /></Field>
-          <Field label="Bölüm"><input value={department} onChange={e => setDepartment(e.target.value)} placeholder="Bölümünüz" /></Field>
-        </div>
+        {catalogError ? <>
+          <Field label="Üniversite"><input value={university} onChange={e => setUniversity(e.target.value)} placeholder="Üniversitenizi yazın" /></Field>
+          <div className="form-grid">
+            <Field label="Fakülte"><input value={faculty} onChange={e => setFaculty(e.target.value)} placeholder="Fakülteniz" /></Field>
+            <Field label="Bölüm"><input value={department} onChange={e => setDepartment(e.target.value)} placeholder="Bölümünüz" /></Field>
+          </div>
+        </> : <>
+          <div className="form-field">
+            <label>Üniversite</label>
+            <SystemDropdown
+              value={university}
+              searchable
+              searchPlaceholder="Üniversite veya şehir ara"
+              placeholder={catalog ? "Üniversite seçin" : "Üniversiteler yükleniyor…"}
+              ariaLabel="Üniversite"
+              disabled={!catalog}
+              options={(catalog ?? []).map(item => ({ value: String(item.id), label: item.city ? `${item.name} · ${item.city}` : item.name, image: universityLogoUrl(item.id) }))}
+              onChange={value => { setUniversity(value); setFaculty(""); setDepartment(""); }}
+            />
+          </div>
+          <div className="form-grid">
+            <div className="form-field">
+              <label>Fakülte</label>
+              <SystemDropdown
+                value={faculty}
+                searchable
+                searchPlaceholder="Fakülte ara"
+                placeholder={university ? "Fakülte seçin" : "Önce üniversite seçin"}
+                ariaLabel="Fakülte"
+                disabled={!university}
+                options={faculties.map(item => ({ value: String(item.id), label: item.name }))}
+                onChange={value => { setFaculty(value); setDepartment(""); }}
+              />
+            </div>
+            <div className="form-field">
+              <label>Bölüm</label>
+              <SystemDropdown
+                value={department}
+                searchable
+                searchPlaceholder="Bölüm ara"
+                placeholder={faculty ? "Bölüm seçin" : "Önce fakülte seçin"}
+                ariaLabel="Bölüm"
+                disabled={!faculty}
+                options={(selectedFaculty?.departments ?? []).map(name => ({ value: name, label: name }))}
+                onChange={setDepartment}
+              />
+            </div>
+          </div>
+        </>}
       </div>
       <div className="settings-actions"><button className="settings-save" type="submit"><Icon name="check" size={16} />Değişiklikleri kaydet</button></div>
     </section>
@@ -193,7 +253,7 @@ function BillingSection() {
 
   return <form className="detail-stack" onSubmit={handleSubmit}>
     <section className="detail-panel">
-      <header className="detail-panel-heading"><div><p className="eyebrow">FATURALANDIRMA</p><h2>Fatura bilgileri</h2><span>Siparişleriniz için düzenlenecek faturalarda bu bilgiler kullanılır.</span></div></header>
+      <header className="detail-panel-heading"><div><p className="eyebrow">FATURALANDIRMA</p><h2>Fatura adresi</h2><span>Siparişleriniz için düzenlenecek faturalarda bu bilgiler kullanılır.</span></div></header>
       <div className="settings-panel-body">
         <ChoiceField label="Fatura türü *" options={[["individual", "Bireysel"], ["corporate", "Kurumsal"]]} value={billingType} onChange={value => setBillingType(value as BillingType)} />
 

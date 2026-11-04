@@ -6,7 +6,7 @@ export default async function AssistantOrderDetailPage({ params }: { params: Pro
   const { code } = await params;
 
   return (
-    <div className="app-shell assistant-shell">
+    <div className="app-shell customer-shell">
       <AssistantHeader />
       <Suspense>
         <SharedOrderDetail

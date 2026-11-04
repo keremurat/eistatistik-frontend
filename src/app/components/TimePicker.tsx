@@ -78,48 +78,25 @@ export function TimePicker({ id, value, onChange, placeholder = "SS:DD" }: TimeP
       ref={panelRef}
       role="dialog"
       aria-label="Saat seçici"
-      style={{
-        position: "fixed",
-        top: pos.top,
-        left: pos.left,
-        width: PANEL_W,
-        zIndex: 9999,
-        background: "#fff",
-        border: "1px solid var(--line)",
-        borderRadius: 13,
-        boxShadow: "0 18px 45px rgba(19,43,70,.18)",
-        padding: ".55rem",
-        animation: "profile-menu-in .15s ease-out",
-        overflow: "hidden",
-      }}>
+      className="time-picker-panel"
+      style={{ top: pos.top, left: pos.left }}>
 
       {/* Sütun başlıkları */}
-      <div style={{
-        display: "grid", gridTemplateColumns: "1fr 1px 1fr",
-        marginBottom: ".4rem",
-      }}>
-        <p style={{
-          margin: 0, textAlign: "center",
-          fontSize: ".63rem", fontWeight: 850,
-          color: "var(--navy)", letterSpacing: "-.01em",
-        }}>Saat</p>
-        <span style={{ background: "var(--line)" }} />
-        <p style={{
-          margin: 0, textAlign: "center",
-          fontSize: ".63rem", fontWeight: 850,
-          color: "var(--navy)", letterSpacing: "-.01em",
-        }}>Dakika</p>
+      <div className="time-picker-head">
+        <p>Saat</p>
+        <span />
+        <p>Dakika</p>
       </div>
 
       {/* Ayraç */}
-      <div style={{ height: 1, background: "var(--line)", margin: "0 -.55rem .4rem" }} />
+      <div className="time-picker-rule" />
 
       {/* İki sütun */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1px 1fr", height: 178 }}>
+      <div className="time-picker-columns">
         {/* Saat sütunu */}
         <div
           ref={hourRef}
-          style={{ overflowY: "auto", paddingRight: 2, scrollbarWidth: "none" }}>
+          className="time-picker-list time-picker-hours">
           {HOURS.map((h) => {
             const active = h === selH;
             return (
@@ -128,22 +105,7 @@ export function TimePicker({ id, value, onChange, placeholder = "SS:DD" }: TimeP
                 data-v={h}
                 type="button"
                 onClick={() => pickH(h)}
-                style={{
-                  width: "100%",
-                  padding: ".36rem 0",
-                  border: 0,
-                  borderRadius: 6,
-                  background: active ? "var(--navy)" : "transparent",
-                  color: active ? "#fff" : "#3f556a",
-                  font: "inherit",
-                  fontSize: ".7rem",
-                  fontWeight: active ? 800 : 700,
-                  cursor: "pointer",
-                  textAlign: "center",
-                  transition: ".1s",
-                }}
-                onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLElement).style.background = "var(--canvas)"; }}
-                onMouseLeave={(e) => { if (!active) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                className={`time-picker-option${active ? " active" : ""}`}
                 aria-pressed={active}>
                 {h}
               </button>
@@ -152,12 +114,12 @@ export function TimePicker({ id, value, onChange, placeholder = "SS:DD" }: TimeP
         </div>
 
         {/* Dikey ayraç */}
-        <span style={{ background: "var(--line)" }} />
+        <span className="time-picker-divider" />
 
         {/* Dakika sütunu */}
         <div
           ref={minRef}
-          style={{ overflowY: "auto", paddingLeft: 2, scrollbarWidth: "none" }}>
+          className="time-picker-list time-picker-minutes">
           {MINUTES.map((m) => {
             const active = m === selM;
             return (
@@ -166,22 +128,7 @@ export function TimePicker({ id, value, onChange, placeholder = "SS:DD" }: TimeP
                 data-v={m}
                 type="button"
                 onClick={() => pickM(m)}
-                style={{
-                  width: "100%",
-                  padding: ".36rem 0",
-                  border: 0,
-                  borderRadius: 6,
-                  background: active ? "var(--navy)" : "transparent",
-                  color: active ? "#fff" : "#3f556a",
-                  font: "inherit",
-                  fontSize: ".7rem",
-                  fontWeight: active ? 800 : 700,
-                  cursor: "pointer",
-                  textAlign: "center",
-                  transition: ".1s",
-                }}
-                onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLElement).style.background = "var(--canvas)"; }}
-                onMouseLeave={(e) => { if (!active) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                className={`time-picker-option${active ? " active" : ""}`}
                 aria-pressed={active}>
                 {m}
               </button>
@@ -191,17 +138,7 @@ export function TimePicker({ id, value, onChange, placeholder = "SS:DD" }: TimeP
       </div>
 
       {/* Alt: seçili saat göstergesi */}
-      <div style={{
-        marginTop: ".4rem",
-        paddingTop: ".4rem",
-        borderTop: "1px solid var(--line)",
-        textAlign: "center",
-        fontSize: ".8rem",
-        fontWeight: 850,
-        color: "var(--navy)",
-        letterSpacing: ".04em",
-        fontVariantNumeric: "tabular-nums",
-      }}>
+      <div className="time-picker-value">
         {selH || "00"}:{selM || "00"}
       </div>
     </div>
@@ -218,7 +155,6 @@ export function TimePicker({ id, value, onChange, placeholder = "SS:DD" }: TimeP
         onClick={openPanel}
         className={`dc-input${value ? " has-value" : ""}`}
         aria-haspopup="dialog"
-        aria-expanded={open}
       />
       {open && typeof document !== "undefined" && createPortal(panel, document.body)}
     </>

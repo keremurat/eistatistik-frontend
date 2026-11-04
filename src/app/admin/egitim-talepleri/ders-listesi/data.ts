@@ -1,4 +1,5 @@
-export type Ders = { id: number; adi: string; aciklama: string; modul: string; youtubeUrl: string };
+export type LessonFile = { name: string; size: number };
+export type Ders = { id: number; adi: string; aciklama: string; modul: string; youtubeUrl: string; videolar?: string[]; dosyalar?: LessonFile[] };
 
 export const M15 = "MODÜL 15- Bibliyometrik Veri Analizi Eğitimi";
 export const M14 = "Modül 14 — Veri Kazıma ve Metin Madenciliği";
@@ -92,3 +93,23 @@ export const lessons: Ders[] = [
   { id: 87,  adi: "TD11. Merkezi Eğilim ve Dağılım Ölçüleri",                           aciklama: "", modul: M1,  youtubeUrl: "" },
   { id: 86,  adi: "TD10. Frekans ve Yüzde Tablolar",                                    aciklama: "", modul: M1,  youtubeUrl: "" },
 ];
+
+const STORAGE_KEY = "eistatistik.lessons.v1";
+
+export const MODULE_OPTIONS = [M15, M14, M12, M7, M6, M5, M4, M3, M2, M1];
+
+export function readLessons() {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return lessons;
+    const parsed = JSON.parse(raw) as Ders[];
+    return Array.isArray(parsed) ? parsed : lessons;
+  } catch {
+    return lessons;
+  }
+}
+
+export function writeLessons(items: Ders[]) {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+}

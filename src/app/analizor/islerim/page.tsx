@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { NotificationMenu } from "../../components/NotificationMenu";
 import { ProfileMenu } from "../../components/ProfileMenu";
-import { CustomerEducationMenu } from "../../components/CustomerEducationMenu";
+import { WorkspaceNav } from "../../components/WorkspaceNav";
 import { SystemDropdown } from "../../components/SystemDropdown";
 
 type WorkStatus = "new" | "active" | "waiting" | "delivery" | "completed";
@@ -63,17 +63,11 @@ export default function AnalystWorksPage() {
     return sort === "progress" ? [...result].sort((a, b) => b.progress - a.progress) : result;
   }, [filter, query, sort]);
 
-  return <div className="app-shell">
+  return <div className="app-shell customer-shell">
     <a className="skip-link" href="#analyst-works">İçeriğe geç</a>
     <header className="topbar">
       <Link className="brand" href="/analizor"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} priority /></Link>
-      <nav className="main-nav" aria-label="Analizör navigasyonu">
-        <Link href="/analizor"><Icon name="home" />Genel bakış</Link>
-        <Link className="active" href="/analizor/islerim"><Icon name="tasks" />İşlerim</Link>
-        <CustomerEducationMenu />
-        <Link href="/analizor/gorusmeler"><Icon name="video" />Görüşmeler</Link>
-        <Link href="/analizor/takvim"><Icon name="calendar" />Takvim</Link>
-      </nav>
+      <WorkspaceNav kind="analyst" />
       <div className="top-actions">
         <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a>
         <NotificationMenu role="analizor" />

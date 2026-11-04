@@ -78,7 +78,7 @@ const ETIKET_CLS: Record<EtiketKey, string> = {
 const ETIKET_LIST: EtiketKey[] = ["Acil", "Arama Talebi", "Önemli", "Düşük Öncelikli", "Hatırlatma"];
 
 // ── İkon ─────────────────────────────────────────────────────────────────────
-type IName = "folder" | "plus" | "x" | "dots" | "trash" | "edit" | "archive" | "check";
+type IName = "folder" | "plus" | "x" | "dots" | "trash" | "edit" | "archive" | "check" | "search";
 function Icon({ name, size = 16 }: { name: IName; size?: number }) {
   const p: Record<IName, React.ReactNode> = {
     folder:  <><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" /></>,
@@ -89,6 +89,7 @@ function Icon({ name, size = 16 }: { name: IName; size?: number }) {
     edit:    <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" /></>,
     archive: <><polyline points="21 8 21 21 3 21 3 8" /><rect x="1" y="3" width="22" height="5" /><line x1="10" y1="12" x2="14" y2="12" /></>,
     check:   <><path d="M20 6 9 17l-5-5" /></>,
+    search:  <><circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" /></>,
   };
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{p[name]}</svg>;
 }
@@ -131,16 +132,15 @@ function SimpleSelect({ id, value, onChange, options, placeholder = "Seçin" }: 
   const selected = options.find(o => o.value === value);
 
   const panel = (
-    <div ref={panRef} className="cs-panel" role="listbox"
-      style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width, zIndex: 9999 }}>
+    <div ref={panRef} className="cs-panel task-select-panel" role="listbox"
+      style={{ top: pos.top, left: pos.left, width: pos.width }}>
       {options.map(o => (
         <button key={o.value} role="option" aria-selected={o.value === value}
-          className={`cs-option${o.value === value ? " active" : ""}`}
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+          className={`cs-option task-select-option${o.value === value ? " active" : ""}`}
           onClick={() => { onChange(o.value); setOpen(false); }}>
           <span>{o.label}</span>
           {o.meta && (
-            <span style={{ fontSize: ".54rem", fontWeight: 800, padding: ".15rem .45rem", borderRadius: 99, background: o.metaBg ?? "var(--canvas)", color: o.metaColor ?? "var(--muted)", letterSpacing: ".04em" }}>
+            <span className="task-select-meta" style={{ background: o.metaBg ?? "var(--canvas)", color: o.metaColor ?? "var(--muted)" }}>
               {o.meta}
             </span>
           )}
@@ -152,14 +152,13 @@ function SimpleSelect({ id, value, onChange, options, placeholder = "Seçin" }: 
   return (
     <>
       <button id={id} ref={trigRef} type="button" aria-haspopup="listbox" aria-expanded={open}
-        className={`cs-trigger${open ? " open" : ""}`} onClick={toggle}
-        style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ display: "flex", alignItems: "center", gap: ".5rem" }}>
+        className={`cs-trigger task-select-trigger${open ? " open" : ""}`} onClick={toggle}>
+        <span className="task-select-value">
           {selected ? (
             <>
               <span>{selected.label}</span>
               {selected.meta && (
-                <span style={{ fontSize: ".52rem", fontWeight: 800, padding: ".12rem .4rem", borderRadius: 99, background: selected.metaBg ?? "var(--canvas)", color: selected.metaColor ?? "var(--muted)" }}>
+                <span className="task-select-meta compact" style={{ background: selected.metaBg ?? "var(--canvas)", color: selected.metaColor ?? "var(--muted)" }}>
                   {selected.meta}
                 </span>
               )}
@@ -204,35 +203,18 @@ function CardMenu({ onEdit, onArchive, onDelete }: {
     setOpen(o => !o);
   }
 
-  const itemBase: React.CSSProperties = {
-    width: "100%", padding: ".44rem .65rem", border: 0, borderRadius: 6,
-    background: "transparent", font: "inherit", fontSize: ".7rem", fontWeight: 700,
-    textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: ".45rem",
-  };
-
   const menu = (
-    <div ref={panRef} role="menu" style={{
-      position: "fixed", top: pos.top, left: pos.left, width: 156, zIndex: 9999,
-      background: "#fff", border: "1px solid var(--line)", borderRadius: 9,
-      boxShadow: "0 12px 30px rgba(19,43,70,.13)", padding: ".3rem",
-      animation: "profile-menu-in .12s ease-out",
-    }}>
-      <button role="menuitem" style={{ ...itemBase, color: "#3f556a" }}
-        onMouseEnter={e => (e.currentTarget.style.background = "var(--canvas)")}
-        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+    <div ref={panRef} className="task-context-menu" role="menu" style={{ top: pos.top, left: pos.left }}>
+      <button role="menuitem"
         onClick={() => { setOpen(false); onEdit(); }}>
         <Icon name="edit" size={14} />Düzenle
       </button>
-      <button role="menuitem" style={{ ...itemBase, color: "#3f556a" }}
-        onMouseEnter={e => (e.currentTarget.style.background = "var(--canvas)")}
-        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+      <button role="menuitem"
         onClick={() => { setOpen(false); onArchive(); }}>
         <Icon name="archive" size={14} />Arşivle
       </button>
-      <div style={{ height: 1, background: "var(--line)", margin: ".25rem 0" }} />
-      <button role="menuitem" style={{ ...itemBase, color: "#c85a51" }}
-        onMouseEnter={e => (e.currentTarget.style.background = "#fff3f2")}
-        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+      <div className="task-context-separator" />
+      <button className="danger" role="menuitem"
         onClick={() => { setOpen(false); onDelete(); }}>
         <Icon name="trash" size={14} />Sil
       </button>
@@ -241,10 +223,7 @@ function CardMenu({ onEdit, onArchive, onDelete }: {
 
   return (
     <>
-      <button ref={btnRef} type="button" aria-haspopup="menu" aria-expanded={open} onClick={toggle}
-        style={{ width: 28, height: 28, border: "1px solid var(--line)", borderRadius: 6, background: "#fff", color: "var(--muted)", cursor: "pointer", display: "grid", placeItems: "center", flexShrink: 0, transition: ".1s" }}
-        onMouseEnter={e => (e.currentTarget.style.background = "var(--canvas)")}
-        onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+      <button ref={btnRef} className="task-card-menu-trigger" type="button" aria-haspopup="menu" aria-expanded={open} onClick={toggle}
         aria-label="Kart seçenekleri">
         <Icon name="dots" size={16} />
       </button>
@@ -254,14 +233,18 @@ function CardMenu({ onEdit, onArchive, onDelete }: {
 }
 
 // ── Görev kartı ───────────────────────────────────────────────────────────────
-function GorevCard({ gorev, onEdit, onArchive, onDelete }: {
+function GorevCard({ gorev, dragging, onDragStart, onDragEnd, onEdit, onArchive, onDelete }: {
   gorev: Gorev;
+  dragging: boolean;
+  onDragStart: (e: React.DragEvent) => void;
+  onDragEnd: () => void;
   onEdit: () => void;
   onArchive: () => void;
   onDelete: () => void;
 }) {
   return (
-    <article className="gorev-card">
+    <article className={`gorev-card${dragging ? " dragging" : ""}`}
+      draggable onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <div className="gorev-card-top">
         <span className={ETIKET_CLS[gorev.etiket]}>{gorev.etiket}</span>
         <span className="gorev-card-tarih">{gorev.tarih}</span>
@@ -383,7 +366,7 @@ function GorevModal({ panolar, initial, onClose, onSave }: {
             </div>
             <div className="form-field">
               <label>Bitirme Zamanı</label>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".4rem" }}>
+              <div className="task-datetime-grid">
                 <DatePicker value={tarih} onChange={setTarih} placeholder="GG.AA.YYYY" />
                 <TimePicker value={saat}  onChange={setSaat} />
               </div>
@@ -399,7 +382,7 @@ function GorevModal({ panolar, initial, onClose, onSave }: {
             <label htmlFor="gm-aciklama">Açıklama</label>
             <textarea id="gm-aciklama" rows={4} placeholder="Görev açıklaması veya notlar…"
               value={aciklama} onChange={e => setAciklama(e.target.value)}
-              style={{ resize: "vertical" }} />
+              className="task-resizable-textarea" />
           </div>
 
           {/* Yapılacaklar listesi */}
@@ -454,15 +437,15 @@ function PanoEkleModal({ onClose, onSave, mevcutSira }: {
 
   return (
     <div className="admin-modal-backdrop" role="presentation" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <section className="admin-modal" style={{ maxWidth: 500 }} role="dialog" aria-modal="true" aria-labelledby="pm-title">
+      <section className="admin-modal task-board-modal" role="dialog" aria-modal="true" aria-labelledby="pm-title">
         <header className="admin-modal-head">
           <h2 id="pm-title">Pano Bilgileri</h2>
           <button className="admin-modal-close" onClick={onClose} aria-label="Kapat">×</button>
         </header>
 
         <div className="admin-modal-body">
-          <div style={{ border: "1px solid var(--line)", borderRadius: 10, padding: "1rem", display: "flex", flexDirection: "column", gap: ".75rem" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".75rem" }}>
+          <div className="task-board-form-box">
+            <div className="task-board-form-grid">
               <div className="form-field">
                 <label htmlFor="pm-baslik">Pano Başlığı</label>
                 <input id="pm-baslik" type="text" placeholder="Pano başlığı"
@@ -478,7 +461,7 @@ function PanoEkleModal({ onClose, onSave, mevcutSira }: {
               <label htmlFor="pm-aciklama">Açıklama</label>
               <textarea id="pm-aciklama" rows={3} placeholder="Açıklama"
                 value={aciklama} onChange={e => setAciklama(e.target.value)}
-                style={{ resize: "vertical" }} />
+                className="task-resizable-textarea" />
             </div>
           </div>
         </div>
@@ -502,6 +485,11 @@ export function TaskKanbanContent() {
   const [gorevModal,   setGorevModal]   = useState(false);
   const [editingGorev, setEditingGorev] = useState<Gorev | null>(null);
   const [panoModal,    setPanoModal]    = useState(false);
+  const [arama,        setArama]        = useState("");
+  const [filtreEtiket, setFiltreEtiket] = useState("hepsi");
+  const [filtreAtanan, setFiltreAtanan] = useState("hepsi");
+  const [draggingId,   setDraggingId]   = useState<number | null>(null);
+  const [dragOverPano, setDragOverPano] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = readOrderTasks().map((task, index): Gorev => ({ id: -(index + 1), baslik: task.title, pano: "yapilacaklar", etiket: "Önemli", tarih: task.dueDate, siparisKodu: task.orderCode, aciklama: task.description, atanan: task.assignee, yapilanlar: [] }));
@@ -534,6 +522,28 @@ export function TaskKanbanContent() {
     setPanolar(prev => [...prev, { key, ...p }]);
   }
 
+  function moveGorev(id: number, hedefPano: string) {
+    setGorevler(prev => {
+      const item = prev.find(g => g.id === id);
+      if (!item || item.pano === hedefPano) return prev;
+      const rest = prev.filter(g => g.id !== id);
+      return [...rest, { ...item, pano: hedefPano }];
+    });
+  }
+
+  const q = arama.trim().toLocaleLowerCase("tr");
+  const gorevlerFiltreli = gorevler.filter(g => {
+    if (filtreEtiket !== "hepsi" && g.etiket !== filtreEtiket) return false;
+    if (filtreAtanan !== "hepsi" && g.atanan !== filtreAtanan) return false;
+    if (!q) return true;
+    const hay = [g.baslik, g.aciklama, g.atanan, g.siparisKodu, g.musteriAdi, g.musteriTel]
+      .filter(Boolean).join(" ").toLocaleLowerCase("tr");
+    return hay.includes(q);
+  });
+
+  const etiketFiltreOptions = [{ value: "hepsi", label: "Tüm Etiketler" }, ...ETIKET_LIST.map(e => ({ value: e, label: e }))];
+  const atananFiltreOptions = [{ value: "hepsi", label: "Tüm Atananlar" }, ...ATANABILIR.map(k => ({ value: k.value, label: k.label }))];
+
   const sorted = [...panolar].sort((a, b) => a.sira - b.sira);
 
   return (
@@ -544,22 +554,42 @@ export function TaskKanbanContent() {
             <p className="eyebrow">YÖNETİM</p>
             <h1>Görev Listesi</h1>
           </div>
-          <div style={{ display: "flex", gap: ".55rem", alignItems: "center" }}>
+          <div className="task-page-actions">
             <button type="button" className="orders-create" onClick={() => setGorevModal(true)}>
               <Icon name="plus" size={15} /> Yeni Görev Ekle
             </button>
-            <button type="button" className="orders-create" style={{ background: "var(--blue)", boxShadow: "0 8px 18px rgba(23,117,169,.2)" }}
+            <button type="button" className="orders-create task-board-create"
               onClick={() => setPanoModal(true)}>
               <Icon name="plus" size={15} /> Yeni Pano Ekle
             </button>
           </div>
         </header>
 
+        <div className="orders-toolbar kanban-toolbar">
+          <label className="orders-search">
+            <Icon name="search" size={15} />
+            <input type="text" placeholder="Görev, müşteri veya sipariş kodu ara…"
+              value={arama} onChange={e => setArama(e.target.value)} aria-label="Görevlerde ara" />
+          </label>
+          <div className="orders-analyst-filter">
+            <SimpleSelect value={filtreEtiket} onChange={setFiltreEtiket} options={etiketFiltreOptions} />
+          </div>
+          <div className="orders-analyst-filter">
+            <SimpleSelect value={filtreAtanan} onChange={setFiltreAtanan} options={atananFiltreOptions} />
+          </div>
+          <span className="result-count">{gorevlerFiltreli.length} görev</span>
+        </div>
+
         <div className="kanban-board">
           {sorted.map(pano => {
-            const cards = gorevler.filter(g => g.pano === pano.key);
+            const cards = gorevlerFiltreli.filter(g => g.pano === pano.key);
             return (
-              <div key={pano.key} className="kanban-col">
+              <div key={pano.key}
+                className={`kanban-col${dragOverPano === pano.key ? " drag-over" : ""}`}
+                onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; if (dragOverPano !== pano.key) setDragOverPano(pano.key); }}
+                onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverPano(null); }}
+                onDrop={e => { e.preventDefault(); if (draggingId != null) moveGorev(draggingId, pano.key); setDraggingId(null); setDragOverPano(null); }}
+              >
                 <div className="kanban-col-head">
                   <span className="kanban-col-title">{pano.baslik}</span>
                   <span className="kanban-col-count">{cards.length}</span>
@@ -568,6 +598,9 @@ export function TaskKanbanContent() {
                   <GorevCard
                     key={gorev.id}
                     gorev={gorev}
+                    dragging={draggingId === gorev.id}
+                    onDragStart={e => { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", String(gorev.id)); setDraggingId(gorev.id); }}
+                    onDragEnd={() => { setDraggingId(null); setDragOverPano(null); }}
                     onEdit={() => setEditingGorev(gorev)}
                     onArchive={() => archiveGorev(gorev.id)}
                     onDelete={() => deleteGorev(gorev.id)}

@@ -2,98 +2,113 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useState } from "react";
 import { AdminShell } from "../../AdminShell";
-import { getBulten, bultenIcerikler } from "../data";
+import { Bulten, Icerik, readBultenler, readIcerikler, writeIcerikler } from "../data";
 
-type IconName = "back" | "edit" | "play" | "file" | "doc" | "trash";
-function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
-  const paths: Record<IconName, React.ReactNode> = {
-    back: <><path d="M19 12H5" /><path d="m11 18-6-6 6-6" /></>,
-    edit: <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" /></>,
-    play: <><circle cx="12" cy="12" r="9" /><path d="m10 9 5 3-5 3z" fill="currentColor" stroke="none" /></>,
-    file: <><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z" /></>,
-    doc: <><path d="M4 4h13a1 1 0 0 1 1 1v13a2 2 0 0 0 2 2H5a2 2 0 0 1-1-1.7V4Z" /><path d="M8 8h6M8 12h6M8 16h4" /></>,
-    trash: <><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /></>,
-  };
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+const ICONS = {
+  back: "M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z",
+  news: "M216,40H40A16,16,0,0,0,24,56V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM40,56H216V80H40ZM216,192H40V96H216Zm-16-24a8,8,0,0,1-8,8H152a8,8,0,0,1,0-16h40A8,8,0,0,1,200,168Z",
+  caret: "M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z",
+} as const;
+
+function Icon({ name, size = 18 }: { name: keyof typeof ICONS; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d={ICONS[name]} />
+    </svg>
+  );
 }
 
-const turIcon = (t: string): IconName => t === "video" ? "play" : t === "dosya" ? "file" : "doc";
+const KIND: Record<Icerik["tur"], string> = { video: "Video", dosya: "Dosya", metin: "Metin" };
 
 export default function BultenDetayPage() {
   const params = useParams<{ id: string }>();
-  const bulten = getBulten(params.id);
-  const [icerikler,  setIcerikler]  = useState(() => bulten ? bultenIcerikler(bulten.id) : []);
-  const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const [item, setItem] = useState<Bulten | null | undefined>(undefined);
+  const [items, setItems] = useState<Icerik[]>([]);
+  const [confirming, setConfirming] = useState<string | null>(null);
 
-  if (!bulten) return (
-    <AdminShell><div className="st-page">
-      <header className="favorite-category-create-header"><Link className="back-link" href="/admin/bultenler"><Icon name="back" size={16} />Bültenlere dön</Link><h1>Bülten</h1></header>
-      <section className="detail-panel"><div className="settings-panel-body"><p style={{ color: "var(--muted)", fontSize: ".72rem" }}>Bülten bulunamadı.</p></div></section>
-    </div></AdminShell>
-  );
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      const found = readBultenler().find((record) => record.id === params.id) ?? null;
+      setItem(found);
+      setItems(found ? readIcerikler().filter((entry) => entry.bultenId === found.id) : []);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [params.id]);
 
-  function confirmDelete() {
-    setIcerikler((prev) => prev.filter((i) => i.id !== confirmDel));
-    setConfirmDel(null);
+  if (item === undefined) return <AdminShell>{null}</AdminShell>;
+  if (item === null) {
+    return (
+      <AdminShell>
+        <div className="fav-page">
+          <div className="fav-card fav-empty">
+            <strong>Bülten bulunamadı</strong>
+            <p>Bu kayıt listede yok.</p>
+            <Link className="orders-create" href="/admin/bultenler">Listeye dön</Link>
+          </div>
+        </div>
+      </AdminShell>
+    );
   }
 
   return (
     <AdminShell>
-      <div className="st-page">
-        <header className="favorite-category-create-header">
-          <Link className="back-link" href="/admin/bultenler"><Icon name="back" size={16} />Bültenlere dön</Link>
-          <div className="bulten-detail-titlebar">
-            <div>
-              <h1>{bulten.baslik}</h1>
-              <p className="bulten-detail-sub">{icerikler.length} içerik · {bulten.yayinTarihi.split(" ")[0]}</p>
-            </div>
-            <Link className="orders-create" href={`/admin/bultenler/duzenle?id=${bulten.id}`}>
-              <Icon name="edit" size={15} />Düzenle
-            </Link>
+      <div className="fav-page">
+        <Link className="fav-back" href="/admin/bultenler"><Icon name="back" size={16} />Bültenlere dön</Link>
+        <header className="fav-head">
+          <div>
+            <h1>{item.baslik}</h1>
+            <p>{items.length} içerik · {item.yayinTarihi}</p>
           </div>
+          <Link className="orders-create" href={`/admin/bultenler/duzenle?id=${item.id}`}>Düzenle</Link>
         </header>
 
-        {icerikler.length === 0 ? (
-          <section className="detail-panel"><div className="bulten-empty"><Icon name="doc" size={28} /><strong style={{ color: "var(--navy)" }}>Bu bültende içerik yok</strong><span>Bültene içerik ekleyerek başlayın.</span></div></section>
-        ) : (
-          <div>
-            {icerikler.map((ic) => (
-              <div className="icerik-row" key={ic.id}>
-                <span className="icerik-row-icon"><Icon name={turIcon(ic.tur)} size={16} /></span>
-                <strong title={ic.baslik}>{ic.baslik}</strong>
-                <small>{ic.yayinTarihi.split(" ")[0]}</small>
-                <div className="bulten-card-actions">
-                  <Link className="bulten-icon-btn" href={`/admin/bultenler/icerik/duzenle?id=${ic.id}`} aria-label="İçeriği düzenle"><Icon name="edit" size={15} /></Link>
-                  <button className="bulten-icon-btn danger" type="button" onClick={() => setConfirmDel(ic.id)} aria-label="İçeriği sil"><Icon name="trash" size={15} /></button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+        <section className="fav-card stype-section">
+          <header>
+            <span className="fav-mark"><Icon name="news" /></span>
+            <h2>Bülten</h2>
+            <span className={`stype-status ${item.yayinda ? "aktif" : "pasif"}`}>{item.yayinda ? "Yayında" : "Taslak"}</span>
+          </header>
+          <p className="llist-empty">{item.aciklama.trim() || "Açıklama eklenmedi."}</p>
+        </section>
 
-      {confirmDel && typeof document !== "undefined" && createPortal(
-        <div className="legal-modal-backdrop" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) setConfirmDel(null); }}>
-          <section className="legal-modal ms-edit-modal" style={{ maxWidth: 400, minHeight: 0 }} role="dialog" aria-modal="true" aria-labelledby="del-icerik-title">
-            <header>
-              <div><p className="eyebrow">DİKKAT</p><h2 id="del-icerik-title" style={{ fontSize: ".9rem" }}>İçeriği sil</h2></div>
-              <button aria-label="Kapat" onClick={() => setConfirmDel(null)}>×</button>
-            </header>
-            <div className="ms-edit-body"><p style={{ color: "#3f556a", fontSize: ".72rem", lineHeight: 1.6 }}>Bu içeriği silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</p></div>
-            <footer>
-              <div />
-              <div>
-                <button className="legal-cancel" onClick={() => setConfirmDel(null)}>Vazgeç</button>
-                <button className="legal-accept" style={{ background: "#c85a51" }} onClick={confirmDelete}>Evet, Sil</button>
-              </div>
-            </footer>
-          </section>
-        </div>,
-        document.body
-      )}
+        <section className="fav-card" aria-label="Bülten içerikleri">
+          {items.length === 0 ? (
+            <div className="fav-empty">
+              <strong>Bu bültende içerik yok</strong>
+              <p>Bültene içerik ekleyerek başlayın.</p>
+            </div>
+          ) : (
+            <ul className="fav-list">
+              {items.map((content) => (
+                <li key={content.id}>
+                  {confirming === content.id ? (
+                    <div className="user-row">
+                      <span className="fav-copy"><strong>{content.baslik}</strong><small>Bu işlem geri alınamaz.</small></span>
+                      <button className="user-cancel" type="button" onClick={() => setConfirming(null)}>Vazgeç</button>
+                      <button className="fav-delete" type="button" onClick={() => { const next = readIcerikler().filter((entry) => entry.id !== content.id); writeIcerikler(next); setItems(next.filter((entry) => entry.bultenId === item.id)); setConfirming(null); }}>Evet, sil</button>
+                    </div>
+                  ) : (
+                    <div className="appt-row">
+                      <Link href={`/admin/icerikler/${content.id}`}>
+                        <span className="fav-mark"><Icon name="news" size={16} /></span>
+                        <span className="fav-copy">
+                          <strong>{content.baslik}</strong>
+                          <small className="mtpl-snippet">{KIND[content.tur]} · {content.yayinTarihi}</small>
+                        </span>
+                        <span className={`stype-status ${content.yayinda ? "aktif" : "pasif"}`}>{content.yayinda ? "Yayında" : "Taslak"}</span>
+                        <Icon name="caret" size={16} />
+                      </Link>
+                      <button className="user-cancel" type="button" onClick={() => setConfirming(content.id)}>Sil</button>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
     </AdminShell>
   );
 }

@@ -53,11 +53,11 @@ export default function ResetPasswordPage() {
           <header className="auth-login-header"><h2>Şifre<br /><span>sıfırlama.</span></h2><p>Hesabınıza bağlı e-posta adresine bir sıfırlama bağlantısı göndereceğiz.</p></header>
 
           {sent ? (
-            <div style={{ display: "grid", gap: ".7rem", justifyItems: "center", textAlign: "center", padding: "1.4rem 0 .6rem" }}>
-              <span style={{ width: 54, height: 54, display: "grid", placeItems: "center", borderRadius: "50%", background: "#e8f4f0", color: "#3a826c" }}><AuthIcon name="check" size={24} /></span>
-              <strong style={{ color: "var(--navy)", fontSize: "1rem", letterSpacing: "-.01em" }}>Bağlantı gönderildi</strong>
-              <p style={{ maxWidth: 320, margin: 0, color: "#758796", fontSize: ".72rem", lineHeight: 1.6 }}>
-                <b style={{ color: "#3f556a" }}>{email}</b> adresine şifre sıfırlama bağlantısı gönderdik. Gelen kutunuzu ve spam klasörünüzü kontrol edin.
+            <div className="auth-reset-success">
+              <span className="auth-reset-success-icon"><AuthIcon name="check" size={24} /></span>
+              <strong className="auth-reset-success-title">Bağlantı gönderildi</strong>
+              <p className="auth-reset-success-copy">
+                <b>{email}</b> adresine şifre sıfırlama bağlantısı gönderdik. Gelen kutunuzu ve spam klasörünüzü kontrol edin.
               </p>
             </div>
           ) : (

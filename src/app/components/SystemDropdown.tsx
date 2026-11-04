@@ -1,9 +1,20 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-export type SystemDropdownOption = { value: string; label: string };
+export type SystemDropdownOption = { value: string; label: string; image?: string };
+
+function DropdownLogo({ src }: { src: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  return <img src={src} alt="" width={22} height={22} referrerPolicy="no-referrer" onError={() => setFailed(true)} />;
+}
+
+function DropdownLabel({ option }: { option: SystemDropdownOption }) {
+  if (!option.image) return option.label;
+  return <span className="cs-option-with-logo"><DropdownLogo src={option.image} />{option.label}</span>;
+}
 
 type Props = {
   value: string;
@@ -31,7 +42,7 @@ export function SystemDropdown({ value, options, onChange, placeholder = "Seçin
     ? options.filter((option) => option.label.toLocaleLowerCase("tr").includes(search.trim().toLocaleLowerCase("tr")))
     : options;
 
-  function syncPosition() {
+  const syncPosition = useCallback(() => {
     const rect = triggerRef.current?.getBoundingClientRect();
     if (!rect) return;
     // Aşağıda yeterli yer yoksa (ve yukarıda daha çok yer varsa) paneli yukarı doğru aç.
@@ -40,7 +51,7 @@ export function SystemDropdown({ value, options, onChange, placeholder = "Seçin
     const spaceBelow = window.innerHeight - rect.bottom;
     const up = spaceBelow < estimated + 8 && rect.top > spaceBelow;
     setPosition({ up, top: rect.bottom + 4, bottom: window.innerHeight - rect.top + 4, left: rect.left, width: rect.width });
-  }
+  }, [options.length, search, searchable, shown.length]);
 
   useEffect(() => {
     if (!open) return;
@@ -61,22 +72,22 @@ export function SystemDropdown({ value, options, onChange, placeholder = "Seçin
       window.removeEventListener("resize", syncPosition);
       window.removeEventListener("scroll", syncPosition, true);
     };
-  }, [open, searchable]);
+  }, [open, searchable, syncPosition]);
 
   return <div className={`cs-wrap system-dropdown ${className}`.trim()}>
     <button ref={triggerRef} type="button" className={`cs-trigger${open ? " open" : ""}`} aria-label={ariaLabel} aria-controls={panelId} aria-expanded={open} aria-haspopup="listbox" disabled={disabled} onClick={() => { syncPosition(); if (!open) setSearch(""); setOpen(current => !current); }}>
-      <span className={selected ? undefined : "cs-placeholder"}>{selected?.label ?? placeholder}</span>
+      <span className={selected ? "cs-value" : "cs-placeholder"}>{selected ? <DropdownLabel option={selected} /> : placeholder}</span>
       <span className="cs-arrow" aria-hidden="true">▾</span>
     </button>
-    {open && typeof document !== "undefined" && createPortal(<div ref={panelRef} id={panelId} className={`cs-panel system-dropdown-panel${position.up ? " open-up" : ""}`} role="listbox" aria-label={ariaLabel} style={{ position: "fixed", left: position.left, width: position.width, zIndex: 9999, ...(position.up ? { bottom: position.bottom } : { top: position.top }) }}>
+    {open && typeof document !== "undefined" && createPortal(<div ref={panelRef} id={panelId} className={`cs-panel system-dropdown-panel${position.up ? " open-up" : ""}`} role="listbox" aria-label={ariaLabel} style={{ left: position.left, width: position.width, ...(position.up ? { bottom: position.bottom } : { top: position.top }) }}>
       {searchable && (
         <input ref={searchRef} className="cs-search-input" value={search} onChange={(event) => setSearch(event.target.value)} placeholder={searchPlaceholder} aria-label="Seçeneklerde ara" />
       )}
-      {searchable && <div style={{ maxHeight: 220, overflowY: "auto" }}>
-        {shown.map(option => <button key={option.value} type="button" role="option" aria-selected={option.value === value} className={`cs-option${option.value === value ? " active" : ""}`} onClick={() => { onChange(option.value); setOpen(false); }}>{option.label}</button>)}
-        {shown.length === 0 && <p style={{ padding: ".5rem .6rem", margin: 0, color: "var(--muted)", fontSize: ".68rem" }}>Sonuç bulunamadı</p>}
+      {searchable && <div className="cs-options-scroll">
+        {shown.map(option => <button key={option.value} type="button" role="option" aria-selected={option.value === value} className={`cs-option${option.value === value ? " active" : ""}`} onClick={() => { onChange(option.value); setOpen(false); }}><DropdownLabel option={option} /></button>)}
+        {shown.length === 0 && <p className="cs-empty">Sonuç bulunamadı</p>}
       </div>}
-      {!searchable && options.map(option => <button key={option.value} type="button" role="option" aria-selected={option.value === value} className={`cs-option${option.value === value ? " active" : ""}`} onClick={() => { onChange(option.value); setOpen(false); }}>{option.label}</button>)}
+      {!searchable && options.map(option => <button key={option.value} type="button" role="option" aria-selected={option.value === value} className={`cs-option${option.value === value ? " active" : ""}`} onClick={() => { onChange(option.value); setOpen(false); }}><DropdownLabel option={option} /></button>)}
     </div>, document.body)}
   </div>;
 }

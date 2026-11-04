@@ -1,143 +1,161 @@
 "use client";
 
 import Link from "next/link";
+import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { AdminShell } from "../AdminShell";
 import { DatePicker } from "../../components/DatePicker";
 import { TimePicker } from "../../components/TimePicker";
-import { Bulten } from "./data";
+import { useToast } from "../../components/ToastProvider";
+import { Bulten, readBultenler, writeBultenler } from "./data";
 
-type IconName = "back" | "calendar" | "image" | "eye";
-function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
-  const paths: Record<IconName, React.ReactNode> = {
-    back: <><path d="M19 12H5" /><path d="m11 18-6-6 6-6" /></>,
-    calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>,
-    image: <><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></>,
-    eye: <><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" /></>,
-  };
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+const ICONS = {
+  back: "M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z",
+  news: "M216,40H40A16,16,0,0,0,24,56V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM40,56H216V80H40ZM216,192H40V96H216Zm-16-24a8,8,0,0,1-8,8H152a8,8,0,0,1,0-16h40A8,8,0,0,1,200,168Z",
+} as const;
+
+function Icon({ name, size = 18 }: { name: keyof typeof ICONS; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d={ICONS[name]} />
+    </svg>
+  );
 }
 
-const todayStr = () => {
-  const d = new Date();
-  return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
-};
+function Switch({ checked, onChange }: { checked: boolean; onChange: (value: boolean) => void }) {
+  return (
+    <button type="button" role="switch" aria-checked={checked} aria-label="Yayında" className={`role-switch${checked ? " on" : ""}`} onClick={() => onChange(!checked)}>
+      <span />
+    </button>
+  );
+}
+
+function todayStamp() {
+  const date = new Date();
+  return `${String(date.getDate()).padStart(2, "0")}.${String(date.getMonth() + 1).padStart(2, "0")}.${date.getFullYear()}`;
+}
 
 export function BultenForm({ mode, initial = {}, basePath = "/admin/bultenler" }: { mode: "ekle" | "duzenle"; initial?: Partial<Bulten>; basePath?: string }) {
   const router = useRouter();
-  const [baslik,   setBaslik]   = useState(initial.baslik ?? "");
-  const [aciklama, setAciklama] = useState(initial.aciklama ?? "");
-  const [tarih,    setTarih]    = useState(initial.yayinTarihi ? initial.yayinTarihi.split(" ")[0] : todayStr());
-  const [saat,     setSaat]     = useState(initial.yayinTarihi ? initial.yayinTarihi.split(" ")[1] ?? "09:00" : "09:00");
-  const [yayinda,  setYayinda]  = useState(initial.yayinda ?? false);
-  const [kapak,    setKapak]    = useState("");
-  const [kapakUrl, setKapakUrl] = useState("");
-  const [preview,  setPreview]  = useState(false);
-  const [error,    setError]    = useState("");
+  const toast = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
+  const [baslik, setBaslik] = useState(initial.baslik ?? "");
+  const [aciklama, setAciklama] = useState(initial.aciklama ?? "");
+  const [tarih, setTarih] = useState(initial.yayinTarihi?.split(" ")[0] || todayStamp());
+  const [saat, setSaat] = useState(initial.yayinTarihi?.split(" ")[1] || "09:00");
+  const [yayinda, setYayinda] = useState(initial.yayinda ?? false);
+  const [kapak, setKapak] = useState<string | null>(initial.kapak ?? null);
+  const [error, setError] = useState("");
+  const [confirming, setConfirming] = useState(false);
 
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    setKapak(f.name);
-    const reader = new FileReader();
-    reader.onload = (ev) => setKapakUrl(ev.target?.result as string);
-    reader.readAsDataURL(f);
+  function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!baslik.trim()) {
+      setError("Başlık zorunludur.");
+      return;
+    }
+    const current = readBultenler();
+    const record: Bulten = {
+      id: initial.id ?? `b${Date.now()}`,
+      baslik: baslik.trim(),
+      aciklama: aciklama.trim(),
+      yayinTarihi: `${tarih} ${saat}`.trim(),
+      yayinda,
+      kapak: kapak || undefined,
+    };
+    writeBultenler(initial.id ? current.map((item) => item.id === initial.id ? record : item) : [record, ...current]);
+    toast.success(mode === "duzenle" ? "Bülten güncellendi." : "Bülten oluşturuldu.");
+    router.push(basePath);
   }
 
-  function save() {
-    if (!baslik.trim()) { setError("Başlık zorunludur."); return; }
-    setError("");
+  function remove() {
+    if (!initial.id) return;
+    writeBultenler(readBultenler().filter((item) => item.id !== initial.id));
+    toast.success("Bülten silindi.");
     router.push(basePath);
   }
 
   return (
     <AdminShell>
-      <div className="st-page">
-        <header className="favorite-category-create-header">
-          <Link className="back-link" href={basePath}><Icon name="back" size={16} />Bültenlere dön</Link>
-          <h1>{mode === "ekle" ? "Yeni Bülten" : "Bülten Düzenle"}</h1>
-        </header>
-
-        <div className="edu-edit-wrap">
-          <div className="edu-edit-col">
-            <section className="detail-panel">
-              <div className="detail-panel-heading"><p className="eyebrow">BÜLTEN BİLGİLERİ</p><h2>Temel Bilgiler</h2></div>
-              <div className="settings-panel-body">
-                <div className="form-field">
-                  <label htmlFor="b-baslik">Başlık<span style={{ color: "#c85a51", marginLeft: ".2rem" }}>*</span></label>
-                  <input id="b-baslik" value={baslik} onChange={(e) => { setBaslik(e.target.value); setError(""); }} placeholder="Nisan 2026 Bülteni" />
-                </div>
-                <div className="form-field">
-                  <label htmlFor="b-aciklama">Açıklama</label>
-                  <textarea id="b-aciklama" value={aciklama} rows={5} onChange={(e) => setAciklama(e.target.value)} style={{ resize: "vertical" }} />
-                </div>
-                <div className="form-field">
-                  <label>Kapak Görseli</label>
-                  <div className="bulten-upload" role="button" tabIndex={0} onClick={() => fileRef.current?.click()} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") fileRef.current?.click(); }}>
-                    <Icon name="image" size={17} />{kapak || "Görsel seç veya değiştir"}
+      <div className="fav-page stype-page">
+        <Link className="fav-back" href={basePath}><Icon name="back" size={16} />Bültenlere dön</Link>
+        <form className="stype-layout" onSubmit={save}>
+          <div className="stype-stack">
+            <section className="fav-card stype-section">
+              <header><span className="fav-mark"><Icon name="news" /></span><h2>Temel bilgiler</h2></header>
+              <label className="stype-field">
+                <span>Başlık</span>
+                <input value={baslik} onChange={(event) => { setBaslik(event.target.value); setError(""); }} placeholder="Nisan 2026 Bülteni" autoFocus />
+              </label>
+              <label className="stype-field">
+                <span>Açıklama</span>
+                <textarea value={aciklama} onChange={(event) => setAciklama(event.target.value)} rows={5} />
+              </label>
+              <div className="stype-field">
+                <span>Kapak görseli</span>
+                <input ref={fileRef} hidden type="file" accept="image/*" onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = "";
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = () => setKapak(String(reader.result || ""));
+                  reader.readAsDataURL(file);
+                }} />
+                {kapak ? (
+                  <div className="ann-upload">
+                    <img src={kapak} alt="Kapak görseli" />
+                    <button type="button" onClick={() => setKapak(null)}>Kaldır</button>
                   </div>
-                  <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFile} />
-                </div>
+                ) : (
+                  <button className="llist-upload" type="button" onClick={() => fileRef.current?.click()}>
+                    Görsel seç veya değiştir
+                    <small>Bülten kapağı.</small>
+                  </button>
+                )}
               </div>
             </section>
+
+            <section className="fav-card stype-section">
+              <header><h2>Yayın</h2></header>
+              <label className="stype-field">
+                <span>Yayın tarihi</span>
+                <div className="appt-when">
+                  <DatePicker id="b-tarih" value={tarih} onChange={setTarih} />
+                  <TimePicker id="b-saat" value={saat} onChange={setSaat} />
+                </div>
+              </label>
+              <div className="role-option">
+                <span><strong>Yayında</strong><small>Açıkken bülten yayınlanır.</small></span>
+                <Switch checked={yayinda} onChange={setYayinda} />
+              </div>
+            </section>
+
+            <div className="fav-actions">
+              {error && <p role="alert">{error}</p>}
+              {mode === "duzenle" && initial.id && (confirming ? (
+                <>
+                  <p>Bu işlem geri alınamaz.</p>
+                  <button className="user-cancel" type="button" onClick={() => setConfirming(false)}>Vazgeç</button>
+                  <button className="fav-delete" type="button" onClick={remove}>Evet, sil</button>
+                </>
+              ) : <button className="fav-delete" type="button" onClick={() => setConfirming(true)}>Bülteni sil</button>)}
+              <button className="fav-save" type="submit">{mode === "ekle" ? "Oluştur" : "Güncelle"}</button>
+            </div>
           </div>
 
-          <aside className="bulten-side">
-            <section className="detail-panel">
-              <div className="detail-panel-heading"><p className="eyebrow">YAYIN AYARLARI</p><h2>Yayın</h2></div>
-              <div className="settings-panel-body">
-                <div className="form-field">
-                  <label>Yayın Tarihi<span style={{ color: "#c85a51", marginLeft: ".2rem" }}>*</span></label>
-                  <div style={{ display: "flex", gap: ".4rem" }}>
-                    <DatePicker id="b-tarih" value={tarih} onChange={setTarih} />
-                    <div style={{ width: 80, flexShrink: 0 }}><TimePicker id="b-saat" value={saat} onChange={setSaat} placeholder="SS:DD" /></div>
-                  </div>
-                </div>
-                <label className="guide-toggle">
-                  <span><strong>Yayında</strong><small>Açıkken bülten yayınlanır</small></span>
-                  <input type="checkbox" checked={yayinda} onChange={(e) => setYayinda(e.target.checked)} />
-                  <i aria-hidden="true" />
-                </label>
-              </div>
-            </section>
-            <button className="bulten-preview-btn" type="button" onClick={() => setPreview(true)}>
-              <Icon name="eye" size={15} />Bülteni Önizle
-            </button>
-            {error && <p style={{ margin: 0, fontSize: ".65rem", color: "#c85a51", fontWeight: 700 }}>{error}</p>}
-            <button className="edu-form-save" onClick={save}>{mode === "ekle" ? "Oluştur" : "Güncelle"}</button>
-            <Link className="bulten-cancel" href={basePath}>Vazgeç</Link>
+          <aside className="fav-card acct-summary" aria-label="Bülten önizleme">
+            <header><span className="fav-mark"><Icon name="news" /></span><h2>Önizleme</h2></header>
+            {kapak && <img className="ann-preview" src={kapak} alt="" />}
+            <span className={`stype-status ${yayinda ? "aktif" : "pasif"}`}>{yayinda ? "Yayında" : "Taslak"}</span>
+            <p className="acct-figure">{saat || "—"}</p>
+            <dl className="acct-rows">
+              <div><dt>Başlık</dt><dd className="wrap">{baslik.trim() || "Başlıksız bülten"}</dd></div>
+              <div><dt>Tarih</dt><dd>{tarih || "—"}</dd></div>
+            </dl>
+            <p className="tm-bubble">{aciklama.trim() || "Açıklama eklenmedi."}</p>
           </aside>
-        </div>
+        </form>
       </div>
-
-      {preview && typeof document !== "undefined" && createPortal(
-        <div className="legal-modal-backdrop" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) setPreview(false); }}>
-          <section className="bulten-preview-modal" role="dialog" aria-modal="true" aria-label="Bülten önizleme">
-            <header>
-              <strong>Bülten Önizleme</strong>
-              <button aria-label="Kapat" onClick={() => setPreview(false)}>×</button>
-            </header>
-            <div className="bulten-preview-body">
-              <div className="bulten-preview-cover">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                {kapakUrl ? <img src={kapakUrl} alt="Kapak görseli" /> : <span><Icon name="image" size={18} /> Kapak görseli eklenmedi</span>}
-              </div>
-              <div className="bulten-preview-meta">
-                <span className={`bulten-badge ${yayinda ? "yayinda" : "taslak"}`}>{yayinda ? "Yayında" : "Taslak"}</span>
-                <span><Icon name="calendar" size={12} /> {tarih} {saat}</span>
-              </div>
-              <h2>{baslik || "Başlıksız bülten"}</h2>
-              {aciklama.trim()
-                ? <p>{aciklama}</p>
-                : <p className="muted">Açıklama eklenmedi.</p>}
-            </div>
-          </section>
-        </div>,
-        document.body
-      )}
     </AdminShell>
   );
 }

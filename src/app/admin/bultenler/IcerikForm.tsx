@@ -1,25 +1,26 @@
 "use client";
 
 import Link from "next/link";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { AdminShell } from "../AdminShell";
 import { DatePicker } from "../../components/DatePicker";
 import { TimePicker } from "../../components/TimePicker";
 import { SystemDropdown } from "../../components/SystemDropdown";
-import { Icerik, IcerikTuru, bultenOptions } from "./data";
+import { useToast } from "../../components/ToastProvider";
+import { Icerik, IcerikTuru, bultenOptions, readBultenler, readIcerikler, writeIcerikler } from "./data";
 
-type IconName = "back" | "file" | "settings" | "grid" | "eye" | "calendar";
-function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
-  const paths: Record<IconName, React.ReactNode> = {
-    back: <><path d="M19 12H5" /><path d="m11 18-6-6 6-6" /></>,
-    file: <><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z" /></>,
-    settings: <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 3.6 15a1.65 1.65 0 0 0-1.5-1H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 3.6 8.5 1.65 1.65 0 0 0 3.27 6.7l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 8 4.6a1.65 1.65 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.5 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.2.61.76 1 1.4 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" /></>,
-    grid: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></>,
-    eye: <><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" /></>,
-    calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>,
-  };
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+const ICONS = {
+  back: "M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z",
+  file: "M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM152,44l44,44H152ZM200,216H56V40h80V88a8,8,0,0,0,8,8h56Z",
+} as const;
+
+function Icon({ name, size = 18 }: { name: keyof typeof ICONS; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d={ICONS[name]} />
+    </svg>
+  );
 }
 
 const turOptions = [
@@ -28,134 +29,171 @@ const turOptions = [
   { value: "metin", label: "Metin" },
 ];
 
-function youtubeId(url: string): string {
-  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
-  return m ? m[1] : "";
-}
+const KIND: Record<IcerikTuru, string> = { video: "Video", dosya: "Dosya", metin: "Metin" };
 
 export function IcerikForm({ mode, base = null }: { mode: "ekle" | "duzenle"; base?: Icerik | null }) {
   const router = useRouter();
-  const backHref = mode === "ekle" ? "/admin/icerikler" : base ? `/admin/bultenler/${base.bultenId}` : "/admin/icerikler";
-
-  const [bultenId,  setBultenId]  = useState(base?.bultenId ?? "");
-  const [baslik,    setBaslik]    = useState(base?.baslik ?? "");
-  const [aciklama,  setAciklama]  = useState(base?.aciklama ?? "");
-  const [tur,       setTur]       = useState<IcerikTuru>(base?.tur ?? "video");
-  const [tarih,     setTarih]     = useState(base ? base.yayinTarihi.split(" ")[0] : "");
-  const [saat,      setSaat]      = useState(base ? base.yayinTarihi.split(" ")[1] ?? "09:00" : "09:00");
-  const [youtube,   setYoutube]   = useState(base?.youtubeUrl ?? "");
-  const [dosya,     setDosya]     = useState(base?.dosya ?? "");
-  const [genislik,  setGenislik]  = useState<"normal" | "tam">(base?.genislik ?? "normal");
-  const [yayinda,   setYayinda]   = useState(base?.yayinda ?? false);
-  const [preview,   setPreview]   = useState(false);
-  const [error,     setError]     = useState("");
+  const toast = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
-  const ytId = youtubeId(youtube);
+  const [options, setOptions] = useState(bultenOptions());
+  const [bultenId, setBultenId] = useState(base?.bultenId ?? "");
+  const [baslik, setBaslik] = useState(base?.baslik ?? "");
+  const [aciklama, setAciklama] = useState(base?.aciklama ?? "");
+  const [tur, setTur] = useState<IcerikTuru>(base?.tur ?? "video");
+  const [tarih, setTarih] = useState(base ? base.yayinTarihi.split(" ")[0] : "");
+  const [saat, setSaat] = useState(base ? base.yayinTarihi.split(" ")[1] ?? "09:00" : "09:00");
+  const [youtube, setYoutube] = useState(base?.youtubeUrl ?? "");
+  const [dosya, setDosya] = useState(base?.dosya ?? "");
+  const [genislik, setGenislik] = useState<"normal" | "tam">(base?.genislik ?? "normal");
+  const [yayinda, setYayinda] = useState(base?.yayinda ?? false);
+  const [error, setError] = useState("");
+  const [confirming, setConfirming] = useState(false);
 
-  function save() {
-    if (!baslik.trim()) { setError("Başlık zorunludur."); return; }
-    setError("");
-    router.push(backHref);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setOptions(readBultenler().map((item) => ({ value: item.id, label: item.baslik }))));
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  if (mode === "duzenle" && !base) {
+    return (
+      <AdminShell>
+        <div className="fav-page">
+          <div className="fav-card fav-empty">
+            <strong>İçerik bulunamadı</strong>
+            <p>Bu kayıt listede yok.</p>
+            <Link className="orders-create" href="/admin/icerikler">Listeye dön</Link>
+          </div>
+        </div>
+      </AdminShell>
+    );
   }
 
-  if (mode === "duzenle" && !base) return (
-    <div className="st-page">
-      <header className="favorite-category-create-header"><Link className="back-link" href="/admin/icerikler"><Icon name="back" size={16} />İçeriklere dön</Link><h1>İçerik Düzenle</h1></header>
-      <section className="detail-panel"><div className="settings-panel-body"><p style={{ color: "var(--muted)", fontSize: ".72rem" }}>İçerik bulunamadı.</p></div></section>
-    </div>
-  );
+  function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!baslik.trim()) {
+      setError("Başlık zorunludur.");
+      return;
+    }
+    const current = readIcerikler();
+    const record: Icerik = {
+      id: base?.id ?? `i${Date.now()}`,
+      bultenId,
+      baslik: baslik.trim(),
+      aciklama: aciklama.trim(),
+      tur,
+      yayinTarihi: `${tarih} ${saat}`.trim(),
+      youtubeUrl: youtube.trim(),
+      dosya,
+      genislik,
+      yayinda,
+    };
+    writeIcerikler(base?.id ? current.map((item) => item.id === base.id ? record : item) : [record, ...current]);
+    toast.success(mode === "duzenle" ? "İçerik güncellendi." : "İçerik oluşturuldu.");
+    router.push("/admin/icerikler");
+  }
+
+  function remove() {
+    if (!base?.id) return;
+    writeIcerikler(readIcerikler().filter((item) => item.id !== base.id));
+    toast.success("İçerik silindi.");
+    router.push("/admin/icerikler");
+  }
+
+  const newsletter = options.find((option) => option.value === bultenId)?.label || "Bülten seçilmedi";
 
   return (
-    <div className="st-page">
-      <header className="favorite-category-create-header">
-        <Link className="back-link" href={backHref}><Icon name="back" size={16} />İçeriklere dön</Link>
-        <h1>{mode === "ekle" ? "Yeni İçerik" : "İçerik Düzenle"}</h1>
-      </header>
-
-      <div className="edu-edit-wrap">
-        <div className="edu-edit-col">
-          <section className="detail-panel">
-            <div className="detail-panel-heading"><p className="eyebrow">İÇERİK BİLGİLERİ</p><h2>Temel Bilgiler</h2></div>
-            <div className="settings-panel-body">
-              <div className="form-field"><label>Bülten<span style={{ color: "#c85a51", marginLeft: ".2rem" }}>*</span></label><SystemDropdown value={bultenId} onChange={setBultenId} placeholder="Bülten seç" ariaLabel="Bülten" options={bultenOptions()} /></div>
-              <div className="form-field"><label htmlFor="ic-baslik">Başlık<span style={{ color: "#c85a51", marginLeft: ".2rem" }}>*</span></label><input id="ic-baslik" value={baslik} onChange={(e) => { setBaslik(e.target.value); setError(""); }} placeholder="İçerik başlığı" /></div>
-              <div className="form-field"><label htmlFor="ic-aciklama">Açıklama</label><textarea id="ic-aciklama" value={aciklama} rows={4} onChange={(e) => setAciklama(e.target.value)} style={{ resize: "vertical" }} /></div>
-              <div className="edu-row-2">
-                <div className="form-field"><label>İçerik Türü<span style={{ color: "#c85a51", marginLeft: ".2rem" }}>*</span></label><SystemDropdown value={tur} onChange={(v) => setTur(v as IcerikTuru)} ariaLabel="İçerik türü" options={turOptions} /></div>
-                <div className="form-field"><label>Yayın Tarihi<span style={{ color: "#c85a51", marginLeft: ".2rem" }}>*</span></label><div style={{ display: "flex", gap: ".4rem" }}><DatePicker id="ic-tarih" value={tarih} onChange={setTarih} /><div style={{ width: 80, flexShrink: 0 }}><TimePicker id="ic-saat" value={saat} onChange={setSaat} placeholder="SS:DD" /></div></div></div>
-              </div>
-              <div className="form-field">
-                <label htmlFor="ic-yt">YouTube URL <span style={{ fontWeight: 600, color: "#9baab6", fontSize: ".82em" }}>(video türü için)</span></label>
-                <input id="ic-yt" value={youtube} onChange={(e) => setYoutube(e.target.value)} placeholder="https://www.youtube.com/watch?v=…" />
-                <small>YouTube linki girilirse dosya yerine embed gösterilir.</small>
-              </div>
-              <div className="form-field">
-                <label>Dosya <span style={{ fontWeight: 600, color: "#9baab6", fontSize: ".82em" }}>(YouTube yoksa)</span></label>
-                <div className="bulten-upload" role="button" tabIndex={0} onClick={() => fileRef.current?.click()} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") fileRef.current?.click(); }}>
-                  <Icon name="file" size={16} />{dosya || "Dosya seç veya sürükle bırak"}
-                </div>
-                <input ref={fileRef} type="file" style={{ display: "none" }} onChange={(e) => setDosya(e.target.files?.[0]?.name ?? "")} />
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <aside className="bulten-side">
-          <section className="detail-panel">
-            <div className="detail-panel-heading"><p className="eyebrow">BÜLTEN GENİŞLİĞİ</p><h2>Sayfada kaç kolon?</h2></div>
-            <div className="settings-panel-body">
-              <div className="icerik-genislik">
-                <button type="button" className={genislik === "normal" ? "active" : ""} onClick={() => setGenislik("normal")}>
-                  <span className="bars"><i style={{ width: 20 }} /><i style={{ opacity: .3 }} /><i style={{ opacity: .3 }} /></span>Normal
-                </button>
-                <button type="button" className={genislik === "tam" ? "active" : ""} onClick={() => setGenislik("tam")}>
-                  <span className="bars"><i /><i /><i /></span>Tam Genişlik
-                </button>
-              </div>
-            </div>
-          </section>
-          <section className="detail-panel">
-            <div className="detail-panel-heading"><p className="eyebrow">YAYIN AYARLARI</p><h2>Yayın</h2></div>
-            <div className="settings-panel-body">
-              <label className="guide-toggle">
-                <span><strong>Yayında</strong><small>Açıkken içerik yayınlanır</small></span>
-                <input type="checkbox" checked={yayinda} onChange={(e) => setYayinda(e.target.checked)} />
-                <i aria-hidden="true" />
+    <AdminShell>
+      <div className="fav-page stype-page">
+        <Link className="fav-back" href="/admin/icerikler"><Icon name="back" size={16} />İçeriklere dön</Link>
+        <form className="stype-layout" onSubmit={save}>
+          <div className="stype-stack">
+            <section className="fav-card stype-section">
+              <header><span className="fav-mark"><Icon name="file" /></span><h2>Temel bilgiler</h2></header>
+              <label className="stype-field">
+                <span>Bülten</span>
+                <SystemDropdown value={bultenId} onChange={setBultenId} placeholder="Bülten seç" ariaLabel="Bülten" options={options} />
               </label>
-            </div>
-          </section>
-          <button className="bulten-preview-btn" type="button" onClick={() => setPreview(true)}><Icon name="eye" size={15} />İçeriği Önizle</button>
-          {error && <p style={{ margin: 0, fontSize: ".65rem", color: "#c85a51", fontWeight: 700 }}>{error}</p>}
-          <button className="edu-form-save" onClick={save}>{mode === "ekle" ? "Oluştur" : "Güncelle"}</button>
-          <Link className="bulten-cancel" href={backHref}>Vazgeç</Link>
-        </aside>
-      </div>
-
-      {preview && typeof document !== "undefined" && createPortal(
-        <div className="legal-modal-backdrop" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) setPreview(false); }}>
-          <section className="bulten-preview-modal" role="dialog" aria-modal="true" aria-label="İçerik önizleme">
-            <header><strong>İçerik Önizleme</strong><button aria-label="Kapat" onClick={() => setPreview(false)}>×</button></header>
-            <div className="bulten-preview-body">
-              <div className="bulten-preview-meta">
-                <span className={`bulten-badge ${yayinda ? "yayinda" : "taslak"}`}>{yayinda ? "Yayında" : "Taslak"}</span>
-                <span><Icon name="calendar" size={12} /> {tarih} {saat}</span>
+              <label className="stype-field">
+                <span>Başlık</span>
+                <input id="ic-baslik" value={baslik} onChange={(event) => { setBaslik(event.target.value); setError(""); }} placeholder="İçerik başlığı" autoFocus />
+              </label>
+              <label className="stype-field">
+                <span>Açıklama</span>
+                <textarea id="ic-aciklama" value={aciklama} rows={4} onChange={(event) => setAciklama(event.target.value)} />
+              </label>
+              <div className="icerik-split">
+                <label className="stype-field">
+                  <span>İçerik türü</span>
+                  <SystemDropdown value={tur} onChange={(value) => setTur(value as IcerikTuru)} ariaLabel="İçerik türü" options={turOptions} />
+                </label>
+                <label className="stype-field">
+                  <span>Yayın tarihi</span>
+                  <div className="appt-when">
+                    <DatePicker id="ic-tarih" value={tarih} onChange={setTarih} />
+                    <TimePicker id="ic-saat" value={saat} onChange={setSaat} placeholder="SS:DD" />
+                  </div>
+                </label>
               </div>
-              <h2>{baslik || "Başlıksız içerik"}</h2>
-              {aciklama.trim() ? <p>{aciklama}</p> : <p className="muted">Açıklama eklenmedi.</p>}
-              {ytId ? (
-                <div style={{ marginTop: "1.1rem", aspectRatio: "16 / 9", borderRadius: 12, overflow: "hidden", background: "#000" }}>
-                  <iframe src={`https://www.youtube.com/embed/${ytId}`} title="Video önizleme" style={{ width: "100%", height: "100%", border: 0 }} allowFullScreen />
+              <label className="stype-field">
+                <span>YouTube URL</span>
+                <input id="ic-yt" value={youtube} onChange={(event) => setYoutube(event.target.value)} placeholder="https://www.youtube.com/watch?v=…" />
+                <small>YouTube linki girilirse dosya yerine embed gösterilir.</small>
+              </label>
+              <div className="stype-field">
+                <span>Dosya</span>
+                <input ref={fileRef} className="lesson-file-input" type="file" onChange={(event) => { setDosya(event.target.files?.[0]?.name ?? ""); event.target.value = ""; }} />
+                <button className="llist-upload" type="button" onClick={() => fileRef.current?.click()}>
+                  {dosya || "Dosya seç veya sürükle bırak"}
+                  <small>YouTube yoksa dosya gösterilir.</small>
+                </button>
+              </div>
+            </section>
+
+            <section className="fav-card stype-section">
+              <header><h2>Yerleşim ve yayın</h2></header>
+              <div className="stype-field">
+                <span>Sayfada kaç kolon?</span>
+                <div className="icerik-width">
+                  <button className={genislik === "normal" ? "on" : ""} type="button" onClick={() => setGenislik("normal")}>Normal</button>
+                  <button className={genislik === "tam" ? "on" : ""} type="button" onClick={() => setGenislik("tam")}>Tam genişlik</button>
                 </div>
-              ) : dosya ? (
-                <div style={{ marginTop: "1.1rem", display: "flex", alignItems: "center", gap: ".6rem", padding: ".7rem .8rem", border: "1px solid var(--line)", borderRadius: 9, background: "#f8fafb", color: "#3f556a", fontSize: ".7rem", fontWeight: 700 }}>
-                  <span style={{ color: "var(--blue)" }}><Icon name="file" size={18} /></span>{dosya}
-                </div>
-              ) : null}
+              </div>
+              <div className="role-option">
+                <span><strong>Yayında</strong><small>Açıkken içerik yayınlanır.</small></span>
+                <button type="button" role="switch" aria-checked={yayinda} aria-label="Yayında" className={`role-switch${yayinda ? " on" : ""}`} onClick={() => setYayinda((value) => !value)}>
+                  <span />
+                </button>
+              </div>
+            </section>
+
+            <div className="fav-actions">
+              {error && <p role="alert">{error}</p>}
+              {mode === "duzenle" && base?.id && (confirming ? (
+                <>
+                  <p>Bu işlem geri alınamaz.</p>
+                  <button className="user-cancel" type="button" onClick={() => setConfirming(false)}>Vazgeç</button>
+                  <button className="fav-delete" type="button" onClick={remove}>Evet, sil</button>
+                </>
+              ) : <button className="fav-delete" type="button" onClick={() => setConfirming(true)}>İçeriği sil</button>)}
+              <button className="fav-save" type="submit">{mode === "ekle" ? "Oluştur" : "Güncelle"}</button>
             </div>
-          </section>
-        </div>,
-        document.body
-      )}
-    </div>
+          </div>
+
+          <aside className="fav-card acct-summary" aria-label="İçerik önizleme">
+            <header><span className="fav-mark"><Icon name="file" /></span><h2>Önizleme</h2></header>
+            <span className={`stype-status ${yayinda ? "aktif" : "pasif"}`}>{yayinda ? "Yayında" : "Taslak"}</span>
+            <p className="acct-figure">{KIND[tur]}</p>
+            <dl className="acct-rows">
+              <div><dt>Başlık</dt><dd className="wrap">{baslik.trim() || "Başlıksız içerik"}</dd></div>
+              <div><dt>Bülten</dt><dd className="wrap">{newsletter}</dd></div>
+              <div><dt>Tarih</dt><dd>{`${tarih} ${saat}`.trim() || "—"}</dd></div>
+              <div><dt>Genişlik</dt><dd>{genislik === "tam" ? "Tam genişlik" : "Normal"}</dd></div>
+              <div><dt>Kaynak</dt><dd className="wrap">{youtube.trim() ? "YouTube" : dosya || "Eklenmedi"}</dd></div>
+            </dl>
+            <p className="tm-bubble">{aciklama.trim() || "Açıklama eklenmedi."}</p>
+          </aside>
+        </form>
+      </div>
+    </AdminShell>
   );
 }

@@ -8,6 +8,7 @@ export type Duyuru = {
   yayinTarihi: string;
   durum: DuyuruDurum;
   modalGoster: boolean;
+  gorsel?: string;
 };
 
 export const DUYURULAR: Duyuru[] = [
@@ -207,3 +208,21 @@ Saygılarımızla`,
     modalGoster: false,
   },
 ];
+
+const STORAGE_KEY = "eistatistik.announcements.v1";
+
+export function readAnnouncements(): Duyuru[] {
+  if (typeof window === "undefined") return DUYURULAR;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return DUYURULAR;
+    const parsed = JSON.parse(raw) as Duyuru[];
+    return Array.isArray(parsed) ? parsed : DUYURULAR;
+  } catch {
+    return DUYURULAR;
+  }
+}
+
+export function writeAnnouncements(items: Duyuru[]) {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+}

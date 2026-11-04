@@ -5,64 +5,76 @@ import { useEffect, useMemo, useState } from "react";
 import { AdminShell } from "../AdminShell";
 import { readServiceTypes, ServiceType } from "./serviceTypeData";
 
-type IconName = "plus" | "search" | "edit";
+function PlusIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z" />
+    </svg>
+  );
+}
 
-function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
-  const paths: Record<IconName, React.ReactNode> = {
-    plus: <path d="M12 5v14M5 12h14" />,
-    search: <><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></>,
-    edit: <><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z" /></>,
-  };
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+function Caret() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z" />
+    </svg>
+  );
 }
 
 export default function SiparisTurleriPage() {
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [query, setQuery] = useState("");
 
-  useEffect(() => setServiceTypes(readServiceTypes()), []);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setServiceTypes(readServiceTypes()));
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
-  const filtered = useMemo(() => {
-    const normalized = query.trim().toLocaleLowerCase("tr-TR");
-    if (!normalized) return serviceTypes;
-    return serviceTypes.filter((type) => `${type.code} ${type.title} ${type.description}`.toLocaleLowerCase("tr-TR").includes(normalized));
+  const visible = useMemo(() => {
+    const needle = query.trim().toLocaleLowerCase("tr-TR");
+    if (!needle) return serviceTypes;
+    return serviceTypes.filter((type) => `${type.code} ${type.title} ${type.description}`.toLocaleLowerCase("tr-TR").includes(needle));
   }, [query, serviceTypes]);
 
   return (
     <AdminShell>
-      <div className="st-page service-types-page">
-        <header className="orders-hero">
-          <div><h1>Sipariş Türleri</h1></div>
-          <Link className="orders-create" href="/admin/siparis-turleri/ekle"><Icon name="plus" size={17} />Yeni sipariş türü</Link>
+      <div className="fav-page">
+        <header className="fav-head">
+          <div>
+            <h1>Sipariş Türleri <span>{serviceTypes.length}</span></h1>
+            <p>Hizmet kodu, açıklama ve durumu bu listede. Bir satıra girince türün ayrıntısı açılır.</p>
+          </div>
+          <Link className="orders-create" href="/admin/siparis-turleri/ekle"><PlusIcon />Yeni sipariş türü</Link>
         </header>
 
-        <section className="detail-panel st-list-panel">
-          <div className="service-types-toolbar">
-            <span>{serviceTypes.length} hizmet türü</span>
-            <label className="service-types-search">
-              <Icon name="search" size={16} />
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Kod, başlık veya açıklama ara" aria-label="Sipariş türlerinde ara" />
-            </label>
-          </div>
-          <div className="ur-table-wrap">
-            <table className="ur-table st-table service-types-table">
-              <thead><tr><th>Sıra</th><th>Kod</th><th>Sipariş türü</th><th>Açıklama</th><th>Durum</th><th><span className="sr-only">İşlemler</span></th></tr></thead>
-              <tbody>
-                {filtered.map((type) => (
-                  <tr key={type.id}>
-                    <td><span className="service-type-order">{type.order}</span></td>
-                    <td><span className="st-code service-type-code">{type.code}</span></td>
-                    <td className="st-title-cell">{type.title}</td>
-                    <td className="st-desc-cell">{type.description || "—"}</td>
-                    <td><span className={`st-badge ${type.status}`}><i />{type.status === "aktif" ? "Aktif" : "Pasif"}</span></td>
-                    <td><button className="service-type-edit" type="button" aria-label={`${type.title} hizmetini düzenle`}><Icon name="edit" size={15} /></button></td>
-                  </tr>
-                ))}
-                {filtered.length === 0 && <tr><td className="ur-empty" colSpan={6}>Aramanızla eşleşen hizmet türü bulunamadı.</td></tr>}
-              </tbody>
-            </table>
-          </div>
-          <footer className="service-types-count">{filtered.length} kayıt gösteriliyor</footer>
+        <section className="fav-card" aria-label="Sipariş türleri listesi">
+          <label className="fav-search">
+            <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z" /></svg>
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Kod, başlık veya açıklama ara" aria-label="Sipariş türlerinde ara" />
+          </label>
+
+          {visible.length === 0 ? (
+            <div className="fav-empty">
+              <strong>{serviceTypes.length === 0 ? "Henüz sipariş türü yok" : "Eşleşen tür yok"}</strong>
+              <p>{serviceTypes.length === 0 ? "İlk sipariş türünü oluşturun." : "Aramayı değiştirin ya da yeni bir tür ekleyin."}</p>
+            </div>
+          ) : (
+            <ul className="fav-list">
+              {visible.map((type) => (
+                <li key={type.id}>
+                  <Link href={`/admin/siparis-turleri/${type.id}`}>
+                    <span className={`stype-code${type.status === "pasif" ? " quiet" : ""}`}>{type.code}</span>
+                    <span className="fav-copy">
+                      <strong>{type.title}</strong>
+                      <small>{type.description || `Sıra ${type.order}`}</small>
+                    </span>
+                    <span className={`stype-status ${type.status}`}>{type.status === "aktif" ? "Aktif" : "Pasif"}</span>
+                    <Caret />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </div>
     </AdminShell>

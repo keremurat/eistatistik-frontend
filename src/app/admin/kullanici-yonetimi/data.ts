@@ -211,3 +211,21 @@ export const KULLANICILAR: Kullanici[] = [
     ],
   },
 ];
+
+const STORAGE_KEY = "eistatistik.users.v1";
+
+export function readUsers() {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return KULLANICILAR;
+    const parsed = JSON.parse(raw) as Kullanici[];
+    return Array.isArray(parsed) ? parsed : KULLANICILAR;
+  } catch {
+    return KULLANICILAR;
+  }
+}
+
+export function writeUsers(items: Kullanici[]) {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+}

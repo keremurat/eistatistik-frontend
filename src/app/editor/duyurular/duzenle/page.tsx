@@ -1,16 +1,27 @@
 "use client";
 
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { DuyuruForm } from "../../../admin/duyurular/DuyuruForm";
-import { DUYURULAR } from "../../../admin/duyurular/data";
+import { Suspense, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { AdminShell } from "../../../admin/AdminShell";
 
-function EditorAnnouncementEdit() {
+function RedirectToAnnouncement() {
+  const router = useRouter();
   const params = useSearchParams();
-  const announcement = DUYURULAR.find((item) => item.id === Number(params.get("id") ?? 0));
-  return <DuyuruForm mode="duzenle" initial={announcement} basePath="/editor/duyurular" />;
+  const id = params.get("id");
+
+  useEffect(() => {
+    router.replace(id ? `/editor/duyurular/${encodeURIComponent(id)}` : "/editor/duyurular");
+  }, [id, router]);
+
+  return null;
 }
 
 export default function EditorAnnouncementEditPage() {
-  return <Suspense fallback={null}><EditorAnnouncementEdit /></Suspense>;
+  return (
+    <AdminShell>
+      <Suspense fallback={null}>
+        <RedirectToAnnouncement />
+      </Suspense>
+    </AdminShell>
+  );
 }

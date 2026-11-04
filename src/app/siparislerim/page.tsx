@@ -6,7 +6,7 @@ import Image from "next/image";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { NotificationMenu } from "../components/NotificationMenu";
 import { BrandLogo } from "../components/BrandLogo";
-import { CustomerEducationMenu } from "../components/CustomerEducationMenu";
+import { WorkspaceNav } from "../components/WorkspaceNav";
 import { SystemDropdown } from "../components/SystemDropdown";
 
 type IconName = "arrow" | "bell" | "book" | "calendar" | "chevron" | "clock" | "file" | "home" | "message" | "more" | "plus" | "search" | "spark";
@@ -87,16 +87,11 @@ export default function OrdersPage() {
   const cancelledOrders = filteredOrders.filter(order => order.status === "cancelled");
 
   return (
-    <div className="app-shell">
+    <div className="app-shell customer-shell">
       <a className="skip-link" href="#orders-content">İçeriğe geç</a>
       <header className="topbar">
         <BrandLogo />
-        <nav className="main-nav" aria-label="Ana navigasyon">
-          <Link href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
-          <Link className="active" href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
-          <CustomerEducationMenu />
-          <Link href="/hizmetler"><Icon name="spark" size={17} />Hizmetler</Link>
-        </nav>
+        <WorkspaceNav kind="customer" />
         <div className="top-actions">
           <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç">
             <Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} />
@@ -108,7 +103,10 @@ export default function OrdersPage() {
 
       <main id="orders-content" className="orders-page">
         <header className="orders-hero">
-          <div><p className="eyebrow">ÇALIŞMA ALANINIZ</p><h1>Siparişlerim</h1><p>Analiz taleplerinizi, görüşmelerinizi ve teslimlerinizi tek yerden takip edin.</p></div>
+          <div>
+            <div className="orders-title"><h1>Siparişlerim</h1><span className="orders-count">{counts.all} sipariş</span></div>
+            <p>Analiz taleplerinizi, görüşmelerinizi ve teslimlerinizi tek yerden takip edin.</p>
+          </div>
           <Link className="orders-create" href="/hizmetler"><Icon name="plus" size={18} />Yeni analiz talebi</Link>
         </header>
 
@@ -116,24 +114,26 @@ export default function OrdersPage() {
           {tabs.map(tab => <button key={tab.key} className={activeTab === tab.key ? "active" : ""} onClick={() => setActiveTab(tab.key)}>{tab.label}<span>{counts[tab.key]}</span></button>)}
         </nav>
 
-        <section className="orders-toolbar" aria-label="Sipariş arama ve sıralama">
-          <label className="orders-search"><Icon name="search" size={18} /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Sipariş adı veya kodu ara…" aria-label="Siparişlerde ara" /></label>
-          <label className="sort-control"><span>Son güncelleme</span><SystemDropdown ariaLabel="Siparişleri sırala" value={sort} onChange={setSort} options={[{ value: "newest", label: "En güncel" }, { value: "oldest", label: "En eski" }]} /></label>
-          <span className="result-count">{filteredOrders.length} sipariş gösteriliyor</span>
-        </section>
+        <section className="orders-board">
+          <section className="orders-toolbar" aria-label="Sipariş arama ve sıralama">
+            <label className="orders-search"><Icon name="search" size={18} /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Sipariş adı veya kodu ara…" aria-label="Siparişlerde ara" /></label>
+            <label className="sort-control"><span>Son güncelleme</span><SystemDropdown ariaLabel="Siparişleri sırala" value={sort} onChange={setSort} options={[{ value: "newest", label: "En güncel" }, { value: "oldest", label: "En eski" }]} /></label>
+            <span className="result-count">{filteredOrders.length} sipariş gösteriliyor</span>
+          </section>
 
-        {filteredOrders.length === 0 ? (
-          <section className="orders-empty"><span><Icon name="search" size={25} /></span><h2>Sipariş bulunamadı</h2><p>Arama kelimenizi veya seçtiğiniz filtreyi değiştirin.</p><button onClick={() => { setQuery(""); setActiveTab("all"); }}>Filtreleri temizle</button></section>
-        ) : (
-          <div className="order-groups">
-            {activeTab === "all" ? <OrderGroup title="" eyebrow="" orders={filteredOrders} ungrouped /> : <>
-              {actionOrders.length > 0 && <OrderGroup title="Sizden işlem bekleyen" eyebrow="ÖNCELİKLİ" orders={actionOrders} />}
-              {activeOrders.length > 0 && <OrderGroup title="Aktif analizler" eyebrow="DEVAM EDEN" orders={activeOrders} />}
-              {completedOrders.length > 0 && <OrderGroup title="Teslim edilenler" eyebrow="ARŞİV" orders={completedOrders} subdued />}
-              {cancelledOrders.length > 0 && <OrderGroup title="İptal edilenler" eyebrow="İPTAL" orders={cancelledOrders} subdued />}
-            </>}
-          </div>
-        )}
+          {filteredOrders.length === 0 ? (
+            <section className="orders-empty"><span><Icon name="search" size={25} /></span><h2>Sipariş bulunamadı</h2><p>Arama kelimenizi veya seçtiğiniz filtreyi değiştirin.</p><button onClick={() => { setQuery(""); setActiveTab("all"); }}>Filtreleri temizle</button></section>
+          ) : (
+            <div className="order-groups">
+              {activeTab === "all" ? <OrderGroup title="" eyebrow="" orders={filteredOrders} ungrouped /> : <>
+                {actionOrders.length > 0 && <OrderGroup title="Sizden işlem bekleyen" eyebrow="ÖNCELİKLİ" orders={actionOrders} />}
+                {activeOrders.length > 0 && <OrderGroup title="Aktif analizler" eyebrow="DEVAM EDEN" orders={activeOrders} />}
+                {completedOrders.length > 0 && <OrderGroup title="Teslim edilenler" eyebrow="ARŞİV" orders={completedOrders} subdued />}
+                {cancelledOrders.length > 0 && <OrderGroup title="İptal edilenler" eyebrow="İPTAL" orders={cancelledOrders} subdued />}
+              </>}
+            </div>
+          )}
+        </section>
       </main>
     </div>
   );

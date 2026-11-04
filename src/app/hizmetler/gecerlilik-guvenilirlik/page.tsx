@@ -1,5 +1,4 @@
 import Link from "next/link";
-import type { CSSProperties } from "react";
 import { LandingFaq } from "../../components/LandingFaq";
 import { LandingHeader } from "../../components/LandingHeader";
 import { LandingFooter } from "../../components/LandingFooter";
@@ -52,8 +51,8 @@ export default function ValidityReliabilityPage() {
               <div className="validity-window-head"><div><small>ÖLÇEK ANALİZİ</small><strong>Araştırma Tutum Ölçeği</strong></div><span>28 madde</span></div>
               <div className="validity-score-grid"><article><span>Güvenilirlik</span><strong>.91</strong><i><em /></i><small>Yüksek iç tutarlılık</small></article><article><span>KMO değeri</span><strong>.87</strong><i><em /></i><small>Faktör analizine uygun</small></article></div>
               <div className="validity-factor-area">
-                <div className="validity-factor-chart"><span>Faktör 1</span><i style={{"--load":"88%"} as CSSProperties} /><i style={{"--load":"72%"} as CSSProperties} /><i style={{"--load":"65%"} as CSSProperties} /><i style={{"--load":"79%"} as CSSProperties} /></div>
-                <div className="validity-factor-chart second"><span>Faktör 2</span><i style={{"--load":"54%"} as CSSProperties} /><i style={{"--load":"83%"} as CSSProperties} /><i style={{"--load":"69%"} as CSSProperties} /><i style={{"--load":"76%"} as CSSProperties} /></div>
+                <div className="validity-factor-chart"><span>Faktör 1</span><i /><i /><i /><i /></div>
+                <div className="validity-factor-chart second"><span>Faktör 2</span><i /><i /><i /><i /></div>
               </div>
               <div className="validity-model"><span>F1</span><i /><b>M01</b><i /><b>M02</b><i /><b>M03</b><i /><span>F2</span></div>
             </div>

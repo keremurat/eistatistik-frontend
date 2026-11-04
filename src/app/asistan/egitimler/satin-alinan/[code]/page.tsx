@@ -4,7 +4,7 @@ import { PurchasedEducationDetailContent } from "../../../../admin/egitimler/sat
 import { AssistantHeader } from "../../../AssistantHeader";
 
 export default function AssistantPurchasedEducationDetailPage() {
-  return <div className="app-shell assistant-shell">
+  return <div className="app-shell customer-shell">
     <AssistantHeader />
     <PurchasedEducationDetailContent basePath="/asistan/egitimler" />
   </div>;

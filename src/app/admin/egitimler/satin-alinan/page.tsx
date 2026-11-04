@@ -95,7 +95,7 @@ function EducationMenu({ code, student, basePath, onAction }: { code: string; st
   return <>
     <button ref={buttonRef} className={`dots-btn${open ? " open" : ""}`} onClick={() => setOpen(value => !value)} aria-label={`${student} için işlemler`} aria-expanded={open} aria-haspopup="menu"><span aria-hidden="true">•••</span></button>
     {open && typeof document !== "undefined" && createPortal(
-      <div ref={menuRef} className="order-ctx-menu education-ctx-menu" role="menu" style={{ position: "fixed", top: pos.top, right: pos.right, zIndex: 9999 }}>
+      <div ref={menuRef} className="order-ctx-menu education-ctx-menu" role="menu" style={{ top: pos.top, right: pos.right }}>
         <Link className="ctx-item" role="menuitem" href={`/admin/kullanici?arama=${encodeURIComponent(student)}`} onClick={() => setOpen(false)}><MenuIcon name="user"/>Müşteri Görüntüle</Link>
         <Link className="ctx-item" role="menuitem" href={detailHref} onClick={() => setOpen(false)}><MenuIcon name="eye"/>Görüntüle</Link>
         <div className="ctx-separator" role="separator"/>

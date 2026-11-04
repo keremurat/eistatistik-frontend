@@ -4,11 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { findDemoAccount } from "../lib/demoAccounts";
-import { CURRENT_ACCOUNT_KEY } from "../lib/accountStorage";
+import { ApiRequestError, landingForRole, loginUser, registerUser } from "@/lib/api/auth";
 
 type IconName = "arrow" | "eye" | "eyeOff" | "lock" | "mail" | "shield" | "user";
 type LegalDocument = "membership" | "kvkk";
+type RegisterField = "firstName" | "lastName" | "email" | "password" | "confirm";
+type RegisterErrors = Partial<Record<RegisterField, string>>;
 
 function AuthIcon({ name, size = 18 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, React.ReactNode> = {
@@ -31,8 +32,11 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [login, setLogin] = useState({ email: "", password: "" });
+  const [rememberMe, setRememberMe] = useState(true);
   const [authError, setAuthError] = useState("");
   const [register, setRegister] = useState({ firstName: "", lastName: "", email: "", password: "", confirm: "" });
+  const [registerErrors, setRegisterErrors] = useState<RegisterErrors>({});
+  const [registrationCompleteEmail, setRegistrationCompleteEmail] = useState("");
   const [membershipAccepted, setMembershipAccepted] = useState(false);
   const [kvkkAccepted, setKvkkAccepted] = useState(false);
   const [legalDocument, setLegalDocument] = useState<LegalDocument | null>(null);
@@ -45,33 +49,75 @@ export default function AuthPage() {
     setSubmitted(false);
     setShowPassword(false);
     setAuthError("");
+    setRegisterErrors({});
   }
 
-  function handleLogin(event: FormEvent<HTMLFormElement>) {
+  async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitted(true);
     setAuthError("");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email) || login.password.length < 6) return;
-    const account = findDemoAccount(login.email, login.password);
-    if (!account) {
-      setAuthError("E-posta veya şifre hatalı. Demo hesap şifresi: password123");
-      return;
-    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email) || !login.password) return;
+
     setLoading(true);
-    localStorage.setItem("eistatistik_role", account.role);
-    localStorage.setItem(CURRENT_ACCOUNT_KEY, account.email);
-    window.setTimeout(() => router.push(account.landing), 650);
+
+    try {
+      const user = await loginUser({
+        email: login.email,
+        password: login.password,
+        rememberMe,
+      });
+      router.replace(user.homePath || landingForRole(user.role));
+      router.refresh();
+    } catch (error) {
+      setAuthError(
+        error instanceof ApiRequestError && error.code === "invalid_credentials"
+          ? "E-posta veya şifre hatalı. Bilgilerinizi kontrol edip tekrar deneyin."
+          : "Giriş şu anda tamamlanamadı. Lütfen biraz sonra tekrar deneyin.",
+      );
+      setLoading(false);
+    }
   }
 
-  function handleRegister(event: FormEvent<HTMLFormElement>) {
+  async function handleRegister(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitted(true);
-    const valid = register.firstName.trim() && register.lastName.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(register.email) && register.password.length >= 6 && register.password === register.confirm && membershipAccepted && kvkkAccepted;
-    if (!valid) return;
+    setAuthError("");
+
+    const errors: RegisterErrors = {};
+    if (!register.firstName.trim()) errors.firstName = "Adınızı girin.";
+    if (!register.lastName.trim()) errors.lastName = "Soyadınızı girin.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(register.email)) errors.email = "Geçerli bir e-posta adresi girin.";
+    if (register.password.length < 12) errors.password = "Şifreniz en az 12 karakter olmalı.";
+    if (register.password !== register.confirm) errors.confirm = "Şifreler birbiriyle eşleşmiyor.";
+    setRegisterErrors(errors);
+
+    if (Object.keys(errors).length > 0 || !membershipAccepted || !kvkkAccepted) return;
+
     setLoading(true);
-    localStorage.setItem("eistatistik_role", "musteri");
-    localStorage.setItem(CURRENT_ACCOUNT_KEY, register.email.trim().toLowerCase());
-    window.setTimeout(() => router.push("/dashboard"), 650);
+
+    try {
+      const user = await registerUser({
+        firstName: register.firstName,
+        lastName: register.lastName,
+        email: register.email,
+        password: register.password,
+        passwordConfirmation: register.confirm,
+        membershipTermsAccepted: membershipAccepted,
+        kvkkNoticeAccepted: kvkkAccepted,
+      });
+      setRegistrationCompleteEmail(user.email);
+    } catch (error) {
+      if (error instanceof ApiRequestError && error.code === "validation_failed") {
+        setRegisterErrors(registrationErrorsFrom(error.fields));
+        setAuthError("Bazı bilgileri düzelttikten sonra tekrar deneyin.");
+      } else if (error instanceof ApiRequestError && error.code === "legal_acceptance_required") {
+        setAuthError("Devam etmek için güncel üyelik ve KVKK metinlerini kabul etmelisiniz.");
+      } else {
+        setAuthError("Kayıt şu anda tamamlanamadı. Lütfen biraz sonra tekrar deneyin.");
+      }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return <main className="auth-page">
@@ -96,9 +142,9 @@ export default function AuthPage() {
             <header className="auth-login-header"><h2>Tekrar<br /><span>hoş geldiniz.</span></h2><p>Hesabınıza giriş yapın ve çalışmalarınıza devam edin.</p></header>
             <form className="auth-login-form" onSubmit={handleLogin} autoComplete="on" noValidate>
               <AuthField name="login-email" autoComplete="section-login username" icon="mail" type="email" placeholder="E-posta adresi" value={login.email} onChange={value => { setLogin(current => ({ ...current, email: value })); setAuthError(""); }} invalid={submitted && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login.email)} error="Geçerli bir e-posta adresi girin." />
-              <AuthField name="login-password" autoComplete="section-login current-password" icon="lock" type={showPassword ? "text" : "password"} placeholder="Şifre" value={login.password} onChange={value => { setLogin(current => ({ ...current, password: value })); setAuthError(""); }} invalid={submitted && login.password.length < 6} error="Şifreniz en az 6 karakter olmalı." action={<button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}><AuthIcon name={showPassword ? "eyeOff" : "eye"} size={16} /></button>} />
+              <AuthField name="login-password" autoComplete="section-login current-password" icon="lock" type={showPassword ? "text" : "password"} placeholder="Şifre" value={login.password} onChange={value => { setLogin(current => ({ ...current, password: value })); setAuthError(""); }} invalid={submitted && !login.password} error="Şifrenizi girin." action={<button type="button" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}><AuthIcon name={showPassword ? "eyeOff" : "eye"} size={16} /></button>} />
               {authError && <p className="auth-error" role="alert">{authError}</p>}
-              <div className="auth-form-options"><label><input type="checkbox" defaultChecked />Beni hatırla</label><Link href="/sifre-sifirlama">Şifremi unuttum</Link></div>
+              <div className="auth-form-options"><label><input type="checkbox" checked={rememberMe} onChange={event => setRememberMe(event.target.checked)} />Beni hatırla</label><Link href="/sifre-sifirlama">Şifremi unuttum</Link></div>
               <button className="auth-primary-button" disabled={loading}>{loading ? <span className="login-loader" /> : <>Giriş yap <AuthIcon name="arrow" size={16} /></>}</button>
             </form>
             <div className="auth-form-footer">
@@ -106,22 +152,28 @@ export default function AuthPage() {
               <button className="auth-google" type="button"><GoogleIcon />Google ile devam et</button>
               <p className="auth-switch-copy">Hesabınız yok mu? <button onClick={() => changeMode("register")}>Hemen kaydolun</button></p>
             </div>
-          </> : <>
+          </> : registrationCompleteEmail ? <div className="auth-reset-success" role="status">
+            <span className="auth-reset-success-icon" aria-hidden="true">✓</span>
+            <strong className="auth-reset-success-title">Doğrulama e-postası gönderildi</strong>
+            <p className="auth-reset-success-copy"><b>{registrationCompleteEmail}</b> adresine gönderdiğimiz bağlantıyı açarak hesabınızı doğrulayın. E-postayı doğruladıktan sonra giriş yapabilirsiniz.</p>
+            <button className="auth-primary-button" type="button" onClick={() => changeMode("login")}>Giriş ekranına dön <AuthIcon name="arrow" size={16} /></button>
+          </div> : <>
             <header className="auth-register-header"><h2>Hesap<br /><span>oluşturun.</span></h2><p>Birkaç adımda eistatistik çalışma alanınıza katılın.</p></header>
             <form className="auth-register-form" onSubmit={handleRegister} autoComplete="on" noValidate>
               <div className="auth-field-row">
-                <AuthField name="given-name" autoComplete="section-register given-name" icon="user" placeholder="Adınızı girin" value={register.firstName} onChange={value => setRegister(current => ({ ...current, firstName: value }))} invalid={submitted && !register.firstName.trim()} />
-                <AuthField name="family-name" autoComplete="section-register family-name" icon="user" placeholder="Soyadınızı girin" value={register.lastName} onChange={value => setRegister(current => ({ ...current, lastName: value }))} invalid={submitted && !register.lastName.trim()} />
+                <AuthField name="given-name" autoComplete="section-register given-name" icon="user" placeholder="Adınızı girin" value={register.firstName} onChange={value => { setRegister(current => ({ ...current, firstName: value })); clearRegisterError("firstName", setRegisterErrors); }} invalid={Boolean(registerErrors.firstName)} error={registerErrors.firstName} />
+                <AuthField name="family-name" autoComplete="section-register family-name" icon="user" placeholder="Soyadınızı girin" value={register.lastName} onChange={value => { setRegister(current => ({ ...current, lastName: value })); clearRegisterError("lastName", setRegisterErrors); }} invalid={Boolean(registerErrors.lastName)} error={registerErrors.lastName} />
               </div>
-              <AuthField name="register-email" autoComplete="section-register email" icon="mail" type="email" placeholder="E-posta adresinizi girin" value={register.email} onChange={value => setRegister(current => ({ ...current, email: value }))} invalid={submitted && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(register.email)} />
+              <AuthField name="register-email" autoComplete="section-register email" icon="mail" type="email" placeholder="E-posta adresinizi girin" value={register.email} onChange={value => { setRegister(current => ({ ...current, email: value })); clearRegisterError("email", setRegisterErrors); }} invalid={Boolean(registerErrors.email)} error={registerErrors.email} />
               <div className="auth-field-row">
-                <AuthField name="new-password" autoComplete="section-register new-password" icon="lock" type="password" placeholder="En az 6 karakter" value={register.password} onChange={value => setRegister(current => ({ ...current, password: value }))} invalid={submitted && register.password.length < 6} />
-                <AuthField name="confirm-password" autoComplete="section-register new-password" icon="lock" type="password" placeholder="Şifreyi tekrar girin" value={register.confirm} onChange={value => setRegister(current => ({ ...current, confirm: value }))} invalid={submitted && register.password !== register.confirm} />
+                <AuthField name="new-password" autoComplete="section-register new-password" icon="lock" type="password" placeholder="En az 12 karakter" value={register.password} onChange={value => { setRegister(current => ({ ...current, password: value })); clearRegisterError("password", setRegisterErrors); }} invalid={Boolean(registerErrors.password)} error={registerErrors.password} />
+                <AuthField name="confirm-password" autoComplete="section-register new-password" icon="lock" type="password" placeholder="Şifreyi tekrar girin" value={register.confirm} onChange={value => { setRegister(current => ({ ...current, confirm: value })); clearRegisterError("confirm", setRegisterErrors); }} invalid={Boolean(registerErrors.confirm)} error={registerErrors.confirm} />
               </div>
               <div className="auth-legal-consents">
                 <button type="button" className={submitted && !membershipAccepted ? "invalid" : ""} onClick={() => setLegalDocument("membership")}><span className={membershipAccepted ? "accepted" : ""}>{membershipAccepted ? "✓" : ""}</span><strong><u>Üyelik Sözleşmesi</u> şartlarını okudum ve kabul ediyorum.</strong></button>
                 <button type="button" className={submitted && !kvkkAccepted ? "invalid" : ""} onClick={() => setLegalDocument("kvkk")}><span className={kvkkAccepted ? "accepted" : ""}>{kvkkAccepted ? "✓" : ""}</span><strong><u>KVKK Aydınlatma Metni</u>’ni okudum ve kabul ediyorum.</strong></button>
               </div>
+              {authError && <p className="auth-error" role="alert">{authError}</p>}
               <button className="auth-primary-button" disabled={loading}>{loading ? <span className="login-loader" /> : <>Kayıt ol <AuthIcon name="arrow" size={16} /></>}</button>
             </form>
             <div className="auth-form-footer">
@@ -144,6 +196,34 @@ export default function AuthPage() {
       }
     }} />}
   </main>;
+}
+
+function registrationErrorsFrom(fields?: Record<string, string[]>): RegisterErrors {
+  if (!fields) return {};
+
+  const hasError = (...keys: string[]) => keys.some(key => (fields[key]?.length ?? 0) > 0);
+  const errors: RegisterErrors = {};
+
+  if (hasError("first_name", "profile.first_name", "profile_first_name")) errors.firstName = "Ad bilgisi geçerli değil.";
+  if (hasError("last_name", "profile.last_name", "profile_last_name", "profile")) errors.lastName = "Soyad bilgisi geçerli değil.";
+  if (hasError("email")) errors.email = "Bu e-posta adresi kullanılamıyor veya zaten kayıtlı.";
+  if (hasError("password")) errors.password = "Şifre en az 12 karakter olmalı.";
+  if (hasError("password_confirmation")) errors.confirm = "Şifreler birbiriyle eşleşmiyor.";
+
+  return errors;
+}
+
+function clearRegisterError(
+  field: RegisterField,
+  setErrors: React.Dispatch<React.SetStateAction<RegisterErrors>>,
+) {
+  setErrors(current => {
+    if (!current[field]) return current;
+
+    const next = { ...current };
+    delete next[field];
+    return next;
+  });
 }
 
 function AuthField({ name, autoComplete, icon, type = "text", placeholder, value, onChange, invalid = false, error, action }: { name: string; autoComplete: string; icon: IconName; type?: string; placeholder: string; value: string; onChange: (value: string) => void; invalid?: boolean; error?: string; action?: React.ReactNode }) {

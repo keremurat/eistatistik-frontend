@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { FormEvent, useState } from "react";
 import { AdminShell } from "../AdminShell";
+import { SystemDropdown } from "../../components/SystemDropdown";
 import { useToast } from "../../components/ToastProvider";
 
-// ── Sabitler ──────────────────────────────────────────────────────────────────
-const ISLEM_TIPLERI = ["Gelen", "Giden"];
+const DIRECTIONS = ["Gelen", "Giden"];
 
-const KULLANICILAR = [
+const USERS = [
   "KEREM MURAT",
   "NACİ MURAT",
   "SÜMEYYE İNAN",
@@ -21,232 +20,117 @@ const KULLANICILAR = [
   "BURCU AKSOY",
 ];
 
-// ── İkon ─────────────────────────────────────────────────────────────────────
-type IName = "chevron" | "check" | "save";
-function Icon({ name, size = 16 }: { name: IName; size?: number }) {
-  const p: Record<IName, React.ReactNode> = {
-    chevron: <polyline points="6 9 12 15 18 9" />,
-    check:   <polyline points="20 6 9 17 4 12" />,
-    save:    <><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></>,
-  };
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{p[name]}</svg>;
-}
+const ICONS = {
+  currency: "M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm40-68a28,28,0,0,1-28,28h-4v8a8,8,0,0,1-16,0v-8H104a8,8,0,0,1,0-16h36a12,12,0,0,0,0-24H116a28,28,0,0,1,0-56h4V72a8,8,0,0,1,16,0v8h16a8,8,0,0,1,0,16H116a12,12,0,0,0,0,24h24A28,28,0,0,1,168,148Z",
+  clipboard: "M168,152a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,152Zm-8-40H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16Zm56-64V216a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V48A16,16,0,0,1,56,32H92.26a47.92,47.92,0,0,1,71.48,0H200A16,16,0,0,1,216,48ZM128,32a32,32,0,0,0-32,32,8,8,0,0,0,8,8h48a8,8,0,0,0,8-8A32,32,0,0,0,128,32Zm72,184V48H176v8a24,24,0,0,1-24,24H104A24,24,0,0,1,80,56V48H56V216Z",
+} as const;
 
-// ── Aranabilir dropdown ───────────────────────────────────────────────────────
-interface SearchSelectProps {
-  options: string[];
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  searchPlaceholder?: string;
-}
-
-function SearchSelect({ options, value, onChange, placeholder = "Seçiniz", searchPlaceholder = "Ara..." }: SearchSelectProps) {
-  const [open, setOpen]   = useState(false);
-  const [query, setQuery] = useState("");
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
-
-  const filtered = options.filter(o => o.toLowerCase().includes(query.toLowerCase()));
-
-  function openDropdown() {
-    if (!triggerRef.current) return;
-    const r = triggerRef.current.getBoundingClientRect();
-    setPos({ top: r.bottom + window.scrollY + 4, left: r.left + window.scrollX, width: r.width });
-    setOpen(true);
-    setQuery("");
-  }
-
-  useEffect(() => {
-    if (!open) return;
-    function onMouseDown(e: MouseEvent) {
-      if (triggerRef.current && !triggerRef.current.contains(e.target as Node)) setOpen(false);
-    }
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") setOpen(false); }
-    document.addEventListener("mousedown", onMouseDown);
-    document.addEventListener("keydown", onKey);
-    return () => { document.removeEventListener("mousedown", onMouseDown); document.removeEventListener("keydown", onKey); };
-  }, [open]);
-
-  return (
-    <>
-      <button
-        ref={triggerRef}
-        type="button"
-        className={`pm-select-trigger${open ? " open" : ""}`}
-        onClick={() => (open ? setOpen(false) : openDropdown())}
-        aria-expanded={open}
-        aria-haspopup="listbox"
-      >
-        <span className={value ? undefined : "pm-select-placeholder"}>{value || placeholder}</span>
-        <span style={{ color: "var(--muted)", display: "flex", transition: "transform .15s", transform: open ? "rotate(180deg)" : undefined }}>
-          <Icon name="chevron" size={14} />
-        </span>
-      </button>
-
-      {open && typeof window !== "undefined" && createPortal(
-        <div className="pm-select-panel" style={{ position: "absolute", top: pos.top, left: pos.left, width: pos.width, zIndex: 9999 }}>
-          <div className="pm-select-search">
-            <input
-              autoFocus
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder={searchPlaceholder}
-            />
-          </div>
-          <ul className="pm-select-list" role="listbox">
-            {filtered.length === 0
-              ? <li className="pm-select-empty">Sonuç bulunamadı</li>
-              : filtered.map(opt => (
-                <li
-                  key={opt}
-                  role="option"
-                  aria-selected={value === opt}
-                  className={`pm-select-option${value === opt ? " selected" : ""}`}
-                  onMouseDown={() => { onChange(opt); setOpen(false); }}
-                >
-                  {opt}
-                  {value === opt && <Icon name="check" size={13} />}
-                </li>
-              ))
-            }
-          </ul>
-        </div>,
-        document.body,
-      )}
-    </>
-  );
-}
-
-// ── Sayfa ─────────────────────────────────────────────────────────────────────
-interface FormState {
+type FormState = {
   projeAdi: string;
   islemTipi: string;
   birim: string;
   tutar: string;
   kullaniciAdi: string;
   siparis: string;
-}
+};
 
 const EMPTY: FormState = { projeAdi: "", islemTipi: "", birim: "", tutar: "", kullaniciAdi: "", siparis: "" };
 
-export default function ProjeMuhasebesiPage() {
-  const [form, setForm]   = useState<FormState>(EMPTY);
-  const [status, setStatus] = useState<"idle" | "error">("idle");
-  const toast = useToast();
+function Icon({ name, size = 18 }: { name: keyof typeof ICONS; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d={ICONS[name]} />
+    </svg>
+  );
+}
 
-  function set(key: keyof FormState, val: string) {
-    setForm(f => ({ ...f, [key]: val }));
-    setStatus("idle");
+function money(value: string) {
+  const amount = Number(value);
+  if (!value.trim() || !Number.isFinite(amount)) return "0,00 TL";
+  return `${new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount)} TL`;
+}
+
+export default function ProjeMuhasebesiPage() {
+  const toast = useToast();
+  const [form, setForm] = useState<FormState>(EMPTY);
+  const [error, setError] = useState("");
+
+  function set(key: keyof FormState, value: string) {
+    setForm((current) => ({ ...current, [key]: value }));
+    setError("");
   }
 
-  function handleSave() {
-    if (!form.projeAdi || !form.islemTipi || !form.tutar || !form.kullaniciAdi) {
-      setStatus("error");
+  function handleSave(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const amount = Number(form.tutar);
+    if (!form.projeAdi.trim() || !form.islemTipi || !form.tutar.trim() || !Number.isFinite(amount) || amount < 0 || !form.kullaniciAdi) {
+      setError("Proje adı, işlem tipi, tutar ve kullanıcı zorunludur.");
       return;
     }
-    setStatus("idle");
     toast.success("Muhasebe kaydı oluşturuldu.");
     setForm(EMPTY);
   }
 
+  const directionClass = form.islemTipi === "Gelen" || form.islemTipi === "Giden" ? form.islemTipi.toLowerCase() : "quiet";
+
   return (
     <AdminShell>
-      <div className="pm-page">
-
-        <header className="orders-hero">
+      <div className="fav-page">
+        <header className="fav-head">
           <div>
-            <p className="eyebrow">YÖNETİM</p>
-            <h1>Cari Hesap Oluştur</h1>
+            <h1>Proje Muhasebesi</h1>
+            <p>Cari hesap kaydı oluşturun. Proje, tutar ve kullanıcı bu formda.</p>
           </div>
         </header>
 
-        <div className="detail-panel" style={{ padding: "1.5rem" }}>
-          <div className="form-grid" style={{ marginBottom: "1.25rem" }}>
-
-            {/* Proje Adı */}
-            <div className="form-field">
-              <label>Proje Adı</label>
-              <input
-                type="text"
-                value={form.projeAdi}
-                onChange={e => set("projeAdi", e.target.value)}
-                placeholder="Proje adı girin"
-              />
+        <form className="stype-layout" onSubmit={handleSave}>
+          <section className="fav-card stype-section">
+            <header><span className="fav-mark"><Icon name="currency" size={18} /></span><h2>Cari kayıt</h2></header>
+            <label className="stype-field">
+              <span>Proje adı</span>
+              <input value={form.projeAdi} onChange={(event) => set("projeAdi", event.target.value)} placeholder="Proje adı girin" autoFocus />
+            </label>
+            <div className="stype-grid two">
+              <label className="stype-field">
+                <span>İşlem tipi</span>
+                <SystemDropdown value={form.islemTipi} onChange={(value) => set("islemTipi", value)} placeholder="Seçiniz" ariaLabel="İşlem tipi" options={DIRECTIONS.map((item) => ({ value: item, label: item }))} />
+              </label>
+              <label className="stype-field">
+                <span>Birim</span>
+                <input value={form.birim} onChange={(event) => set("birim", event.target.value)} placeholder="Birim girin" />
+              </label>
             </div>
-
-            {/* İşlem Tipi */}
-            <div className="form-field">
-              <label>İşlem Tipi</label>
-              <SearchSelect
-                options={ISLEM_TIPLERI}
-                value={form.islemTipi}
-                onChange={v => set("islemTipi", v)}
-                placeholder="Seçiniz"
-              />
+            <div className="stype-grid two">
+              <label className="stype-field">
+                <span>Tutar</span>
+                <input value={form.tutar} onChange={(event) => set("tutar", event.target.value)} type="number" min="0" step="0.01" placeholder="0,00" />
+              </label>
+              <label className="stype-field">
+                <span>Kullanıcı adı</span>
+                <SystemDropdown value={form.kullaniciAdi} onChange={(value) => set("kullaniciAdi", value)} placeholder="Kullanıcı seçin" ariaLabel="Kullanıcı adı" searchable searchPlaceholder="Kullanıcı ara…" options={USERS.map((item) => ({ value: item, label: item }))} />
+              </label>
             </div>
+            <label className="stype-field">
+              <span>Sipariş</span>
+              <input value={form.siparis} onChange={(event) => set("siparis", event.target.value)} placeholder="Sipariş kodu (opsiyonel)" />
+              <small>Sipariş kodu zorunlu değil.</small>
+            </label>
+          </section>
 
-            {/* Birim */}
-            <div className="form-field">
-              <label>Birim</label>
-              <input
-                type="text"
-                value={form.birim}
-                onChange={e => set("birim", e.target.value)}
-                placeholder="Birim girin"
-              />
-            </div>
-
-            {/* Tutar */}
-            <div className="form-field">
-              <label>Tutar</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.tutar}
-                onChange={e => set("tutar", e.target.value)}
-                placeholder="0,00"
-              />
-            </div>
-
-            {/* Kullanıcı Adı */}
-            <div className="form-field">
-              <label>Kullanıcı Adı</label>
-              <SearchSelect
-                options={KULLANICILAR}
-                value={form.kullaniciAdi}
-                onChange={v => set("kullaniciAdi", v)}
-                placeholder="Kullanıcı seçin"
-                searchPlaceholder="Kullanıcı ara..."
-              />
-            </div>
-
-            {/* Sipariş */}
-            <div className="form-field">
-              <label>Sipariş</label>
-              <input
-                type="text"
-                value={form.siparis}
-                onChange={e => set("siparis", e.target.value)}
-                placeholder="Sipariş kodu (opsiyonel)"
-              />
-            </div>
-
-          </div>
-
-          {/* Kaydet satırı */}
-          <div className="settings-actions" style={{ borderTop: "1px solid var(--line)", paddingTop: "1.1rem" }}>
-            {status === "error" && (
-              <span className="settings-note error">Lütfen zorunlu alanları doldurun.</span>
-            )}
-            <button className="pm-save-btn" onClick={handleSave}>
-              <Icon name="save" size={14} /> Kaydet
-            </button>
-          </div>
-        </div>
-
+          <aside className="fav-card acct-summary" aria-label="Cari kayıt özeti">
+            <header><span className="fav-mark"><Icon name="clipboard" size={18} /></span><h2>Kayıt özeti</h2></header>
+            <span className={`acct-badge ${directionClass}`}>{form.islemTipi || "İşlem tipi"}</span>
+            <p className={`acct-figure ${directionClass}`}>{money(form.tutar)}</p>
+            <dl className="acct-rows">
+              <div><dt>Proje</dt><dd>{form.projeAdi.trim() || "Proje adı"}</dd></div>
+              <div><dt>Birim</dt><dd>{form.birim.trim() || "—"}</dd></div>
+              <div><dt>Kullanıcı</dt><dd>{form.kullaniciAdi || "Seçilmedi"}</dd></div>
+              <div><dt>Sipariş</dt><dd>{form.siparis.trim() || "—"}</dd></div>
+            </dl>
+            {error && <p className="acct-error" role="alert">{error}</p>}
+            <button className="fav-save" type="submit">Kaydı oluştur</button>
+          </aside>
+        </form>
       </div>
     </AdminShell>
   );

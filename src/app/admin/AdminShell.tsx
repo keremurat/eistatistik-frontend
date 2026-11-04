@@ -5,7 +5,9 @@ import Image from "next/image";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ProfileMenu } from "../components/ProfileMenu";
+import { CustomerNavIcon } from "../components/CustomerNavIcon";
 import { NotificationMenu } from "../components/NotificationMenu";
+import { useAccess } from "../components/AccessProvider";
 import { FavoritesProvider, useFavorites } from "./FavoritesContext";
 
 const DataHiddenContext = createContext(false);
@@ -16,7 +18,7 @@ export function useDataHidden() {
 /** Sayısal değeri, göz kapalıyken •••  ile maskeler. */
 export function MaskedNum({ children }: { children: React.ReactNode }) {
   const hidden = useDataHidden();
-  if (hidden) return <span style={{ color: "var(--muted)", letterSpacing: ".1em", userSelect: "none", fontWeight: 700 }}>• • •</span>;
+  if (hidden) return <span className="masked-number-placeholder">• • •</span>;
   return <>{children}</>;
 }
 
@@ -74,7 +76,7 @@ function FavoritesMenu() {
         onClick={() => setOpen(o => !o)}
       >
         <AdminIcon name={favs.length > 0 ? "starFilled" : "star"} size={20} />
-        {favs.length > 0 && <span className="notification-dot" style={{ background: "#b66d2e" }}>{favs.length}</span>}
+        {favs.length > 0 && <span className="notification-dot favorites-notification-dot">{favs.length}</span>}
       </button>
 
       {open && (
@@ -118,115 +120,126 @@ function FavoritesMenu() {
 }
 
 type MenuKey = "orders" | "education" | "manage";
-type MenuItemDef = { label: string; href: string; icon?: AdminIconName; subItems?: { label: string; href: string }[] };
-type ManagementGroup = { label: string; items: { label: string; href: string; icon: AdminIconName }[] };
+type MenuItemDef = { label: string; href: string; icon?: AdminIconName; permission?: string; subItems?: { label: string; href: string; permission?: string }[] };
+type ManagementGroup = { label: string; items: { label: string; href: string; icon: AdminIconName; permission: string }[] };
+
+function filterMenuItems(items: MenuItemDef[], canSee: (permission?: string) => boolean): MenuItemDef[] {
+  return items.flatMap(item => {
+    if (item.subItems) {
+      const subItems = item.subItems.filter(subItem => canSee(subItem.permission));
+      return subItems.length > 0 ? [{ ...item, subItems }] : [];
+    }
+    return canSee(item.permission) ? [item] : [];
+  });
+}
 
 const managementGroups: ManagementGroup[] = [
   { label: "Sipariş Ayarları", items: [
-    { label: "Favori Kategorileri", href: "/admin/favori-kategorileri", icon: "star" },
-    { label: "Sipariş Türleri", href: "/admin/siparis-turleri", icon: "orders" },
-    { label: "Sipariş Analizör Değiştir", href: "/admin/analizor-degistir", icon: "transfer" },
-    { label: "Mesaj Şablonları", href: "/admin/mesaj-sablonlari", icon: "message" },
+    { label: "Favori Kategorileri", href: "/admin/favori-kategorileri", icon: "star", permission: "siparis.dashboard" },
+    { label: "Sipariş Türleri", href: "/admin/siparis-turleri", icon: "orders", permission: "siparis.dashboard" },
+    { label: "Sipariş Analizör Değiştir", href: "/admin/analizor-degistir", icon: "transfer", permission: "siparis.analizor" },
+    { label: "Mesaj Şablonları", href: "/admin/mesaj-sablonlari", icon: "message", permission: "diger.mesaj" },
+    { label: "Proje Muhasebesi", href: "/admin/proje-muhasebesi", icon: "card", permission: "siparis.dashboard" },
   ] },
   { label: "Eğitim Talepleri", items: [
-    { label: "Eğitim Listesi", href: "/admin/egitim-talepleri/egitim-listesi", icon: "education" },
-    { label: "Modül Listesi", href: "/admin/egitim-talepleri/modul-listesi", icon: "layers" },
-    { label: "Ders Listesi", href: "/admin/egitim-talepleri/ders-listesi", icon: "book" },
-    { label: "Mentörlük Ayarı", href: "/admin/egitim-talepleri/mentorluk-ayari", icon: "users" },
-    { label: "İndirim Kodları", href: "/admin/indirim-kodlari", icon: "tag" },
-    { label: "Rol Yönetimi", href: "/admin/rol-yonetimi", icon: "role" },
+    { label: "Eğitim Listesi", href: "/admin/egitim-talepleri/egitim-listesi", icon: "education", permission: "egitim.yonetim" },
+    { label: "Modül Listesi", href: "/admin/egitim-talepleri/modul-listesi", icon: "layers", permission: "egitim.yonetim" },
+    { label: "Ders Listesi", href: "/admin/egitim-talepleri/ders-listesi", icon: "book", permission: "egitim.yonetim" },
+    { label: "Mentörlük Ayarı", href: "/admin/egitim-talepleri/mentorluk-ayari", icon: "users", permission: "egitim.yonetim" },
+    { label: "İndirim Kodları", href: "/admin/indirim-kodlari", icon: "tag", permission: "kupon.listele" },
+    { label: "Rol Yönetimi", href: "/admin/rol-yonetimi", icon: "role", permission: "diger.rol" },
   ] },
   { label: "Kullanıcı Yönetimi", items: [
-    { label: "Kullanıcılar", href: "/admin/kullanici-yonetimi", icon: "users" },
-    { label: "Toplu Mesaj Gönder", href: "/admin/toplu-mesaj", icon: "send" },
-    { label: "Randevular", href: "/admin/randevular", icon: "calendar" },
-    { label: "Rehber Adımları", href: "/admin/rehber-adimlari", icon: "book" },
-    { label: "Duyurular", href: "/admin/duyurular", icon: "message" },
+    { label: "Kullanıcılar", href: "/admin/kullanici-yonetimi", icon: "users", permission: "kullanici.listele" },
+    { label: "Toplu Mesaj Gönder", href: "/admin/toplu-mesaj", icon: "send", permission: "kullanici.whatsapp" },
+    { label: "Randevular", href: "/admin/randevular", icon: "calendar", permission: "diger.takvim" },
+    { label: "Rehber Adımları", href: "/admin/rehber-adimlari", icon: "book", permission: "diger.dashboard" },
+    { label: "Duyurular", href: "/admin/duyurular", icon: "message", permission: "diger.duyuru" },
   ] },
   { label: "Abonelik", items: [
-    { label: "Abonelikler", href: "/admin/abonelikler", icon: "card" },
-    { label: "Plan Ayarları", href: "/admin/plan-ayarlari", icon: "settings" },
-    { label: "Bültenler", href: "/admin/bultenler", icon: "send" },
-    { label: "İçerikler", href: "/admin/icerikler", icon: "inbox" },
-    { label: "Bülten Önizleme", href: "/admin/bulten-onizleme", icon: "eye" },
-    { label: "Hizmetler", href: "/admin/hizmetler", icon: "orders" },
+    { label: "Abonelikler", href: "/admin/abonelikler", icon: "card", permission: "diger.dashboard" },
+    { label: "Plan Ayarları", href: "/admin/plan-ayarlari", icon: "settings", permission: "diger.dashboard" },
+    { label: "Bültenler", href: "/admin/bultenler", icon: "send", permission: "diger.dashboard" },
+    { label: "İçerikler", href: "/admin/icerikler", icon: "inbox", permission: "diger.dashboard" },
+    { label: "Bülten Önizleme", href: "/admin/bulten-onizleme", icon: "eye", permission: "diger.dashboard" },
+    { label: "Hizmetler", href: "/admin/hizmetler", icon: "orders", permission: "diger.dashboard" },
   ] },
   { label: "Şablon Ayarları", items: [
-    { label: "Analiz Şablonları", href: "/admin/analiz-sablonlari", icon: "layers" },
-    { label: "Şablon Görünümü", href: "/admin/sablon-gorunumu", icon: "eye" },
+    { label: "Analiz Şablonları", href: "/admin/analiz-sablonlari", icon: "layers", permission: "diger.dashboard" },
+    { label: "Şablon Görünümü", href: "/admin/sablon-gorunumu", icon: "eye", permission: "diger.dashboard" },
   ] },
   { label: "Görev İşlemleri", items: [
-    { label: "Görev Listesi (Kart)", href: "/admin/gorev-isleri/gorev-listesi-kart", icon: "orders" },
-    { label: "Görev Listesi", href: "/admin/gorev-isleri/gorev-listesi", icon: "manage" },
-    { label: "Arşiv", href: "/admin/gorev-isleri/arsiv", icon: "inbox" },
+    { label: "Görev Listesi (Kart)", href: "/admin/gorev-isleri/gorev-listesi-kart", icon: "orders", permission: "pano.listele" },
+    { label: "Görev Listesi", href: "/admin/gorev-isleri/gorev-listesi", icon: "manage", permission: "pano.listele" },
+    { label: "Arşiv", href: "/admin/gorev-isleri/arsiv", icon: "inbox", permission: "pano.listele" },
   ] },
   { label: "Site Ayarları", items: [
-    { label: "Anasayfa Ayarları", href: "/admin/anasayfa-ayarlari", icon: "home" },
+    { label: "Anasayfa Ayarları", href: "/admin/anasayfa-ayarlari", icon: "home", permission: "diger.dashboard" },
   ] },
 ];
 const adminMenus: { key: MenuKey; label: string; icon: AdminIconName; items: MenuItemDef[] }[] = [
   { key: "orders", label: "Sipariş Yönetimi", icon: "orders", items: [
-    { label: "Mevcut Siparişler / Analizler", href: "/admin/siparisler", icon: "orders" },
-    { label: "Yeni Analiz Talebi Oluştur", href: "/admin/yeni-analiz-talebi", icon: "layers" },
-    { label: "Arşiv", href: "/admin/arsiv", icon: "inbox" },
+    { label: "Mevcut Siparişler / Analizler", href: "/admin/siparisler", icon: "orders", permission: "siparis.listele" },
+    { label: "Yeni Analiz Talebi Oluştur", href: "/admin/yeni-analiz-talebi", icon: "layers", permission: "siparis.olustur" },
+    { label: "Arşiv", href: "/admin/arsiv", icon: "inbox", permission: "siparis.listele" },
   ] },
   { key: "education", label: "Eğitimler", icon: "education", items: [
-    { label: "Satın Alınan Eğitimler", href: "/admin/egitimler/satin-alinan", icon: "education" },
-    { label: "Yeni Eğitim Satın Al", href: "/admin/egitimler/yeni", icon: "book" },
-    { label: "Eğitim İstekleri", href: "/admin/egitimler/istekler", icon: "message" },
-    { label: "Arşiv", href: "/admin/egitimler/arsiv", icon: "inbox" },
+    { label: "Satın Alınan Eğitimler", href: "/admin/egitimler/satin-alinan", icon: "education", permission: "egitim.listele" },
+    { label: "Yeni Eğitim Satın Al", href: "/admin/egitimler/yeni", icon: "book", permission: "egitim.olustur" },
+    { label: "Eğitim İstekleri", href: "/admin/egitimler/istekler", icon: "message", permission: "egitim.listele" },
+    { label: "Arşiv", href: "/admin/egitimler/arsiv", icon: "inbox", permission: "egitim.listele" },
   ] },
   { key: "manage", label: "Yönetim", icon: "manage", items: [
-    { label: "Sipariş Türleri", href: "/admin/siparis-turleri" },
-    { label: "Sipariş Analizör Değiştir", href: "/admin/analizor-degistir" },
-    { label: "Mesaj Şablonları", href: "/admin/mesaj-sablonlari" },
-    { label: "Eğitim Talepleri", href: "#", subItems: [
-      { label: "Eğitim Listesi", href: "/admin/egitim-talepleri/egitim-listesi" },
-      { label: "Modül Listesi", href: "/admin/egitim-talepleri/modul-listesi" },
-      { label: "Ders Listesi", href: "/admin/egitim-talepleri/ders-listesi" },
-      { label: "Mentörlük Ayarı", href: "/admin/egitim-talepleri/mentorluk-ayari" },
+    { label: "Sipariş Türleri", href: "/admin/siparis-turleri", permission: "siparis.dashboard" },
+    { label: "Sipariş Analizör Değiştir", href: "/admin/analizor-degistir", permission: "siparis.analizor" },
+    { label: "Mesaj Şablonları", href: "/admin/mesaj-sablonlari", permission: "diger.mesaj" },
+    { label: "Eğitim Talepleri", href: "#", permission: "egitim.yonetim", subItems: [
+      { label: "Eğitim Listesi", href: "/admin/egitim-talepleri/egitim-listesi", permission: "egitim.yonetim" },
+      { label: "Modül Listesi", href: "/admin/egitim-talepleri/modul-listesi", permission: "egitim.yonetim" },
+      { label: "Ders Listesi", href: "/admin/egitim-talepleri/ders-listesi", permission: "egitim.yonetim" },
+      { label: "Mentörlük Ayarı", href: "/admin/egitim-talepleri/mentorluk-ayari", permission: "egitim.yonetim" },
     ] },
-    { label: "İndirim Kodları", href: "/admin/indirim-kodlari" },
-    { label: "Rol Yönetimi", href: "/admin/rol-yonetimi" },
-    { label: "Kullanıcı Yönetimi", href: "#", subItems: [
-      { label: "Kullanıcılar", href: "/admin/kullanici-yonetimi" },
-      { label: "Toplu Mesaj Gönder", href: "/admin/toplu-mesaj" },
+    { label: "İndirim Kodları", href: "/admin/indirim-kodlari", permission: "kupon.listele" },
+    { label: "Rol Yönetimi", href: "/admin/rol-yonetimi", permission: "diger.rol" },
+    { label: "Kullanıcı Yönetimi", href: "#", permission: "kullanici.listele", subItems: [
+      { label: "Kullanıcılar", href: "/admin/kullanici-yonetimi", permission: "kullanici.listele" },
+      { label: "Toplu Mesaj Gönder", href: "/admin/toplu-mesaj", permission: "kullanici.whatsapp" },
     ] },
-    { label: "Duyurular", href: "/admin/duyurular" },
-    { label: "Görev İşlemleri", href: "#", subItems: [
-      { label: "Görev Listesi (Kart)", href: "/admin/gorev-isleri/gorev-listesi-kart" },
-      { label: "Görev Listesi", href: "/admin/gorev-isleri/gorev-listesi" },
-      { label: "Arşiv", href: "/admin/gorev-isleri/arsiv" },
+    { label: "Duyurular", href: "/admin/duyurular", permission: "diger.duyuru" },
+    { label: "Görev İşlemleri", href: "#", permission: "pano.listele", subItems: [
+      { label: "Görev Listesi (Kart)", href: "/admin/gorev-isleri/gorev-listesi-kart", permission: "pano.listele" },
+      { label: "Görev Listesi", href: "/admin/gorev-isleri/gorev-listesi", permission: "pano.listele" },
+      { label: "Arşiv", href: "/admin/gorev-isleri/arsiv", permission: "pano.listele" },
     ] },
-    { label: "Proje Muhasebesi Ekle", href: "/admin/proje-muhasebesi" },
+    { label: "Proje Muhasebesi Ekle", href: "/admin/proje-muhasebesi", permission: "siparis.dashboard" },
   ] },
 ];
 
 const editorMenus: typeof adminMenus = [
   { key: "orders", label: "Sipariş Yönetimi", icon: "orders", items: [
-    { label: "Mevcut Siparişler / Analizler", href: "/editor/siparisler", icon: "orders" },
-    { label: "Yeni Analiz Talebi Oluştur", href: "/editor/yeni-analiz-talebi", icon: "layers" },
+    { label: "Mevcut Siparişler / Analizler", href: "/editor/siparisler", icon: "orders", permission: "siparis.listele" },
+    { label: "Yeni Analiz Talebi Oluştur", href: "/editor/yeni-analiz-talebi", icon: "layers", permission: "siparis.olustur" },
   ] },
   { key: "education", label: "Eğitimler", icon: "education", items: [
-    { label: "Satın Alınan Eğitimler", href: "/editor/egitimler/satin-alinan", icon: "education" },
-    { label: "Yeni Eğitim Satın Al", href: "/editor/egitimler/yeni", icon: "book" },
+    { label: "Satın Alınan Eğitimler", href: "/editor/egitimler/satin-alinan", icon: "education", permission: "egitim.listele" },
+    { label: "Yeni Eğitim Satın Al", href: "/editor/egitimler/yeni", icon: "book", permission: "egitim.olustur" },
   ] },
   { key: "manage", label: "Yönetim", icon: "manage", items: [
-    { label: "Eğitim Talepleri", href: "#", subItems: [
-      { label: "Eğitim Listesi", href: "/editor/egitim-talepleri/egitim-listesi" },
-      { label: "Modül Listesi", href: "/editor/egitim-talepleri/modul-listesi" },
-      { label: "Ders Listesi", href: "/editor/egitim-talepleri/ders-listesi" },
-      { label: "Mentörlük Ayarı", href: "/editor/egitim-talepleri/mentorluk-ayari" },
+    { label: "Eğitim Talepleri", href: "#", permission: "egitim.yonetim", subItems: [
+      { label: "Eğitim Listesi", href: "/editor/egitim-talepleri/egitim-listesi", permission: "egitim.yonetim" },
+      { label: "Modül Listesi", href: "/editor/egitim-talepleri/modul-listesi", permission: "egitim.yonetim" },
+      { label: "Ders Listesi", href: "/editor/egitim-talepleri/ders-listesi", permission: "egitim.yonetim" },
+      { label: "Mentörlük Ayarı", href: "/editor/egitim-talepleri/mentorluk-ayari", permission: "egitim.yonetim" },
     ] },
-    { label: "İndirim Kodları", href: "/editor/indirim-kodlari" },
-    { label: "Kullanıcı Yönetimi", href: "#", subItems: [
-      { label: "Kullanıcılar", href: "/editor/kullanici-yonetimi" },
+    { label: "İndirim Kodları", href: "/editor/indirim-kodlari", permission: "kupon.listele" },
+    { label: "Kullanıcı Yönetimi", href: "#", permission: "kullanici.listele", subItems: [
+      { label: "Kullanıcılar", href: "/editor/kullanici-yonetimi", permission: "kullanici.listele" },
     ] },
-    { label: "Duyurular", href: "/editor/duyurular" },
-    { label: "Görev İşlemleri", href: "#", subItems: [
-      { label: "Görev Listesi (Kart)", href: "/editor/gorev-isleri/gorev-listesi-kart" },
-      { label: "Görev Listesi", href: "/editor/gorev-isleri/gorev-listesi" },
-      { label: "Arşiv", href: "/editor/gorev-isleri/arsiv" },
+    { label: "Duyurular", href: "/editor/duyurular", permission: "diger.duyuru" },
+    { label: "Görev İşlemleri", href: "#", permission: "pano.listele", subItems: [
+      { label: "Görev Listesi (Kart)", href: "/editor/gorev-isleri/gorev-listesi-kart", permission: "pano.listele" },
+      { label: "Görev Listesi", href: "/editor/gorev-isleri/gorev-listesi", permission: "pano.listele" },
+      { label: "Arşiv", href: "/editor/gorev-isleri/arsiv", permission: "pano.listele" },
     ] },
   ] },
 ];
@@ -234,13 +247,20 @@ const editorMenus: typeof adminMenus = [
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const [openMenu, setOpenMenu]       = useState<MenuKey | null>(null);
   const [openSubMenu, setOpenSubMenu] = useState<string | null>(null);
-  const [dataHidden, setDataHidden]   = useState(true);
+  const [dataHidden, setDataHidden]   = useState(false);
   const navRef          = useRef<HTMLElement>(null);
   const menuCloseTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
   const subCloseTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pathname = usePathname();
+  const access = useAccess();
   const isEditor = pathname.startsWith("/editor");
-  const menus = isEditor ? editorMenus : adminMenus;
+  const canSee = (permission?: string) => !permission || access.can(permission);
+  const visibleGroups = managementGroups
+    .map(group => ({ ...group, items: group.items.filter(item => canSee(item.permission)) }))
+    .filter(group => group.items.length > 0);
+  const menus = (isEditor ? editorMenus : adminMenus)
+    .map(menu => ({ ...menu, items: filterMenuItems(menu.items, canSee) }))
+    .filter(menu => menu.key === "manage" && !isEditor ? visibleGroups.length > 0 : menu.items.length > 0);
   const homeHref = isEditor ? "/editor" : "/admin";
   const calendarHref = isEditor ? "/editor/takvim" : "/admin/takvim";
   const managementHrefs = isEditor
@@ -273,15 +293,53 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     subCloseTimer.current = setTimeout(() => setOpenSubMenu(null), 150);
   }
 
+  const inAdminDesk = !isEditor && (pathname.startsWith("/admin/dashboard") || managementHrefs.some((href) => href !== "#" && (pathname === href || pathname.startsWith(`${href}/`))));
+  const topMenus = isEditor ? menus : menus.filter((menu) => menu.key !== "manage");
+  const activeDeskGroup = visibleGroups.find((group) => group.items.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`)))?.label ?? null;
+
   return (
     <FavoritesProvider>
-    <div className={`app-shell${isEditor ? " editor-shell" : ""}`}>
+    <div className={`app-shell customer-shell${inAdminDesk ? " dash-app" : ""}`}>
       <a className="skip-link" href="#admin-main">İçeriğe geç</a>
+      {inAdminDesk ? (
+        <aside className="dash-side">
+          <Link className="brand" href="/admin/dashboard" aria-label="Admin dashboard"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} priority /></Link>
+          <p className="dash-kicker">Dashboard</p>
+          <nav aria-label="Yönetici navigasyonu">
+            <Link className={pathname.startsWith("/admin/dashboard") ? "active" : ""} href="/admin/dashboard"><CustomerNavIcon name="dashboard" />Özet</Link>
+            {visibleGroups.map((group) => {
+              const open = (openSubMenu ?? activeDeskGroup) === group.label;
+              return (
+                <div className="dash-group" key={group.label}>
+                  <button type="button" className={open ? "open" : ""} aria-expanded={open} onClick={() => setOpenSubMenu(open ? "" : group.label)}>
+                    {group.label}
+                    <span className="dash-caret" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 6.25 4 4 4-4" /></svg></span>
+                  </button>
+                  {open && (
+                    <div className="dash-sub">
+                      {group.items.map((item) => <Link key={item.href} className={pathname === item.href || pathname.startsWith(`${item.href}/`) ? "active" : ""} href={item.href}>{item.label}</Link>)}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </nav>
+          <Link className="dash-exit" href="/admin">Dashboarddan çık</Link>
+          <div className="dash-side-tools">
+            <button className={`icon-button ${dataHidden ? "open" : ""}`} onClick={() => setDataHidden((current) => !current)} aria-pressed={dataHidden} aria-label={dataHidden ? "Verileri göster" : "Verileri gizle"} title={dataHidden ? "Verileri göster" : "Verileri gizle"}>
+              <AdminIcon name={dataHidden ? "eyeOff" : "eye"} size={20} />
+            </button>
+            <FavoritesMenu />
+            <NotificationMenu role="admin" />
+            <ProfileMenu roleLabel={access.roleName || "Yönetici"} settingsHref="/admin/ayarlar" ordersHref="/admin/siparisler" ordersLabel="Sipariş Yönetimi" dashboardHref={canSee("menu.dashboard") ? "/admin/dashboard" : undefined} name="Kerem Murat" email="admin@eistatistik.com" initials="KM" />
+          </div>
+        </aside>
+      ) : (
       <header className="topbar">
         <Link className="brand" href={homeHref} aria-label={`eistatistik ${isEditor ? "editör" : "yönetim"} ana sayfa`}><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} priority /></Link>
         <nav className="admin-nav" aria-label={isEditor ? "Editör navigasyonu" : "Yönetici navigasyonu"} ref={navRef}>
-          <Link className={pathname === homeHref ? "active" : ""} href={homeHref}><AdminIcon name="home" />Anasayfa</Link>
-          {menus.map((menu) => {
+          <Link className={pathname === homeHref ? "active" : ""} href={homeHref}><CustomerNavIcon name="overview" />Anasayfa</Link>
+          {topMenus.map((menu) => {
             const menuActive = (menu.key === "manage" && !isEditor && managementGroups.some(group => group.items.some(item => pathname.startsWith(item.href)))) || menu.items.some((item) => {
               if (item.href !== "#" && pathname.startsWith(item.href)) return true;
               return item.subItems?.some((s) => s.href !== "#" && pathname.startsWith(s.href)) ?? false;
@@ -299,11 +357,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 aria-haspopup="menu"
                 onClick={() => { setOpenMenu((c) => (c === menu.key ? null : menu.key)); setOpenSubMenu(null); }}
               >
-                <AdminIcon name={menu.icon} />{menu.label}<span className="nav-caret">⌄</span>
+                <CustomerNavIcon name={menu.icon === "orders" ? "orders" : menu.icon === "education" ? "education" : "manage"} />{menu.label}<span className="nav-caret">⌄</span>
               </button>
               {openMenu === menu.key && (
                 menu.key === "manage" && !isEditor ? <div className="admin-menu admin-management-menu" role="menu" aria-label="Yönetim bölümleri">
-                  {managementGroups.map((group) => <section className="admin-management-group" key={group.label}>
+                  {visibleGroups.map((group) => <section className="admin-management-group" key={group.label}>
                     <h2>{group.label}</h2>
                     <div>{group.items.map((item) => <Link key={item.label} role="menuitem" href={item.href} onClick={() => setOpenMenu(null)}><AdminIcon name={item.icon} size={16} /><span>{item.label}</span></Link>)}</div>
                   </section>)}
@@ -349,7 +407,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </div>
             );
           })}
-          <Link className={pathname === calendarHref ? "active" : ""} href={calendarHref}><AdminIcon name="calendar" />Takvim</Link>
+          {canSee("menu.takvim") && <Link className={pathname === calendarHref ? "active" : ""} href={calendarHref}><CustomerNavIcon name="calendar" />Takvim</Link>}
         </nav>
         <div className="top-actions">
           <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a>
@@ -358,9 +416,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </button>
           <FavoritesMenu />
           <NotificationMenu role={isEditor ? "editor" : "admin"} />
-          <ProfileMenu roleLabel={isEditor ? "Editör hesabı" : "Yönetici"} settingsHref={isEditor ? "/editor/ayarlar" : "/admin/ayarlar"} ordersHref={isEditor ? "/editor/siparisler" : "/admin/siparisler"} ordersLabel="Sipariş Yönetimi" name={isEditor ? "eistatistik Editör" : undefined} email={isEditor ? "editor@eistatistik.com" : undefined} initials={isEditor ? "EE" : undefined} />
+          <ProfileMenu roleLabel={access.roleName || (isEditor ? "Editör hesabı" : "Yönetici")} settingsHref={isEditor ? "/editor/ayarlar" : "/admin/ayarlar"} ordersHref={isEditor ? "/editor/siparisler" : "/admin/siparisler"} ordersLabel="Sipariş Yönetimi" dashboardHref={!isEditor && canSee("menu.dashboard") ? "/admin/dashboard" : undefined} name={isEditor ? "eistatistik Editör" : "Kerem Murat"} email={isEditor ? "editor@eistatistik.com" : "admin@eistatistik.com"} initials={isEditor ? "EE" : "KM"} />
         </div>
       </header>
+      )}
       <main id="admin-main" className={`admin-dash${isManagementPage ? " admin-management-page" : ""}`} data-hidden={dataHidden ? "true" : undefined}>
         <DataHiddenContext.Provider value={dataHidden}>{children}</DataHiddenContext.Provider>
       </main>

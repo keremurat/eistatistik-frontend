@@ -15,3 +15,24 @@ export const SABLONLAR: Sablon[] = [
 ];
 
 export function getSablon(id: string) { return SABLONLAR.find((s) => s.id === id); }
+
+const STORAGE_KEY = "eistatistik.analysis-templates.v1";
+
+export function readSablonlar(): Sablon[] {
+  const source = (() => {
+    if (typeof window === "undefined") return SABLONLAR;
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) return SABLONLAR;
+      const parsed = JSON.parse(raw) as Sablon[];
+      return Array.isArray(parsed) ? parsed : SABLONLAR;
+    } catch {
+      return SABLONLAR;
+    }
+  })();
+  return [...source].sort((a, b) => a.sira - b.sira);
+}
+
+export function writeSablonlar(items: Sablon[]) {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+}

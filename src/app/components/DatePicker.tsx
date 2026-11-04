@@ -126,8 +126,8 @@ export function DatePicker({ id, value, onChange, required, placeholder = "GG.AA
   function nextMonth() { setView((v) => v.month === 11 ? { year: v.year + 1, month: 0 } : { ...v, month: v.month + 1 }); }
 
   const calendarPanel = (
-    <div ref={panelRef} className="dc-panel"
-      style={{ position: "fixed", top: pos.top, left: pos.left, width: 272, zIndex: 9999 }}
+    <div ref={panelRef} className="dc-panel dc-panel-positioned"
+      style={{ top: pos.top, left: pos.left }}
       role="dialog" aria-label="Takvim">
       <div className="dc-nav">
         <button className="dc-nav-btn" type="button" onClick={prevMonth} aria-label="Önceki ay">

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { BrandLogo } from "../components/BrandLogo";
-import { CustomerEducationMenu } from "../components/CustomerEducationMenu";
+import { WorkspaceNav } from "../components/WorkspaceNav";
 import { NotificationMenu } from "../components/NotificationMenu";
 import { ProfileMenu } from "../components/ProfileMenu";
 
@@ -30,15 +30,10 @@ const services = [
 
 export default function ServicesPage() {
   return (
-    <div className="app-shell">
+    <div className="app-shell customer-shell">
       <header className="topbar">
         <BrandLogo />
-        <nav className="main-nav" aria-label="Ana navigasyon">
-          <Link href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
-          <Link href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
-          <CustomerEducationMenu />
-          <Link className="active" href="/hizmetler"><Icon name="spark" size={17} />Hizmetler</Link>
-        </nav>
+        <WorkspaceNav kind="customer" />
         <div className="top-actions"><a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a><NotificationMenu role="musteri" /><ProfileMenu /></div>
       </header>
 

@@ -36,6 +36,8 @@ export const ALL_PERMS: Permission[] = [
   { key: "menu.mesaj",          label: "Mesaj Şablonları Menüsü",  category: "menu" },
   { key: "menu.dashboard",      label: "Dashboard Menüsü",         category: "menu" },
   { key: "menu.takvim",         label: "Takvim Menüsü",            category: "menu" },
+  { key: "menu.hizmet",         label: "Hizmetler Menüsü",         category: "menu" },
+  { key: "menu.gorusme",        label: "Görüşmeler Menüsü",        category: "menu" },
 
   // Sipariş
   { key: "siparis.listele",     label: "Sipariş Listele",          category: "siparis" },
@@ -96,7 +98,7 @@ export const ALL_PERMS: Permission[] = [
 const adminPerms = new Set(ALL_PERMS.map((p) => p.key));
 
 const analyzerPerms = new Set([
-  "menu.siparis","menu.egitim","menu.indirim","menu.pano","menu.dashboard",
+  "menu.siparis","menu.egitim","menu.indirim","menu.pano","menu.dashboard","menu.takvim","menu.gorusme",
   "siparis.listele","siparis.goruntule","siparis.dashboard","siparis.tum_yazisma",
   "siparis.analizor","siparis.eft","siparis.kredi","siparis.teslim",
   "egitim.listele","egitim.goruntule","egitim.icerik",
@@ -106,7 +108,7 @@ const analyzerPerms = new Set([
 ]);
 
 const customerPerms = new Set([
-  "menu.siparis","menu.egitim","menu.dashboard",
+  "menu.siparis","menu.egitim","menu.dashboard","menu.hizmet",
   "siparis.listele","siparis.goruntule","siparis.olustur","siparis.eft","siparis.kredi",
   "egitim.listele","egitim.goruntule","egitim.icerik",
   "diger.takvim",
@@ -114,7 +116,7 @@ const customerPerms = new Set([
 
 const editorPerms = new Set([
   "menu.siparis","menu.egitim","menu.indirim","menu.kullanici","menu.pano","menu.duyuru","menu.mesaj","menu.dashboard","menu.takvim",
-  "siparis.listele","siparis.goruntule","siparis.dashboard","siparis.tum_yazisma","siparis.analizor","siparis.eft","siparis.kredi","siparis.iptal","siparis.teslim",
+  "siparis.listele","siparis.goruntule","siparis.olustur","siparis.dashboard","siparis.tum_yazisma","siparis.analizor","siparis.eft","siparis.kredi","siparis.iptal","siparis.teslim",
   "egitim.listele","egitim.goruntule","egitim.olustur","egitim.guncelle","egitim.sil","egitim.yonetim","egitim.icerik",
   "kupon.listele","kupon.olustur","kupon.goruntule","kupon.guncelle","kupon.sil","kupon.siparis_tanimla",
   "kullanici.listele","kullanici.goruntule","kullanici.duzenle","kullanici.guncelle","kullanici.rapor",

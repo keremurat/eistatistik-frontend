@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { SharedOrderDetail } from "../../../admin/siparisler/DS260723008/OrderDetailContent";
-import { CustomerEducationMenu } from "../../../components/CustomerEducationMenu";
+import { WorkspaceNav } from "../../../components/WorkspaceNav";
 import { NotificationMenu } from "../../../components/NotificationMenu";
 import { ProfileMenu } from "../../../components/ProfileMenu";
 
@@ -26,16 +26,10 @@ export default async function AnalystWorkDetailPage({ params }: { params: Promis
   const title = workByCode[code as WorkCode];
   if (!title) notFound();
 
-  return <div className="app-shell">
+  return <div className="app-shell customer-shell">
     <header className="topbar">
       <Link className="brand" href="/analizor"><Image className="brand-logo" src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} priority /></Link>
-      <nav className="main-nav" aria-label="Analizör navigasyonu">
-        <Link href="/analizor">Genel bakış</Link>
-        <Link className="active" href="/analizor/islerim">İşlerim</Link>
-        <CustomerEducationMenu />
-        <Link href="/analizor/gorusmeler">Görüşmeler</Link>
-        <Link href="/analizor/takvim">Takvim</Link>
-      </nav>
+      <WorkspaceNav kind="analyst" />
       <div className="top-actions">
         <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a>
         <NotificationMenu role="analizor" />

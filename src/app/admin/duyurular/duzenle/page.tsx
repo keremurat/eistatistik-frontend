@@ -1,21 +1,27 @@
 "use client";
 
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { DuyuruForm } from "../DuyuruForm";
-import { DUYURULAR } from "../data";
+import { Suspense, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { AdminShell } from "../../AdminShell";
 
-function EditInner() {
+function RedirectToAnnouncement() {
+  const router = useRouter();
   const params = useSearchParams();
-  const id     = Number(params.get("id") ?? 0);
-  const duyuru = DUYURULAR.find((d) => d.id === id);
-  return <DuyuruForm mode="duzenle" initial={duyuru} />;
+  const id = params.get("id");
+
+  useEffect(() => {
+    router.replace(id ? `/admin/duyurular/${encodeURIComponent(id)}` : "/admin/duyurular");
+  }, [id, router]);
+
+  return null;
 }
 
 export default function DuyuruDuzenlePage() {
   return (
-    <Suspense fallback={null}>
-      <EditInner />
-    </Suspense>
+    <AdminShell>
+      <Suspense fallback={null}>
+        <RedirectToAnnouncement />
+      </Suspense>
+    </AdminShell>
   );
 }

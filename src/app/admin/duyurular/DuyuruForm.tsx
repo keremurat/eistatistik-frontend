@@ -1,131 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { FormEvent, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AdminShell } from "../AdminShell";
-import { useToast } from "../../components/ToastProvider";
 import { DatePicker } from "../../components/DatePicker";
+import { SystemDropdown } from "../../components/SystemDropdown";
 import { TimePicker } from "../../components/TimePicker";
-import { Duyuru } from "./data";
+import { useToast } from "../../components/ToastProvider";
+import { Duyuru, DuyuruDurum, readAnnouncements, writeAnnouncements } from "./data";
 
-// ── Özel dropdown (native select'in yerini alır) ──────────────────────────────
-type SelectOpt = { value: string; label: string };
-
-function SimpleSelect({
-  id, value, onChange, options,
-}: {
-  id?: string; value: string; onChange: (v: string) => void; options: SelectOpt[];
-}) {
-  const [open,   setOpen]   = useState(false);
-  const [pos,    setPos]    = useState({ top: 0, left: 0, width: 0 });
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const panelRef   = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function onDown(e: MouseEvent) {
-      if (triggerRef.current?.contains(e.target as Node)) return;
-      if (panelRef.current?.contains(e.target as Node)) return;
-      setOpen(false);
-    }
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") setOpen(false); }
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown",   onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("keydown",   onKey);
-    };
-  }, [open]);
-
-  function openPanel() {
-    if (!triggerRef.current) return;
-    const r       = triggerRef.current.getBoundingClientRect();
-    const panelH  = options.length * 42 + 10;
-    const top     = window.innerHeight - r.bottom - 8 < panelH
-      ? r.top - panelH - 4
-      : r.bottom + 4;
-    setPos({ top, left: r.left, width: r.width });
-    setOpen((o) => !o);
-  }
-
-  const selected = options.find((o) => o.value === value);
-
-  const panel = (
-    <div ref={panelRef} className="cs-panel"
-      style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width, zIndex: 9999, padding: ".3rem" }}
-      role="listbox">
-      {options.map((o) => (
-        <button key={o.value} className={`cs-option${value === o.value ? " active" : ""}`}
-          role="option" aria-selected={value === o.value} type="button"
-          onClick={() => { onChange(o.value); setOpen(false); }}>
-          {o.label}
-        </button>
-      ))}
-    </div>
-  );
-
-  return (
-    <>
-      <button ref={triggerRef} id={id} className={`cs-trigger${open ? " open" : ""}`}
-        type="button" onClick={openPanel} aria-haspopup="listbox" aria-expanded={open}>
-        <span>{selected?.label ?? ""}</span>
-        <span className="cs-arrow">▼</span>
-      </button>
-      {open && typeof document !== "undefined" && createPortal(panel, document.body)}
-    </>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-type IconName = "back" | "bold" | "italic" | "heading" | "quote" | "ul" | "ol" | "task" |
-  "link" | "image" | "preview" | "table" | "fullscreen" | "help" | "upload" | "check" | "x" | "info";
-
-function Icon({ name, size = 15 }: { name: IconName; size?: number }) {
-  const paths: Record<IconName, React.ReactNode> = {
-    back:       <><path d="M19 12H5" /><path d="m12 19-7-7 7-7" /></>,
-    bold:       <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z" />,
-    italic:     <><line x1="19" y1="4" x2="10" y2="4" /><line x1="14" y1="20" x2="5" y2="20" /><line x1="15" y1="4" x2="9" y2="20" /></>,
-    heading:    <><path d="M4 12h16M4 6h16M4 18h16" /></>,
-    quote:      <><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" /><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" /></>,
-    ul:         <><path d="M9 6h11M9 12h11M9 18h11" /><circle cx="4" cy="6" r="1" fill="currentColor" stroke="none" /><circle cx="4" cy="12" r="1" fill="currentColor" stroke="none" /><circle cx="4" cy="18" r="1" fill="currentColor" stroke="none" /></>,
-    ol:         <><path d="M10 6h11M10 12h11M10 18h11" /><path d="M4 6h1v4M4 10h2M3 18h2a1 1 0 1 0 0-2H3v-1h2" /></>,
-    task:       <><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></>,
-    link:       <><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></>,
-    image:      <><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" /></>,
-    preview:    <><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" /></>,
-    table:      <><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 3v18" /></>,
-    fullscreen: <><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3" /></>,
-    help:       <><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" /></>,
-    upload:     <><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M12 12v9M8 16l4-4 4 4" /></>,
-    check:      <path d="m5 12 4 4L19 6" />,
-    x:          <><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>,
-    info:       <><circle cx="12" cy="12" r="9" /><path d="M12 16v-4M12 8h.01" /></>,
-  };
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {paths[name]}
-    </svg>
-  );
-}
-
-// ── Markdown editor toolbar ───────────────────────────────────────────────────
-const TOOLBAR: { icon: IconName; title: string; wrap?: [string, string] }[] = [
-  { icon: "bold",       title: "Kalın",       wrap: ["**", "**"] },
-  { icon: "italic",     title: "İtalik",      wrap: ["*", "*"]   },
-  { icon: "heading",    title: "Başlık",      wrap: ["## ", ""]  },
-  { icon: "quote",      title: "Alıntı",      wrap: ["> ", ""]   },
-  { icon: "ul",         title: "Liste",       wrap: ["- ", ""]   },
-  { icon: "ol",         title: "Numaralı",    wrap: ["1. ", ""]  },
-  { icon: "task",       title: "Görev",       wrap: ["- [ ] ", ""] },
-  { icon: "link",       title: "Bağlantı",    wrap: ["[", "](url)"] },
-  { icon: "image",      title: "Resim",       wrap: ["![alt](", ")"] },
-  { icon: "preview",    title: "Önizle",      },
-  { icon: "table",      title: "Tablo",       },
-  { icon: "fullscreen", title: "Tam ekran",   },
-  { icon: "help",       title: "Yardım",      },
+const TOOLS: { label: string; title: string; wrap: [string, string] }[] = [
+  { label: "B", title: "Kalın", wrap: ["**", "**"] },
+  { label: "I", title: "İtalik", wrap: ["*", "*"] },
+  { label: "H", title: "Başlık", wrap: ["## ", ""] },
+  { label: "❝", title: "Alıntı", wrap: ["> ", ""] },
+  { label: "≡", title: "Liste", wrap: ["- ", ""] },
+  { label: "1.", title: "Numaralı", wrap: ["1. ", ""] },
+  { label: "☐", title: "Görev", wrap: ["- [ ] ", ""] },
+  { label: "↗", title: "Bağlantı", wrap: ["[", "](url)"] },
+  { label: "▣", title: "Resim", wrap: ["![alt](", ")"] },
 ];
+
+const ICONS = {
+  back: "M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z",
+  megaphone: "M248,120a48.05,48.05,0,0,0-40-47.32V72a8,8,0,0,0-8-8H160.2a4,4,0,0,1-3.2-1.6l-23.48-31.3A16,16,0,0,0,120.45,24H72A16,16,0,0,0,56,40V80H32a16,16,0,0,0-16,16v64a16,16,0,0,0,16,16H56v8a32,32,0,0,0,32,32h8a8,8,0,0,0,8-8V176h16.45a16,16,0,0,0,13.07-6.79l23.48-31.3a4,4,0,0,1,3.2-1.6H200a8,8,0,0,0,8-8v-.68A48.05,48.05,0,0,0,248,120ZM72,40h48.45l16.8,22.4A8,8,0,0,0,143.73,66H72ZM88,192H88a16,16,0,0,1-16-16v-8h16Zm120-72H143.73a8,8,0,0,0-6.48,3.31L113.45,160H32V96H200Zm32-8a32,32,0,0,1-16,27.71V92.29A32,32,0,0,1,240,112Z",
+} as const;
 
 type Props = {
   mode: "ekle" | "duzenle";
@@ -134,306 +34,188 @@ type Props = {
   embedded?: boolean;
 };
 
-export function DuyuruForm({ mode, initial = {}, basePath = "/admin/duyurular", embedded = false }: Props) {
-  const toast = useToast();
-  const today = new Date();
-  const todayStr = `${String(today.getDate()).padStart(2, "0")}.${String(today.getMonth() + 1).padStart(2, "0")}.${today.getFullYear()}`;
+function Icon({ name, size = 18 }: { name: keyof typeof ICONS; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d={ICONS[name]} />
+    </svg>
+  );
+}
 
-  const [baslik,      setBaslik]      = useState(initial.baslik      ?? "");
-  const [yayinTarih,  setYayinTarih]  = useState(
-    initial.yayinTarihi ? initial.yayinTarihi.split(" ")[0] : todayStr
-  );
-  const [yayinSaat,   setYayinSaat]   = useState(
-    initial.yayinTarihi ? initial.yayinTarihi.split(" ")[1] ?? "09:00" : "09:00"
-  );
-  const [durum,       setDurum]       = useState(initial.durum       ?? "Pasif");
-  const [modal,       setModal]       = useState(initial.modalGoster ?? false);
-  const [icerik,      setIcerik]      = useState(initial.icerik      ?? "");
-  const [bgImage,     setBgImage]     = useState<string | null>(null);
-  const [error,       setError]       = useState("");
+function todayStamp() {
+  const today = new Date();
+  return `${String(today.getDate()).padStart(2, "0")}.${String(today.getMonth() + 1).padStart(2, "0")}.${today.getFullYear()}`;
+}
+
+function nowStamp() {
+  const now = new Date();
+  return `${todayStamp()} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+}
+
+export function DuyuruForm({ mode, initial = {}, basePath = "/admin/duyurular", embedded = false }: Props) {
+  const router = useRouter();
+  const toast = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileRef     = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [baslik, setBaslik] = useState(initial.baslik ?? "");
+  const [yayinTarih, setYayinTarih] = useState(initial.yayinTarihi?.split(" ")[0] || todayStamp());
+  const [yayinSaat, setYayinSaat] = useState(initial.yayinTarihi?.split(" ")[1] || "09:00");
+  const [durum, setDurum] = useState<DuyuruDurum>(initial.durum ?? "Pasif");
+  const [modal, setModal] = useState(initial.modalGoster ?? false);
+  const [icerik, setIcerik] = useState(initial.icerik ?? "");
+  const [gorsel, setGorsel] = useState<string | null>(initial.gorsel ?? null);
+  const [error, setError] = useState("");
+  const [confirming, setConfirming] = useState(false);
 
   const wordCount = icerik.trim() ? icerik.trim().split(/\s+/).length : 0;
   const lineCount = icerik ? icerik.split("\n").length : 1;
 
   function insertWrap(before: string, after: string) {
-    const ta = textareaRef.current;
-    if (!ta) return;
-    const start = ta.selectionStart;
-    const end   = ta.selectionEnd;
-    const sel   = icerik.slice(start, end);
-    const next  = icerik.slice(0, start) + before + sel + after + icerik.slice(end);
-    setIcerik(next);
-    setTimeout(() => {
-      ta.focus();
-      ta.selectionStart = start + before.length;
-      ta.selectionEnd   = start + before.length + sel.length;
-    }, 0);
-  }
-
-  function handleSave() {
-    if (!baslik.trim()) { setError("Duyuru başlığı boş bırakılamaz."); return; }
-    if (!icerik.trim()) { setError("Duyuru içeriği boş bırakılamaz."); return; }
+    const field = textareaRef.current;
+    if (!field) return;
+    const start = field.selectionStart;
+    const end = field.selectionEnd;
+    const selected = icerik.slice(start, end);
+    setIcerik(icerik.slice(0, start) + before + selected + after + icerik.slice(end));
     setError("");
-    toast.success(mode === "duzenle" ? "Duyuru güncellendi." : "Duyuru oluşturuldu.");
+    requestAnimationFrame(() => {
+      field.focus();
+      field.setSelectionRange(start + before.length, end + before.length);
+    });
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setBgImage(ev.target?.result as string);
-    reader.readAsDataURL(file);
+  function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!baslik.trim()) {
+      setError("Duyuru başlığı boş bırakılamaz.");
+      return;
+    }
+    if (!icerik.trim()) {
+      setError("Duyuru içeriği boş bırakılamaz.");
+      return;
+    }
+    const current = readAnnouncements();
+    const record: Duyuru = {
+      id: initial.id ?? Math.max(0, ...current.map((item) => item.id)) + 1,
+      baslik: baslik.trim(),
+      icerik: icerik.trim(),
+      eklemeTarihi: initial.eklemeTarihi ?? nowStamp(),
+      yayinTarihi: `${yayinTarih} ${yayinSaat}`.trim(),
+      durum,
+      modalGoster: modal,
+      gorsel: gorsel || undefined,
+    };
+    const next = initial.id
+      ? current.map((item) => item.id === initial.id ? record : item)
+      : [record, ...current];
+    writeAnnouncements(next);
+    toast.success(mode === "duzenle" ? "Duyuru güncellendi." : "Duyuru oluşturuldu.");
+    router.push(basePath);
+  }
+
+  function remove() {
+    if (!initial.id) return;
+    writeAnnouncements(readAnnouncements().filter((item) => item.id !== initial.id));
+    toast.success("Duyuru silindi.");
+    router.push(basePath);
   }
 
   const content = (
-      <div className="st-page">
-        <header className="favorite-category-create-header">
-          <Link className="back-link" href={basePath}>
-            <Icon name="back" size={16} />Duyuru Listesine dön
-          </Link>
-          <h1>{mode === "ekle" ? "Duyuru Ekle" : "Duyuru Düzenle"}</h1>
-        </header>
-
-        <div className="edu-edit-wrap">
-        <div className="edu-edit-col">
-
-          {/* ── Duyuru bilgileri ── */}
-          <section className="detail-panel">
-            <div className="detail-panel-heading">
-              <p className="eyebrow">DUYURU BİLGİLERİ</p>
-              <h2>Temel Bilgiler</h2>
-            </div>
-            <div className="settings-panel-body">
-              <div className="edu-row-2">
-                <div className="form-field">
-                  <label htmlFor="d-baslik">
-                    Duyuru Başlığı
-                    <span style={{ color: "#c85a51", marginLeft: ".2rem" }}>*</span>
-                  </label>
-                  <input
-                    id="d-baslik"
-                    value={baslik}
-                    onChange={(e) => { setBaslik(e.target.value); setError(""); }}
-                    placeholder="Duyuru başlığını girin"
-                    style={error && !baslik.trim() ? { borderColor: "#c85a51" } : undefined}
-                  />
-                </div>
-
-                <div className="form-field">
-                  <label htmlFor="d-tarih">Yayın Tarihi</label>
-                  <div style={{ display: "flex", gap: ".4rem" }}>
-                    <DatePicker id="d-tarih" value={yayinTarih} onChange={setYayinTarih} />
-                    <div style={{ width: 80, flexShrink: 0 }}>
-                      <TimePicker id="d-saat" value={yayinSaat} onChange={setYayinSaat} placeholder="SS:DD" />
-                    </div>
-                  </div>
-                </div>
+    <div className="fav-page stype-page">
+      <Link className="fav-back" href={basePath}><Icon name="back" size={16} />Duyuru listesine dön</Link>
+      <form className="stype-layout" onSubmit={save}>
+        <div className="stype-stack">
+          <section className="fav-card stype-section">
+            <header><span className="fav-mark"><Icon name="megaphone" /></span><h2>Temel bilgiler</h2></header>
+            <label className="stype-field">
+              <span>Duyuru başlığı</span>
+              <input value={baslik} onChange={(event) => { setBaslik(event.target.value); setError(""); }} placeholder="Duyuru başlığını girin" autoFocus />
+            </label>
+            <label className="stype-field">
+              <span>Yayın tarihi</span>
+              <div className="appt-when">
+                <DatePicker id="d-tarih" value={yayinTarih} onChange={setYayinTarih} />
+                <TimePicker id="d-saat" value={yayinSaat} onChange={setYayinSaat} />
               </div>
-
-              <div className="edu-row-2">
-                <div className="form-field">
-                  <label htmlFor="d-durum">Durumu</label>
-                  <SimpleSelect
-                    id="d-durum"
-                    value={durum}
-                    onChange={(v) => setDurum(v as "Aktif" | "Pasif")}
-                    options={[
-                      { value: "Pasif", label: "Pasif" },
-                      { value: "Aktif", label: "Aktif" },
-                    ]}
-                  />
-                </div>
-
-                <div className="form-field">
-                  <label htmlFor="d-modal">Ekranda Gösterilsin mi? (Modal)</label>
-                  <SimpleSelect
-                    id="d-modal"
-                    value={modal ? "evet" : "hayir"}
-                    onChange={(v) => setModal(v === "evet")}
-                    options={[
-                      { value: "hayir", label: "Hayır" },
-                      { value: "evet",  label: "Evet"  },
-                    ]}
-                  />
-                </div>
-              </div>
+            </label>
+            <div className="stype-grid two">
+              <label className="stype-field">
+                <span>Durumu</span>
+                <SystemDropdown value={durum} onChange={(value) => setDurum(value as DuyuruDurum)} ariaLabel="Duyuru durumu" options={[{ value: "Pasif", label: "Pasif" }, { value: "Aktif", label: "Aktif" }]} />
+              </label>
+              <label className="stype-field">
+                <span>Ekranda gösterilsin mi?</span>
+                <SystemDropdown value={modal ? "evet" : "hayir"} onChange={(value) => setModal(value === "evet")} ariaLabel="Modal gösterimi" options={[{ value: "hayir", label: "Hayır" }, { value: "evet", label: "Evet" }]} />
+              </label>
             </div>
           </section>
 
-          {/* ── Duyuru içeriği ── */}
-          <section className="detail-panel">
-            <div className="detail-panel-heading">
-              <p className="eyebrow">DUYURU İÇERİĞİ</p>
-              <h2>İçerik</h2>
-            </div>
-            <div className="settings-panel-body">
-            <div className="form-field">
-              <div style={{
-                border: `1px solid ${error && !icerik.trim() ? "#c85a51" : "var(--line)"}`,
-                borderRadius: 9, overflow: "hidden",
-                background: "#fff",
-              }}>
-                {/* Toolbar */}
-                <div style={{
-                  display: "flex", flexWrap: "wrap", gap: "2px",
-                  padding: ".4rem .5rem",
-                  borderBottom: "1px solid var(--line)",
-                  background: "#f8fafb",
-                }}>
-                  {TOOLBAR.map((btn, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      title={btn.title}
-                      onClick={() => btn.wrap && insertWrap(btn.wrap[0], btn.wrap[1])}
-                      style={{
-                        display: "grid", placeItems: "center",
-                        width: 28, height: 28, border: "1px solid transparent",
-                        borderRadius: 5, background: "transparent",
-                        cursor: "pointer", color: "#54687a",
-                        transition: ".1s",
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = "#edf1f4";
-                        (e.currentTarget as HTMLElement).style.borderColor = "var(--line)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = "transparent";
-                        (e.currentTarget as HTMLElement).style.borderColor = "transparent";
-                      }}>
-                      <Icon name={btn.icon} size={14} />
-                    </button>
-                  ))}
-                </div>
-
-                {/* Textarea */}
-                <textarea
-                  ref={textareaRef}
-                  value={icerik}
-                  onChange={(e) => { setIcerik(e.target.value); setError(""); }}
-                  placeholder="Duyuru içeriğini buraya yazın… (Markdown desteklenir)"
-                  rows={14}
-                  style={{
-                    display: "block", width: "100%", border: 0, outline: "none",
-                    padding: "1rem 1.1rem", resize: "vertical",
-                    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-                    fontSize: ".72rem", lineHeight: 1.7, color: "var(--ink)",
-                    background: "#fff",
-                  }}
-                />
-
-                {/* Alt bar */}
-                <div style={{
-                  padding: ".3rem .8rem",
-                  borderTop: "1px solid var(--line)",
-                  background: "#f8fafb",
-                  textAlign: "right",
-                  fontSize: ".62rem", color: "#94aab7",
-                }}>
-                  lines: {lineCount} · words: {wordCount}
-                </div>
+          <section className="fav-card stype-section">
+            <header><h2>İçerik</h2></header>
+            <label className="stype-field">
+              <span>Duyuru içeriği</span>
+              <div className="guide-tools" role="toolbar" aria-label="Metin biçimlendirme">
+                {TOOLS.map((tool) => (
+                  <button key={tool.title} type="button" title={tool.title} aria-label={tool.title} onClick={() => insertWrap(tool.wrap[0], tool.wrap[1])}>{tool.label}</button>
+                ))}
               </div>
-            </div>
-
-            </div>
+              <textarea ref={textareaRef} className="guide-body ann-body" value={icerik} onChange={(event) => { setIcerik(event.target.value); setError(""); }} placeholder="Duyuru içeriğini buraya yazın… (Markdown desteklenir)" />
+              <small>{lineCount} satır · {wordCount} kelime</small>
+            </label>
           </section>
 
-          {/* ── Arka plan resmi ── */}
-          <section className="detail-panel">
-            <div className="detail-panel-heading">
-              <p className="eyebrow">ARKA PLAN RESMİ</p>
-              <h2>Görsel</h2>
-            </div>
-            <div className="settings-panel-body">
-              <div className="edu-row-2" style={{ alignItems: "start" }}>
-                <div className="form-field">
-                  <label>Resim yükleyin</label>
-                  <div
-                    onClick={() => fileRef.current?.click()}
-                    style={{
-                      display: "flex", flexDirection: "column", alignItems: "center",
-                      justifyContent: "center", gap: ".6rem",
-                      minHeight: 140, borderRadius: 10, cursor: "pointer",
-                      border: "2px dashed var(--line)",
-                      background: bgImage ? "transparent" : "#f8fafb",
-                      overflow: "hidden", position: "relative",
-                      transition: "border-color .15s",
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--blue)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--line)")}>
-                    {bgImage ? (
-                      <>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={bgImage} alt="Arka plan" style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0 }} />
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); setBgImage(null); }}
-                          style={{
-                            position: "absolute", top: 6, right: 6,
-                            width: 24, height: 24, borderRadius: "50%",
-                            border: 0, background: "rgba(0,0,0,.5)", color: "#fff",
-                            cursor: "pointer", display: "grid", placeItems: "center",
-                          }}>
-                          <Icon name="x" size={12} />
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <span style={{ color: "#94aab7" }}><Icon name="upload" size={32} /></span>
-                        <span style={{ fontSize: ".7rem", color: "var(--blue)", fontWeight: 700 }}>
-                          Resim seçmek için tıklayınız
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
-                    onChange={handleFileChange} />
-                </div>
-
-                <div className="form-field">
-                  <label>Önizleme</label>
-                  <div style={{
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    padding: ".75rem 1rem", borderRadius: 10, minHeight: 140,
-                    background: "#f8fafb", border: "1px solid var(--line)",
-                    fontSize: ".7rem", color: "#8493a0", textAlign: "center",
-                  }}>
-                    {bgImage
-                      ? <span style={{ color: "#287a55", fontWeight: 700 }}>Resim seçildi</span>
-                      : "Henüz resim yüklenmedi"}
-                  </div>
-                </div>
+          <section className="fav-card stype-section">
+            <header><h2>Arka plan resmi</h2></header>
+            <input ref={fileRef} hidden type="file" accept="image/*" onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.target.value = "";
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = () => setGorsel(String(reader.result || ""));
+              reader.readAsDataURL(file);
+            }} />
+            {gorsel ? (
+              <div className="ann-upload">
+                <img src={gorsel} alt="Arka plan" />
+                <button type="button" onClick={() => setGorsel(null)}>Kaldır</button>
               </div>
-            </div>
+            ) : (
+              <button className="llist-upload" type="button" onClick={() => fileRef.current?.click()}>
+                Resim seçmek için tıklayınız
+                <small>Duyuru kartının arka planı.</small>
+              </button>
+            )}
           </section>
 
+          <div className="fav-actions">
+            {error && <p role="alert">{error}</p>}
+            {mode === "duzenle" && initial.id && (confirming ? (
+              <>
+                <p>Bu işlem geri alınamaz.</p>
+                <button className="user-cancel" type="button" onClick={() => setConfirming(false)}>Vazgeç</button>
+                <button className="fav-delete" type="button" onClick={remove}>Evet, sil</button>
+              </>
+            ) : <button className="fav-delete" type="button" onClick={() => setConfirming(true)}>Duyuruyu sil</button>)}
+            <button className="fav-save" type="submit">Kaydet</button>
+          </div>
         </div>
 
-        {/* ── Sağ: Duyuru Özeti ── */}
-        <aside className="edu-preview-card">
-          <div className="ik-preview-head">
-            <p className="eyebrow">ÖZET</p>
-            <strong>Duyuru Özeti</strong>
-          </div>
-          <div className="edu-preview-info">
-            <div className="edu-preview-row"><span className="edu-preview-key">Başlık</span><span className="edu-preview-val">{baslik || "—"}</span></div>
-            <div className="edu-preview-row"><span className="edu-preview-key">Durum</span><span className="edu-preview-val">{durum}</span></div>
-            <div className="edu-preview-row"><span className="edu-preview-key">Yayın</span><span className="edu-preview-val">{yayinTarih} · {yayinSaat}</span></div>
-            <div className="edu-preview-row"><span className="edu-preview-key">Modal</span><span className="edu-preview-val">{modal ? "Evet" : "Hayır"}</span></div>
-          </div>
-          <div className="ik-preview-note">
-            <Icon name="info" size={14} />
-            <span>Duyuru içeriği Markdown formatında yazılabilir.</span>
-          </div>
-          {error && <p style={{ margin: "0 1rem .7rem", fontSize: ".64rem", color: "#c85a51", fontWeight: 700, lineHeight: 1.45 }}>{error}</p>}
-          <button className="edu-preview-save" onClick={handleSave}>
-            Kaydet
-          </button>
+        <aside className="fav-card acct-summary" aria-label="Duyuru özeti">
+          <header><span className="fav-mark"><Icon name="megaphone" /></span><h2>Duyuru özeti</h2></header>
+          <span className={`stype-status ${durum === "Aktif" ? "aktif" : "pasif"}`}>{durum}</span>
+          <p className="acct-figure">{yayinSaat || "—"}</p>
+          <dl className="acct-rows">
+            <div><dt>Başlık</dt><dd className="wrap">{baslik.trim() || "Duyuru başlığı"}</dd></div>
+            <div><dt>Yayın</dt><dd>{yayinTarih || "—"}</dd></div>
+            <div><dt>Modal</dt><dd>{modal ? "Evet" : "Hayır"}</dd></div>
+            <div><dt>Görsel</dt><dd>{gorsel ? "Seçildi" : "Yok"}</dd></div>
+          </dl>
+          <p className="tm-bubble">{icerik.trim() || "Duyuru içeriği Markdown formatında yazılabilir."}</p>
+          {gorsel && <img className="ann-preview" src={gorsel} alt="" />}
         </aside>
-      </div>
+      </form>
     </div>
   );
+
   return embedded ? content : <AdminShell>{content}</AdminShell>;
 }

@@ -2,86 +2,106 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { AdminShell } from "../../AdminShell";
-import { getBulten, bultenIcerikler } from "../../bultenler/data";
+import { Bulten, Icerik, readBultenler, readIcerikler } from "../../bultenler/data";
 
-type IconName = "back" | "shield" | "bookmark" | "play" | "calendar" | "download" | "file";
-function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
-  const paths: Record<IconName, React.ReactNode> = {
-    back: <><path d="M19 12H5" /><path d="m11 18-6-6 6-6" /></>,
-    shield: <><path d="M12 22s8-3 8-10V5l-8-3-8 3v7c0 7 8 10 8 10Z" /><path d="m9 12 2 2 4-4" /></>,
-    bookmark: <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />,
-    play: <><circle cx="12" cy="12" r="9" /><path d="m10 9 5 3-5 3z" fill="currentColor" stroke="none" /></>,
-    calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>,
-    download: <><path d="M12 3v12m0 0 4-4m-4 4-4-4" /><path d="M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2" /></>,
-    file: <><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z" /></>,
-  };
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+const ICONS = {
+  back: "M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z",
+  play: "M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm40.44,110.66-48,32A8,8,0,0,1,108,160V96a8,8,0,0,1,12.44-6.66l48,32a8,8,0,0,1,0,13.32Z",
+  file: "M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM152,44l44,44H152ZM200,216H56V40h80V88a8,8,0,0,0,8,8h56Z",
+  shield: "M208,40H48A16,16,0,0,0,32,56v56c0,52.72,25.52,84.67,46.93,102.19,23.06,18.86,46,25.26,47,25.53a8,8,0,0,0,4.2,0c1-.27,23.91-6.67,47-25.53C198.48,196.67,224,164.72,224,112V56A16,16,0,0,0,208,40Zm-42.34,74.83-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L104,154.34l50.34-50.35a8,8,0,0,1,11.32,11.32Z",
+} as const;
+
+function Icon({ name, size = 16 }: { name: keyof typeof ICONS; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d={ICONS[name]} />
+    </svg>
+  );
 }
 
-const turLabel = (t: string) => t === "video" ? "VIDEO" : t === "dosya" ? "BELGE" : "METİN";
-function youtubeId(url: string): string {
-  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
-  return m ? m[1] : "";
+const KIND: Record<Icerik["tur"], string> = { video: "Video", dosya: "Belge", metin: "Metin" };
+
+function youtubeId(url: string) {
+  return url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)?.[1] ?? "";
 }
 
 export default function BultenOnizlemeDetayPage() {
   const params = useParams<{ id: string }>();
-  const bulten = getBulten(params.id);
-  const icerikler = bulten ? bultenIcerikler(bulten.id).filter((i) => i.yayinda) : [];
+  const [item, setItem] = useState<Bulten | null | undefined>(undefined);
+  const [items, setItems] = useState<Icerik[]>([]);
 
-  if (!bulten) return (
-    <AdminShell><div className="st-page">
-      <Link className="back-link" href="/admin/bulten-onizleme"><Icon name="back" size={16} />Önizlemeye dön</Link>
-      <section className="detail-panel"><div className="settings-panel-body"><p style={{ color: "var(--muted)", fontSize: ".72rem" }}>Bülten bulunamadı.</p></div></section>
-    </div></AdminShell>
-  );
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      const found = readBultenler().find((record) => record.id === params.id) ?? null;
+      setItem(found);
+      setItems(found ? readIcerikler().filter((entry) => entry.bultenId === found.id && entry.yayinda) : []);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [params.id]);
 
-  const videoSayisi = icerikler.filter((i) => i.tur === "video").length;
-  const belgeSayisi = icerikler.filter((i) => i.tur === "dosya").length;
+  if (item === undefined) return <AdminShell>{null}</AdminShell>;
+  if (item === null) {
+    return (
+      <AdminShell>
+        <div className="fav-page">
+          <div className="fav-card fav-empty">
+            <strong>Bülten bulunamadı</strong>
+            <p>Bu kayıt listede yok.</p>
+            <Link className="orders-create" href="/admin/bulten-onizleme">Listeye dön</Link>
+          </div>
+        </div>
+      </AdminShell>
+    );
+  }
+
+  const videos = items.filter((entry) => entry.tur === "video").length;
+  const files = items.filter((entry) => entry.tur === "dosya").length;
 
   return (
     <AdminShell>
-      <div className="st-page">
-        <Link className="back-link" href="/admin/bulten-onizleme"><Icon name="back" size={16} />Önizlemeye dön</Link>
+      <div className="fav-page">
+        <Link className="fav-back" href="/admin/bulten-onizleme"><Icon name="back" size={16} />Önizlemeye dön</Link>
+        <section className="preview-hero">
+          <span className="preview-kicker">Özel içerik</span>
+          <h1>{item.baslik}</h1>
+          <p>Hoş geldiniz — içeriklere tam erişiminiz var.</p>
+          {item.aciklama.trim() && <p>{item.aciklama}</p>}
+          <span className="preview-access"><Icon name="shield" size={15} />Tam erişim</span>
+          <p className="preview-meta">{items.length} içerik · {videos} video · {files} belge</p>
+        </section>
 
-        <div className="bp-hero">
-          <span className="bp-hero-badge"><Icon name="bookmark" size={12} />ÖZEL İÇERİK</span>
-          <h1>{bulten.baslik}</h1>
-          <p className="bp-hero-sub">Hoş geldiniz — içeriklere tam erişiminiz var.</p>
-          <span className="bp-access"><Icon name="shield" size={15} />Tam erişim</span>
-          <div className="bp-hero-meta">
-            <span>{icerikler.length} içerik</span>
-            <span>{videoSayisi} video</span>
-            <span>{belgeSayisi} belge</span>
-          </div>
-        </div>
-
-        {icerikler.length === 0 ? (
-          <section className="detail-panel" style={{ marginTop: "1.5rem" }}><div className="bulten-empty"><Icon name="file" size={28} /><strong style={{ color: "var(--navy)" }}>Yayınlanan içerik yok</strong><span>Bu bültende henüz yayınlanmış içerik bulunmuyor.</span></div></section>
+        {items.length === 0 ? (
+          <section className="fav-card">
+            <div className="fav-empty">
+              <strong>Yayınlanan içerik yok</strong>
+              <p>Bu bültende henüz yayınlanmış içerik bulunmuyor.</p>
+            </div>
+          </section>
         ) : (
-          <div className="bp-content-grid">
-            {icerikler.map((ic) => {
-              const ytId = youtubeId(ic.youtubeUrl);
+          <div className="preview-grid">
+            {items.map((entry) => {
+              const video = youtubeId(entry.youtubeUrl);
               return (
-                <article className="bp-card" key={ic.id}>
-                  {ic.tur === "video" && ytId ? (
-                    <div className="bp-card-media"><iframe src={`https://www.youtube.com/embed/${ytId}`} title={ic.baslik} allowFullScreen /></div>
+                <article className={`fav-card preview-card${entry.genislik === "tam" ? " wide" : ""}`} key={entry.id}>
+                  {entry.tur === "video" && video ? (
+                    <div className="preview-media"><iframe src={`https://www.youtube.com/embed/${video}`} title={entry.baslik} allowFullScreen /></div>
                   ) : (
-                    <div className="bp-card-media empty"><Icon name={ic.tur === "dosya" ? "file" : "play"} size={30} /></div>
+                    <div className="preview-media empty"><Icon name={entry.tur === "dosya" ? "file" : "play"} size={28} /></div>
                   )}
-                  <div className="bp-card-body">
-                    <span className="bp-card-type"><Icon name={ic.tur === "dosya" ? "file" : "play"} size={11} />{turLabel(ic.tur)}</span>
-                    <h3>{ic.baslik}</h3>
-                    {ic.aciklama && <p>{ic.aciklama}</p>}
+                  <div className="preview-body">
+                    <span className="user-chip">{KIND[entry.tur]}</span>
+                    <h2>{entry.baslik}</h2>
+                    {entry.aciklama.trim() && <p>{entry.aciklama}</p>}
                   </div>
-                  <div className="bp-card-foot">
-                    <span className="date"><Icon name="calendar" size={12} />{ic.yayinTarihi.split(" ")[0]}</span>
-                    {ic.tur === "video" && ic.youtubeUrl
-                      ? <a className="action" href={ic.youtubeUrl} target="_blank" rel="noopener noreferrer"><Icon name="play" size={13} />İzle</a>
-                      : ic.tur === "dosya" && ic.dosya
-                        ? <span className="action"><Icon name="download" size={13} />İndir</span>
-                        : null}
+                  <div className="preview-foot">
+                    <span>{entry.yayinTarihi.split(" ")[0]}</span>
+                    {entry.tur === "video" && entry.youtubeUrl ? (
+                      <a href={entry.youtubeUrl} target="_blank" rel="noopener noreferrer"><Icon name="play" size={14} />İzle</a>
+                    ) : entry.tur === "dosya" && entry.dosya ? (
+                      <span className="preview-action"><Icon name="file" size={14} />İndir</span>
+                    ) : null}
                   </div>
                 </article>
               );

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useDataHidden } from "./AdminShell";
-import { AreaChart, BarChart, Donut, HorizontalBars, RadialProgress } from "./charts";
+import { AreaChart, BarChart, HorizontalBars } from "./charts";
 import { SystemDropdown } from "../components/SystemDropdown";
 
 type Period = "all" | "month" | "year" | "custom";
@@ -27,9 +27,6 @@ function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
 const analysts = ["Tümü", "Esra Öztürk", "Emre Dündar", "Gizem Şahin", "Fatih Akar", "Ertuğrul Gümüşsu", "Aliihsan Şükür", "Mehmet Meşe", "Naci Murat", "Rabia Aktaş", "eistatistik Genel Analizör"];
 const services = ["Tümü", "İstatistiksel veri analizi", "Power analizi", "Proforma fatura", "Online mentörlük", "Geçerlilik ve güvenilirlik analizi", "İstatistiksel danışmanlık", "Graphical Abstract"];
 const monthLabels = ["Eyl 25", "Eki", "Kas", "Ara", "Oca 26", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu"];
-
-const statusColors = ["#1775a9", "#7451d4", "#d08a22", "#22a89a", "#56a733", "#c9574f", "#98a5b2"];
-const serviceColors = ["#1775a9", "#132b46", "#2da87b", "#d69120", "#7157cf", "#38a7c0", "#cb5961"];
 
 const analystPerformance = [
   { label: "eistatistik Genel Analizör", values: [2549, 2507] },
@@ -71,23 +68,24 @@ export function AdminAnalyticsSection() {
     const ordersTotal = Math.round(14008 * factor);
     const monthlyOrders = [186, 156, 209, 162, 163, 197, 173, 207, 175, 208, 141, 188].map((v, i) => Math.round(v * factor * (1 + ((analysts.indexOf(analyst) + services.indexOf(service) + i) % 3) * .025)));
     const revenue = [1.31, 1.08, 1.02, 1.19, 1.24, 1.61, 1.28, 1.42, 1.27, 1.61, 1.02, .79].map(v => Math.round(v * 1_000_000 * factor));
-    const statusValues = [18, 9, 13, 11, 30, 15, 4].map(v => Math.max(1, Math.round(v * factor)));
-    const serviceValues = [72, 14, 7, 3, 2, 1.5, .5].map(v => Math.max(.2, v * factor));
+    const periodRevenue = Math.round(1_420_800 * factor);
     const selectedOrders = orders.filter(row => service === "Tümü" || row[3] === service).slice(0, analyst === "Tümü" ? 6 : 4);
-    return { ordersTotal, monthlyOrders, revenue, statusValues, serviceValues, selectedOrders };
+    return { ordersTotal, monthlyOrders, revenue, periodRevenue, selectedOrders };
   }, [factor, analyst, service]);
 
   const mask = (value: string | number) => hidden ? "•••" : value;
-  const statusSegments = ["Sipariş alındı", "Ücretlendirildi", "Yapılıyor", "Tamamlandı", "Teslim edildi", "İptal", "Transfer reddedildi"].map((label, i) => ({ label, value: hidden ? 0 : data.statusValues[i], color: statusColors[i] }));
-  const serviceSegments = services.slice(1).map((label, i) => ({ label, value: hidden ? 0 : data.serviceValues[i], color: serviceColors[i] }));
   const filteredPerformance = analyst === "Tümü" ? analystPerformance : analystPerformance.filter(item => item.label === analyst);
+  const attention = [
+    { label: "Teslim tarihi geçen", value: fmt(Math.round(13 * Math.max(factor, .2))) },
+    { label: "Teslimi yaklaşan", value: fmt(Math.round(44 * Math.max(factor, .2))) },
+    { label: "Ücretlendirme bekleyen", value: fmt(Math.round(4 * Math.max(factor, .25))) },
+    { label: "Zamanında teslim", value: "%83,4" },
+  ];
   const metrics = [
+    { icon: "money" as IconName, value: `${fmt(data.periodRevenue)} TL`, label: "Dönem geliri", tone: "green", featured: true },
     { icon: "orders" as IconName, value: fmt(data.ordersTotal), label: "Toplam sipariş", tone: "navy" },
-    { icon: "clock" as IconName, value: fmt(82 * factor), label: "Aktif sipariş", tone: "orange" },
-    { icon: "money" as IconName, value: `${fmt(1_420_800 * factor)} TL`, label: "Dönem geliri", tone: "green" },
-    { icon: "pending" as IconName, value: fmt(4 * Math.max(factor, .25)), label: "Ücretlendirme bekleyen", tone: "violet" },
-    { icon: "transfer" as IconName, value: fmt(2 * Math.max(factor, .2)), label: "Transfer onayı", tone: "cyan" },
-    { icon: "archive" as IconName, value: fmt(489 * factor), label: "Arşivlenen", tone: "slate" },
+    { icon: "clock" as IconName, value: fmt(Math.round(82 * factor)), label: "Aktif sipariş", tone: "orange" },
+    { icon: "pending" as IconName, value: fmt(Math.round(4 * Math.max(factor, .25))), label: "Ücretlendirme", tone: "violet" },
   ];
 
   return (
@@ -103,23 +101,42 @@ export function AdminAnalyticsSection() {
         </div>
       </section>
 
-      <section className="analytics-metrics" aria-label="Özet metrikler">
-        {metrics.map(metric => <article key={metric.label}><i className={metric.tone}><Icon name={metric.icon} /></i><div><strong>{mask(metric.value)}</strong><span>{metric.label}</span></div></article>)}
+      <section className="analytics-metrics dash-metrics" aria-label="Özet metrikler">
+        {metrics.map(metric => <article key={metric.label} className={metric.featured ? "featured" : ""}><i className={metric.tone}><Icon name={metric.icon} /></i><div><strong>{mask(metric.value)}</strong><span>{metric.label}</span></div></article>)}
       </section>
 
-      <section className="analytics-grid primary">
-        <article className="analytics-card analytics-orders-chart"><header><div><p className="eyebrow">SİPARİŞ HACMİ</p><h2>Aylık sipariş sayısı</h2></div><span>Son 12 ay</span></header><div className="analytics-chart-body"><BarChart values={hidden ? data.monthlyOrders.map(() => 0) : data.monthlyOrders} labels={monthLabels} /></div></article>
-        <article className="analytics-card"><header><div><p className="eyebrow">OPERASYON</p><h2>Durum dağılımı</h2></div><span>{mask(fmt(data.ordersTotal))} sipariş</span></header><div className="analytics-donut-layout"><Donut segments={statusSegments} size={176} thickness={25}><strong>{mask(fmt(data.ordersTotal))}</strong><small>toplam</small></Donut><div className="analytics-legend">{statusSegments.map(segment => <span key={segment.label}><i style={{background: segment.color}} />{segment.label}</span>)}</div></div></article>
+      <section className="dash-hero">
+        <article className="analytics-card analytics-orders-chart">
+          <header>
+            <div><p className="eyebrow">SİPARİŞ HACMİ</p><h2>Aylık sipariş sayısı</h2></div>
+            <strong className="dash-figure">{mask(fmt(data.ordersTotal))}</strong>
+          </header>
+          <div className="analytics-chart-body"><BarChart values={hidden ? data.monthlyOrders.map(() => 0) : data.monthlyOrders} labels={monthLabels} /></div>
+        </article>
+        <article className="dash-focus">
+          <div>
+            <p className="eyebrow">BUGÜN</p>
+            <h2>Bakılacaklar</h2>
+          </div>
+          <ul>
+            {attention.map((item) => <li key={item.label}><span>{item.label}</span><strong>{mask(item.value)}</strong></li>)}
+          </ul>
+          <Link href="/admin/siparisler">Siparişlere git</Link>
+        </article>
       </section>
 
-      <article className="analytics-card analytics-revenue"><header><div><p className="eyebrow">FİNANSAL AKIŞ</p><h2>Aylık gelir</h2></div><span>Ödemesi tamamlanan siparişler</span></header><div className="analytics-area-wrap"><AreaChart values={hidden ? data.revenue.map(() => 0) : data.revenue} labels={monthLabels} height={210} valueFormatter={value => `${fmt(value)} TL`} /><div className="analytics-axis">{monthLabels.map((label, index) => <span key={label} style={{left:`${(index / (monthLabels.length - 1 || 1)) * 100}%`}}>{label}</span>)}</div></div></article>
-
-      <section className="analytics-grid secondary">
-        <article className="analytics-card"><header><div><p className="eyebrow">HİZMET PORTFÖYÜ</p><h2>Sipariş türü dağılımı</h2></div><span>Seçili dönem</span></header><div className="analytics-donut-layout service"><Donut segments={serviceSegments} size={188} thickness={27}><strong>{mask(fmt(data.ordersTotal))}</strong><small>toplam</small></Donut><div className="analytics-legend">{serviceSegments.map(segment => <span key={segment.label}><i style={{background: segment.color}} />{segment.label}</span>)}</div></div></article>
-        <article className="analytics-card"><header><div><p className="eyebrow">TESLİMAT KALİTESİ</p><h2>Teslim süresi analizi</h2></div><span>{mask(fmt(9078 * factor))} teslim</span></header><div className="delivery-analysis"><RadialProgress value={hidden ? 0 : 83.4} size={190}><small>Zamanında teslim</small><strong>{hidden ? "•••" : "%83,4"}</strong></RadialProgress><dl><div><dt>{mask(`${fmt(42 * factor)} sa`)}</dt><dd>Söz verilen ort.</dd></div><div><dt>{mask(`${fmt(39 * factor)} sa`)}</dt><dd>Gerçekleşen ort.</dd></div><div><dt>{mask("%83,4")}</dt><dd>Zamanında teslim</dd></div></dl></div></article>
+      <section className="dash-split">
+        <article className="analytics-card analytics-revenue">
+          <header><div><p className="eyebrow">FİNANSAL AKIŞ</p><h2>Aylık gelir</h2></div><span>Ödemesi tamamlanan</span></header>
+          <div className="analytics-area-wrap"><AreaChart values={hidden ? data.revenue.map(() => 0) : data.revenue} labels={monthLabels} height={210} valueFormatter={value => `${fmt(value)} TL`} /><div className="analytics-axis">{monthLabels.map((label, index) => <span key={label} style={{left:`${(index / (monthLabels.length - 1 || 1)) * 100}%`}}>{label}</span>)}</div></div>
+        </article>
+        <article className="analytics-card analytics-performance">
+          <header><div><p className="eyebrow">EKİP</p><h2>Analizör performansı</h2></div></header>
+          <div className="performance-legend"><span><i />Toplam sipariş</span><span><i />Teslim edilen</span></div>
+          <HorizontalBars rows={hidden ? filteredPerformance.map(row => ({...row, values:[0,0]})) : filteredPerformance} />
+        </article>
       </section>
 
-      <article className="analytics-card analytics-performance"><header><div><p className="eyebrow">EKİP PERFORMANSI</p><h2>Analizör performansı</h2></div><span>Sipariş sayısına göre</span></header><div className="performance-legend"><span><i />Toplam sipariş</span><span><i />Teslim edilen</span></div><HorizontalBars rows={hidden ? filteredPerformance.map(row => ({...row, values:[0,0]})) : filteredPerformance} /></article>
 
       <article className="analytics-card analytics-latest"><header><div><p className="eyebrow">SON HAREKETLER</p><h2>Son siparişler</h2></div><Link href="/admin/siparisler">Tümünü görüntüle <Icon name="arrow" size={15} /></Link></header><div className="orders-table analytics-recent-orders"><div className="orders-table-head"><span>Sipariş</span><span>Müşteri</span><span>Hizmet</span><span>Durum</span><span>Tutar</span><span>İşlem</span></div>{hidden ? <div className="masked-cell">Veriler gizlendi</div> : data.selectedOrders.map(row => <article className="orders-row" key={row[0]}><Link className="order-row-link" href="/admin/siparisler" aria-label={`${row[1]} siparişini görüntüle`} /><div className="order-identity"><span className="order-file"><Icon name="file" /></span><span><strong>{row[1]}</strong><small>{row[0]} · {row[6]}</small></span></div><div className="order-identity"><span className="order-file"><Icon name="user" /></span><span><strong>{row[2]}</strong><small>Müşteri hesabı</small></span></div><div className="analytics-order-service"><strong>{row[3]}</strong></div><div className="order-state"><span className={`state-dot ${row[4] === "Teslim edildi" ? "completed" : row[4] === "Ek analiz" ? "action" : ""}`} /><span><strong>{row[4]}</strong></span></div><div className="analytics-order-price"><strong>{row[5]}</strong></div><div className="order-actions"><Link href="/admin/siparisler" className="context-action">Detay <Icon name="arrow" size={15} /></Link></div></article>)}</div></article>
     </div>

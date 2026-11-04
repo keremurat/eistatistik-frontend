@@ -116,7 +116,7 @@ function ActivityModal({ orderCode, onClose }: { orderCode: string; onClose: () 
       <section className="dm-modal dm-wide" role="dialog" aria-modal="true" aria-labelledby="dm-act-title">
         <header className="dm-header">
           <div>
-            <p className="eyebrow" style={{ marginBottom: ".1rem", color: "#8a99a6" }}>SİPARİŞ AKTİVİTESİ</p>
+            <p className="eyebrow admin-orders-modal-eyebrow">SİPARİŞ AKTİVİTESİ</p>
             <h2 id="dm-act-title">Sipariş Aktivite Günlüğü — {orderCode}</h2>
           </div>
           <button className="dm-close" onClick={onClose} aria-label="Kapat">✕</button>
@@ -136,20 +136,20 @@ function ActivityModal({ orderCode, onClose }: { orderCode: string; onClose: () 
               <tbody>
                 {ACTIVITY_ROWS.map((row) => (
                   <tr key={row.v}>
-                    <td style={{ textAlign: "center" }}>{row.v}</td>
+                    <td className="dm-cell-center">{row.v}</td>
                     <td>{row.time}</td>
                     <td>{row.actor}</td>
-                    <td style={{ color: row.code !== "—" ? "var(--blue)" : undefined }}>{row.code}</td>
+                    <td className={row.code !== "—" ? "dm-order-code" : undefined}>{row.code}</td>
                     <td>{row.title}</td>
-                    <td><code style={{ fontSize: ".55rem", color: "#54687a", fontFamily: "monospace" }}>{row.status}</code></td>
-                    <td style={{ textAlign: "center" }}>{row.ilkUcret}</td>
-                    <td style={{ textAlign: "center" }}>{row.sonUcret}</td>
+                    <td><code className="dm-status-code">{row.status}</code></td>
+                    <td className="dm-cell-center">{row.ilkUcret}</td>
+                    <td className="dm-cell-center">{row.sonUcret}</td>
                     <td>{row.odemeDurumu}</td>
                     <td>{row.odemeZamani}</td>
                     <td>{row.teslimatZamani}</td>
-                    <td style={{ textAlign: "center" }}>{row.teslimatTipi}</td>
-                    <td style={{ textAlign: "center" }}>{row.musteriId}</td>
-                    <td style={{ textAlign: "center" }}>{row.analizorId}</td>
+                    <td className="dm-cell-center">{row.teslimatTipi}</td>
+                    <td className="dm-cell-center">{row.musteriId}</td>
+                    <td className="dm-cell-center">{row.analizorId}</td>
                     <td>{row.parentId}</td>
                     <td>{row.kuponId}</td>
                     <td>{row.kuponZamani}</td>
@@ -181,14 +181,14 @@ function RelatedOrdersModal({ orderCode, relatedOrders, onClose }: { orderCode: 
       <section className="dm-modal dm-medium" role="dialog" aria-modal="true" aria-labelledby="dm-rel-title">
         <header className="dm-header">
           <div>
-            <p className="eyebrow" style={{ marginBottom: ".1rem", color: "#8a99a6" }}>SİPARİŞ</p>
+            <p className="eyebrow admin-orders-modal-eyebrow">SİPARİŞ</p>
             <h2 id="dm-rel-title">İlişkili Siparişler — {orderCode}</h2>
           </div>
           <button className="dm-close" onClick={onClose} aria-label="Kapat">✕</button>
         </header>
         <div className="dm-body">
           {relatedOrders.length === 0 ? (
-            <p style={{ color: "var(--muted)", fontSize: ".67rem", padding: "1.5rem 0", textAlign: "center" }}>
+            <p className="related-orders-empty">
               Bu siparişle ilişkili başka sipariş bulunamadı.
             </p>
           ) : (
@@ -201,14 +201,14 @@ function RelatedOrdersModal({ orderCode, relatedOrders, onClose }: { orderCode: 
                   {relatedOrders.map((o) => (
                     <tr key={o.code}>
                       <td>
-                        <Link href="/admin/siparisler/DS260723008" style={{ color: "var(--blue)", fontWeight: 800 }} onClick={onClose}>
+                        <Link className="related-order-link" href="/admin/siparisler/DS260723008" onClick={onClose}>
                           {o.code}
                         </Link>
                       </td>
                       <td>{o.service}</td>
                       <td>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: ".4rem" }}>
-                          <span className={o.statusKey === "teslim" ? "state-dot completed" : "state-dot cancelled"} style={{ width: 7, height: 7, flexShrink: 0 }} />
+                        <span className="related-order-status">
+                          <span className={o.statusKey === "teslim" ? "state-dot completed" : "state-dot cancelled"} />
                           {o.statusKey === "teslim" ? "Teslim edildi" : "İptal edildi"}
                         </span>
                       </td>
@@ -256,9 +256,8 @@ function ConfirmDeleteModal({ code, onConfirm, onClose }: { code: string; onConf
 
 // ── 3-nokta bağlam menüsü ─────────────────────────────────────────
 function ArchiveContextMenu({
-  order, onDelete, onRestore, onShowActivity, onShowRelated,
+  onDelete, onRestore, onShowActivity, onShowRelated,
 }: {
-  order: ArchivedOrder;
   onDelete: () => void;
   onRestore: () => void;
   onShowActivity: () => void;
@@ -316,7 +315,7 @@ function ArchiveContextMenu({
       </button>
       {open && typeof document !== "undefined" && createPortal(
         <div ref={menuRef} className="order-ctx-menu" role="menu"
-          style={{ position: "fixed", top: pos.top, right: pos.right, zIndex: 9999 }}>
+          style={{ top: pos.top, right: pos.right }}>
           <Link className="ctx-item" role="menuitem" href="/admin/kullanici" onClick={close}>
             <CtxIcon name="user" />Müşteri Görüntüle
           </Link>
@@ -555,7 +554,6 @@ function ArchiveTable({
                 </svg>
               </Link>
               <ArchiveContextMenu
-                order={order}
                 onDelete={() => onDelete(order.code)}
                 onRestore={() => onRestore(order.code)}
                 onShowActivity={() => onActivity(order.code)}

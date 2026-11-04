@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ProfileMenu } from "../../components/ProfileMenu";
 import { NotificationMenu } from "../../components/NotificationMenu";
 import { BrandLogo } from "../../components/BrandLogo";
-import { CustomerEducationMenu } from "../../components/CustomerEducationMenu";
+import { WorkspaceNav } from "../../components/WorkspaceNav";
 import { useEffect, useRef, useState } from "react";
 import { copyText } from "../../utils/clipboard";
 import { useToast } from "../../components/ToastProvider";
@@ -113,18 +113,14 @@ export default function OrderDetailPage() {
   const visibleNav = isDelivered ? [...navItems, { key: "extra" as Section, label: "Ek analiz", icon: "spark" as IconName }] : navItems;
 
   return (
-    <div className="app-shell">
+    <div className="app-shell customer-shell">
       <header className="topbar">
         <BrandLogo />
-        <nav className="main-nav">
-          <Link href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
-          <Link className="active" href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
-          <CustomerEducationMenu /><Link href="/hizmetler"><Icon name="spark" size={17} />Hizmetler</Link>
-        </nav>
+        <WorkspaceNav kind="customer" />
         <div className="top-actions"><a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç"><Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} /></a><NotificationMenu role="musteri" /><ProfileMenu /></div>
       </header>
 
-      <main className="detail-page">
+      <main className="detail-page order-detail">
         <Link className="back-link" href="/siparislerim"><Icon name="back" size={16} />Siparişlerime dön</Link>
         <header className="detail-hero">
           <div className="detail-title"><span className="detail-file-icon"><Icon name="file" size={22} /></span><div><p className="eyebrow">DS260723008 · 23 TEMMUZ 2026</p><h1>Güç analizi danışmanlığı</h1></div></div>

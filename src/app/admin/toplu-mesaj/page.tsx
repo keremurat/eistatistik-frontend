@@ -1,339 +1,168 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { FormEvent, useMemo, useState } from "react";
 import { AdminShell } from "../AdminShell";
 import { DatePicker } from "../../components/DatePicker";
+import { SystemDropdown } from "../../components/SystemDropdown";
 import { useToast } from "../../components/ToastProvider";
 
-// ── İkon ─────────────────────────────────────────────────────────────────────
-type IconName = "check" | "send" | "x" | "info";
-function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
-  const paths: Record<IconName, React.ReactNode> = {
-    check: <path d="m5 12 4 4L19 6" />,
-    send:  <><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></>,
-    x:     <><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>,
-    info:  <><circle cx="12" cy="12" r="9" /><path d="M12 16v-4M12 8h.01" /></>,
-  };
+const ICONS = {
+  funnel: "M230.6,49.53A15.81,15.81,0,0,0,216,40H40A16,16,0,0,0,28.19,66.76l.08.09L96,139.17V216a16,16,0,0,0,24.87,13.32l32-21.33A16,16,0,0,0,160,194.66V139.17l67.74-72.32.08-.09A15.8,15.8,0,0,0,230.6,49.53ZM146.18,130.58A8,8,0,0,0,144,136v58.66L112,216V136a8,8,0,0,0-2.16-5.47L40,48H216Z",
+  send: "M227.32,28.68a16,16,0,0,0-15.66-4.08l-.15,0L19.57,82.84a16,16,0,0,0-2.49,29.8L102,154l41.3,84.87A15.86,15.86,0,0,0,157.74,248q.69,0,1.38-.06a15.88,15.88,0,0,0,14-11.51l58.2-191.94c0-.05,0-.1,0-.15A16,16,0,0,0,227.32,28.68ZM157.83,231.85l-.05.14,0,.07L118.42,153l45.77-45.77a8,8,0,0,0-11.31-11.31L107.1,141.68,28.08,98.2l.07,0,.14,0L216,40Z",
+} as const;
+
+const ORDER_TYPES = [
+  { value: "graphical-abstract", label: "Graphical Abstract" },
+  { value: "kampanyali-power", label: "Kampanyalı Power Analizi" },
+  { value: "kampanya-online", label: "Kampanya Online Danışmanlık" },
+  { value: "veri-isleme", label: "Veri İşleme" },
+  { value: "raporlama", label: "Raporlama" },
+  { value: "online-mentorluk", label: "Online Mentörlük" },
+  { value: "spss", label: "SPSS Analizi" },
+  { value: "r-analizi", label: "R Analizi" },
+  { value: "python-analizi", label: "Python Analizi" },
+  { value: "olcek-gelistirme", label: "Ölçek Geliştirme" },
+  { value: "regresyon", label: "Regresyon Analizi" },
+  { value: "anket", label: "Anket Değerlendirme" },
+];
+
+const ORDER_STATUSES = [
+  { value: "tumu", label: "Tümü" },
+  { value: "siparis-verildi", label: "Sipariş Verildi" },
+  { value: "ucret-belirlendi", label: "Ücret Belirlendi" },
+  { value: "odeme-yapildi", label: "Ödeme Yapıldı" },
+  { value: "yapiliyor", label: "Yapılıyor" },
+  { value: "yapildi", label: "Yapıldı" },
+  { value: "ek-ucret", label: "Ek Ücret Bekleniyor" },
+  { value: "teslim", label: "Teslim Edildi" },
+  { value: "iptal", label: "İptal" },
+];
+
+const MAIL_OPTIONS = [
+  { value: "bildirilsin", label: "Bildirilsin" },
+  { value: "bildirilmesin", label: "Bildirilmesin" },
+];
+
+const ORDERS = [
+  { kod: "DS120325001", musteri: "Ebru Buket Erken", tur: "spss", durum: "teslim" },
+  { kod: "DS120325002", musteri: "Ebru Buket Erken", tur: "anket", durum: "yapiliyor" },
+  { kod: "DS050225001", musteri: "Mehmet Doğrul", tur: "r-analizi", durum: "teslim" },
+  { kod: "DS221124001", musteri: "Ayça Ünal", tur: "python-analizi", durum: "teslim" },
+  { kod: "DS221124002", musteri: "Ayça Ünal", tur: "raporlama", durum: "iptal" },
+  { kod: "DS140924001", musteri: "Başak Sözüdoğru", tur: "olcek-gelistirme", durum: "teslim" },
+  { kod: "DS280624001", musteri: "Emine Dilara Çolpak", tur: "regresyon", durum: "teslim" },
+  { kod: "DS220424001", musteri: "Tuğçe Koç", tur: "spss", durum: "teslim" },
+];
+
+function Icon({ name, size = 18 }: { name: keyof typeof ICONS; size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {paths[name]}
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d={ICONS[name]} />
     </svg>
   );
 }
 
-// ── SearchableSelect ──────────────────────────────────────────────────────────
-type SelectOption = { value: string; label: string };
-
-function SearchableSelect({
-  id, placeholder, value, onChange, options,
-}: {
-  id: string; placeholder: string; value: string;
-  onChange: (v: string) => void; options: SelectOption[];
-}) {
-  const [open,   setOpen]   = useState(false);
-  const [pos,    setPos]    = useState({ top: 0, left: 0, width: 0 });
-  const [search, setSearch] = useState("");
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const panelRef   = useRef<HTMLDivElement>(null);
-  const inputRef   = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    inputRef.current?.focus();
-    function onDown(e: MouseEvent) {
-      if (triggerRef.current?.contains(e.target as Node)) return;
-      if (panelRef.current?.contains(e.target as Node)) return;
-      setOpen(false); setSearch("");
-    }
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") { setOpen(false); setSearch(""); } }
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown",   onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("keydown",   onKey);
-    };
-  }, [open]);
-
-  function openPanel() {
-    if (!triggerRef.current) return;
-    const r = triggerRef.current.getBoundingClientRect();
-    const spaceBelow = window.innerHeight - r.bottom;
-    const panelH = Math.min(options.length * 38 + 48, 260);
-    const top = spaceBelow >= panelH ? r.bottom + 4 : r.top - panelH - 4;
-    setPos({ top, left: r.left, width: r.width });
-    setOpen((o) => !o);
-    setSearch("");
-  }
-
-  const filtered  = options.filter((o) => o.label.toLowerCase().includes(search.toLowerCase()));
-  const selected  = options.find((o) => o.value === value);
-
-  const panel = (
-    <div ref={panelRef} className="cs-panel"
-      style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width, zIndex: 9999 }}
-      role="listbox">
-      <input ref={inputRef} className="cs-search-input" value={search}
-        onChange={(e) => setSearch(e.target.value)} placeholder="Ara…" />
-      <div style={{ overflowY: "auto", maxHeight: 200 }}>
-        {filtered.map((o) => (
-          <button key={o.value} className={`cs-option${value === o.value ? " active" : ""}`}
-            role="option" aria-selected={value === o.value} type="button"
-            onClick={() => { onChange(o.value); setOpen(false); setSearch(""); }}>
-            {o.label}
-          </button>
-        ))}
-        {filtered.length === 0 && (
-          <p style={{ padding: ".5rem .75rem", color: "var(--muted)", fontSize: ".68rem", margin: 0 }}>
-            Sonuç bulunamadı
-          </p>
-        )}
-      </div>
-    </div>
-  );
-
-  return (
-    <>
-      <button ref={triggerRef} id={id} className={`cs-trigger${open ? " open" : ""}`} type="button"
-        onClick={openPanel} aria-haspopup="listbox" aria-expanded={open}>
-        {selected
-          ? <span>{selected.label}</span>
-          : <span style={{ color: "var(--muted)" }}>{placeholder}</span>}
-        <span className="cs-arrow">▼</span>
-      </button>
-      {open && typeof document !== "undefined" && createPortal(panel, document.body)}
-    </>
-  );
+function todayStamp() {
+  const today = new Date();
+  return `${String(today.getDate()).padStart(2, "0")}.${String(today.getMonth() + 1).padStart(2, "0")}.${today.getFullYear()}`;
 }
 
-// ── Mock veri ─────────────────────────────────────────────────────────────────
-const SIPARIS_TURLERI: SelectOption[] = [
-  { value: "graphical-abstract",      label: "Graphical Abstract" },
-  { value: "kampanyali-power",        label: "Kampanyalı Power Analizi" },
-  { value: "kampanya-online",         label: "Kampanya Online Danışmanlık" },
-  { value: "veri-isleme",            label: "Veri İşleme" },
-  { value: "raporlama",              label: "Raporlama" },
-  { value: "online-mentorluk",       label: "Online Mentörlük" },
-  { value: "spss",                   label: "SPSS Analizi" },
-  { value: "r-analizi",              label: "R Analizi" },
-  { value: "python-analizi",         label: "Python Analizi" },
-  { value: "olcek-gelistirme",       label: "Ölçek Geliştirme" },
-  { value: "regresyon",              label: "Regresyon Analizi" },
-  { value: "anket",                  label: "Anket Değerlendirme" },
-];
-
-const SIPARIS_DURUMLARI: SelectOption[] = [
-  { value: "tumu",              label: "Tümü" },
-  { value: "siparis-verildi",  label: "Sipariş Verildi" },
-  { value: "ucret-belirlendi", label: "Ücret Belirlendi" },
-  { value: "odeme-yapildi",    label: "Ödeme Yapıldı" },
-  { value: "yapiliyor",        label: "Yapılıyor" },
-  { value: "yapildi",          label: "Yapıldı" },
-  { value: "ek-ucret",         label: "Ek Ücret Bekleniyor" },
-  { value: "teslim",           label: "Teslim Edildi" },
-  { value: "iptal",            label: "İptal" },
-];
-
-const MAIL_SECENEKLERI: SelectOption[] = [
-  { value: "bildirilsin",    label: "Bildirilsin" },
-  { value: "bildirilmesin",  label: "Bildirilmesin" },
-];
-
-type MockSiparis = {
-  kod: string; musteri: string; tur: string; durum: string;
-};
-const MOCK_SIPARISLER: MockSiparis[] = [
-  { kod: "DS120325001", musteri: "Ebru Buket Erken",       tur: "spss",      durum: "teslim"  },
-  { kod: "DS120325002", musteri: "Ebru Buket Erken",       tur: "anket",     durum: "yapiliyor" },
-  { kod: "DS050225001", musteri: "Mehmet Doğrul",          tur: "r-analizi", durum: "teslim"  },
-  { kod: "DS221124001", musteri: "Ayça Ünal",              tur: "python-analizi", durum: "teslim" },
-  { kod: "DS221124002", musteri: "Ayça Ünal",              tur: "raporlama", durum: "iptal"   },
-  { kod: "DS140924001", musteri: "Başak Sözüdoğru",        tur: "olcek-gelistirme", durum: "teslim" },
-  { kod: "DS280624001", musteri: "Emine Dilara Çolpak",    tur: "regresyon", durum: "teslim"  },
-  { kod: "DS220424001", musteri: "Tuğçe Koç",              tur: "spss",      durum: "teslim"  },
-];
-
-// ── Sayfa ─────────────────────────────────────────────────────────────────────
 export default function TopluMesajPage() {
-  const today = new Date();
-  const todayStr = `${String(today.getDate()).padStart(2, "0")}.${String(today.getMonth() + 1).padStart(2, "0")}.${today.getFullYear()}`;
-
-  const [siparisTuru,   setSiparisTuru]   = useState("");
-  const [siparisDurumu, setSiparisDurumu] = useState("");
-  const [tarihBaslama,  setTarihBaslama]  = useState(todayStr);
-  const [tarihBitis,    setTarihBitis]    = useState(todayStr);
-  const [siparis,       setSiparis]       = useState("");
-  const [mailBilgi,     setMailBilgi]     = useState("bildirilsin");
-  const [mesaj,         setMesaj]         = useState("");
   const toast = useToast();
-  const [error,         setError]         = useState("");
+  const [orderType, setOrderType] = useState("");
+  const [orderStatus, setOrderStatus] = useState("");
+  const [startDate, setStartDate] = useState(todayStamp);
+  const [endDate, setEndDate] = useState(todayStamp);
+  const [order, setOrder] = useState("");
+  const [mail, setMail] = useState("bildirilsin");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  // Siparişleri tür ve duruma göre filtrele
-  const filteredSiparisler: SelectOption[] = MOCK_SIPARISLER
-    .filter((s) => {
-      if (siparisTuru   && s.tur   !== siparisTuru)                          return false;
-      if (siparisDurumu && siparisDurumu !== "tumu" && s.durum !== siparisDurumu) return false;
-      return true;
-    })
-    .map((s) => ({
-      value: s.kod,
-      label: `${s.kod} — ${s.musteri}`,
-    }));
+  const filtered = useMemo(() => ORDERS.filter((item) => {
+    if (orderType && item.tur !== orderType) return false;
+    if (orderStatus && orderStatus !== "tumu" && item.durum !== orderStatus) return false;
+    return true;
+  }), [orderType, orderStatus]);
 
-  function handleGonder() {
-    if (!mesaj.trim()) { setError("Mesaj alanı boş bırakılamaz."); return; }
+  const orderOptions = filtered.map((item) => ({ value: item.kod, label: `${item.kod} — ${item.musteri}` }));
+  const typeLabel = ORDER_TYPES.find((item) => item.value === orderType)?.label ?? "Tümü";
+  const statusLabel = ORDER_STATUSES.find((item) => item.value === orderStatus)?.label ?? "Tümü";
+  const mailLabel = MAIL_OPTIONS.find((item) => item.value === mail)?.label ?? "Bildirilsin";
+  const selectedOrder = orderOptions.find((item) => item.value === order)?.label ?? "Seçilmedi";
+
+  function send(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!message.trim()) {
+      setError("Mesaj alanı boş bırakılamaz.");
+      return;
+    }
     setError("");
     toast.success("Mesaj gönderim kuyruğuna alındı.");
   }
 
-  const turLabel   = SIPARIS_TURLERI.find((o) => o.value === siparisTuru)?.label ?? "—";
-  const durumLabel = SIPARIS_DURUMLARI.find((o) => o.value === siparisDurumu)?.label ?? "—";
-  const mailLabel  = MAIL_SECENEKLERI.find((o) => o.value === mailBilgi)?.label ?? "Bildirilsin";
-  const willMail   = mailBilgi === "bildirilsin";
-
   return (
     <AdminShell>
-      <div className="st-page">
-        <header className="orders-hero">
+      <div className="fav-page">
+        <header className="fav-head">
           <div>
-            <p className="eyebrow">KULLANICI YÖNETİMİ</p>
             <h1>Toplu Mesaj Gönder</h1>
+            <p>Sipariş türü ve duruma göre kitle seçilir. Mesaj kuyruğa alınır.</p>
           </div>
         </header>
 
-        <div className="tm-wrap">
-          {/* ── Sol: filtre + mesaj ── */}
-          <div className="edu-edit-col">
-            <section className="detail-panel">
-              <div className="detail-panel-heading">
-                <p className="eyebrow">FİLTRELE VE GÖNDER</p>
-                <h2>Hedef kitle ve mesaj</h2>
-              </div>
-              <div className="settings-panel-body">
-
-                <div className="form-field">
-                  <label htmlFor="tm-tur">Sipariş Türü</label>
-                  <SearchableSelect
-                    id="tm-tur"
-                    placeholder="Sipariş Türü Seçiniz"
-                    value={siparisTuru}
-                    onChange={(v) => { setSiparisTuru(v); setSiparis(""); }}
-                    options={SIPARIS_TURLERI}
-                  />
-                </div>
-
-                <div className="form-field">
-                  <label htmlFor="tm-durum">Sipariş Durumu</label>
-                  <SearchableSelect
-                    id="tm-durum"
-                    placeholder="Sipariş Durumu Seçiniz"
-                    value={siparisDurumu}
-                    onChange={(v) => { setSiparisDurumu(v); setSiparis(""); }}
-                    options={SIPARIS_DURUMLARI}
-                  />
-                </div>
-
-                <div className="form-field">
-                  <label>Sipariş Tarih Aralığı</label>
-                  <div className="edu-row-2" style={{ marginTop: 0 }}>
-                    <div className="form-field" style={{ marginBottom: 0 }}>
-                      <label htmlFor="tm-bas" style={{ fontSize: ".63rem", color: "var(--muted)" }}>Başlangıç</label>
-                      <DatePicker id="tm-bas" value={tarihBaslama} onChange={setTarihBaslama} />
-                    </div>
-                    <div className="form-field" style={{ marginBottom: 0 }}>
-                      <label htmlFor="tm-bit" style={{ fontSize: ".63rem", color: "var(--muted)" }}>Bitiş</label>
-                      <DatePicker id="tm-bit" value={tarihBitis} onChange={setTarihBitis} />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="form-field">
-                  <label htmlFor="tm-siparis">
-                    Siparişler
-                    <span style={{ fontSize: ".63rem", color: "var(--muted)", fontWeight: 600, marginLeft: ".4rem" }}>
-                      ({filteredSiparisler.length} sipariş)
-                    </span>
-                  </label>
-                  <SearchableSelect
-                    id="tm-siparis"
-                    placeholder="Sipariş Seçiniz"
-                    value={siparis}
-                    onChange={setSiparis}
-                    options={filteredSiparisler}
-                  />
-                </div>
-
-                <div className="form-field">
-                  <label htmlFor="tm-mail">Mail ile Bilgilendirme</label>
-                  <SearchableSelect
-                    id="tm-mail"
-                    placeholder="Seçiniz"
-                    value={mailBilgi}
-                    onChange={setMailBilgi}
-                    options={MAIL_SECENEKLERI}
-                  />
-                </div>
-
-                <div className="form-field">
-                  <label htmlFor="tm-mesaj">
-                    Mesajınız<span style={{ color: "#c85a51", marginLeft: ".2rem" }}>*</span>
-                  </label>
-                  <textarea
-                    id="tm-mesaj"
-                    rows={5}
-                    value={mesaj}
-                    onChange={(e) => { setMesaj(e.target.value); setError(""); }}
-                    placeholder="Göndermek istediğiniz mesajı buraya yazın…"
-                    style={{ resize: "vertical", borderColor: error ? "#c85a51" : undefined }}
-                  />
-                  {error && (
-                    <span style={{ fontSize: ".65rem", color: "#c85a51", marginTop: ".15rem" }}>{error}</span>
-                  )}
-                </div>
-
-              </div>
-            </section>
-          </div>
-
-          {/* ── Sağ: gönderim özeti ── */}
-          <aside className="edu-preview-card">
-            <div className="tm-summary-head">
-              <Icon name="send" size={16} />Gönderim Özeti
+        <form className="stype-layout" onSubmit={send}>
+          <section className="fav-card stype-section">
+            <header><span className="fav-mark"><Icon name="funnel" /></span><h2>Hedef ve mesaj</h2></header>
+            <div className="stype-grid two">
+              <label className="stype-field">
+                <span>Sipariş türü</span>
+                <SystemDropdown value={orderType} onChange={(value) => { setOrderType(value); setOrder(""); }} placeholder="Sipariş türü seçiniz" ariaLabel="Sipariş türü" searchable searchPlaceholder="Tür ara…" options={ORDER_TYPES} />
+              </label>
+              <label className="stype-field">
+                <span>Sipariş durumu</span>
+                <SystemDropdown value={orderStatus} onChange={(value) => { setOrderStatus(value); setOrder(""); }} placeholder="Sipariş durumu seçiniz" ariaLabel="Sipariş durumu" options={ORDER_STATUSES} />
+              </label>
             </div>
-            <div className="tm-stats">
-              <div className="tm-stat">
-                <strong>{filteredSiparisler.length}</strong>
-                <small>SİPARİŞ</small>
-              </div>
-              <div className="tm-stat">
-                {willMail
-                  ? <span className="tm-check"><Icon name="check" size={22} /></span>
-                  : <span className="tm-dash">—</span>}
-                <small>E-POSTA</small>
-              </div>
+            <div className="stype-grid two">
+              <label className="stype-field">
+                <span>Başlangıç</span>
+                <DatePicker id="tm-bas" value={startDate} onChange={setStartDate} />
+              </label>
+              <label className="stype-field">
+                <span>Bitiş</span>
+                <DatePicker id="tm-bit" value={endDate} onChange={setEndDate} />
+              </label>
             </div>
-            <div className="edu-preview-info">
-              <div className="edu-preview-row">
-                <span className="edu-preview-key">Sipariş Türü</span>
-                <span className="edu-preview-val">{turLabel}</span>
-              </div>
-              <div className="edu-preview-row">
-                <span className="edu-preview-key">Durum</span>
-                <span className="edu-preview-val">{durumLabel}</span>
-              </div>
-              <div className="edu-preview-row">
-                <span className="edu-preview-key">E-posta</span>
-                <span className="edu-preview-val">{mailLabel}</span>
-              </div>
-            </div>
-            <div className="tm-note">
-              <Icon name="info" size={14} />
-              <span>Filtre seçildiğinde siparişler otomatik yüklenir. Mesaj kuyruğa alınır.</span>
-            </div>
-            <button className="edu-preview-save" onClick={handleGonder} disabled={!mesaj.trim()}>Gönder</button>
+            <label className="stype-field">
+              <span>Siparişler</span>
+              <SystemDropdown value={order} onChange={setOrder} placeholder="Sipariş seçiniz" ariaLabel="Sipariş" searchable searchPlaceholder="Sipariş ara…" options={orderOptions} />
+              <small>{filtered.length} sipariş listeleniyor.</small>
+            </label>
+            <label className="stype-field">
+              <span>Mail ile bilgilendirme</span>
+              <SystemDropdown value={mail} onChange={setMail} ariaLabel="Mail ile bilgilendirme" options={MAIL_OPTIONS} />
+            </label>
+            <label className="stype-field">
+              <span>Mesaj</span>
+              <textarea value={message} onChange={(event) => { setMessage(event.target.value); setError(""); }} placeholder="Göndermek istediğiniz mesajı buraya yazın…" rows={5} />
+            </label>
+          </section>
+
+          <aside className="fav-card acct-summary" aria-label="Gönderim özeti">
+            <header><span className="fav-mark"><Icon name="send" /></span><h2>Gönderim özeti</h2></header>
+            <span className={`acct-badge ${mail === "bildirilsin" ? "gelen" : ""}`}>{mailLabel}</span>
+            <p className="acct-figure">{filtered.length}</p>
+            <dl className="acct-rows">
+              <div><dt>Sipariş türü</dt><dd>{typeLabel}</dd></div>
+              <div><dt>Durum</dt><dd>{statusLabel}</dd></div>
+              <div><dt>Tarih</dt><dd>{startDate} – {endDate}</dd></div>
+              <div><dt>Sipariş</dt><dd className="wrap">{selectedOrder}</dd></div>
+            </dl>
+            {message.trim() && <p className="tm-bubble">{message.trim()}</p>}
+            {error && <p className="acct-error" role="alert">{error}</p>}
+            <button className="fav-save" type="submit" disabled={!message.trim()}>Gönder</button>
           </aside>
-        </div>
+        </form>
       </div>
     </AdminShell>
   );

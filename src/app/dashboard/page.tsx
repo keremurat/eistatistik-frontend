@@ -6,8 +6,9 @@ import Image from "next/image";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { NotificationMenu } from "../components/NotificationMenu";
 import { BrandLogo } from "../components/BrandLogo";
-import { CustomerEducationMenu } from "../components/CustomerEducationMenu";
+import { WorkspaceNav } from "../components/WorkspaceNav";
 import { TimeGreeting } from "../components/TimeGreeting";
+import { CustomerSessionGate } from "../components/CustomerSessionGate";
 
 type IconName = "arrow" | "bell" | "book" | "calendar" | "check" | "chevron" | "clock" | "file" | "home" | "message" | "plus" | "search" | "spark";
 
@@ -113,16 +114,12 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="app-shell">
+    <CustomerSessionGate>
+    <div className="app-shell customer-shell">
       <a className="skip-link" href="#main-content">İçeriğe geç</a>
       <header className="topbar">
         <BrandLogo />
-        <nav className="main-nav" aria-label="Ana navigasyon">
-          <Link className="active" href="/dashboard"><Icon name="home" size={17} />Genel bakış</Link>
-          <Link href="/siparislerim"><Icon name="file" size={17} />Siparişlerim</Link>
-          <CustomerEducationMenu />
-          <Link href="/hizmetler"><Icon name="spark" size={17} />Hizmetler</Link>
-        </nav>
+        <WorkspaceNav kind="customer" />
         <div className="top-actions">
           <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç">
             <Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} />
@@ -273,13 +270,14 @@ export default function DashboardPage() {
               <button className="mark-read">Tümünü okundu işaretle</button>
             </div>
             <div className="updates-list">
-              <a href="#"><span className="update-icon"><Icon name="file" size={17} /></span><span><strong>Raporunuza yeni dosya eklendi</strong><small>Regresyon analizi · 18 dakika önce</small></span><Icon name="chevron" size={16} /></a>
-              <a href="#"><span className="update-icon"><Icon name="calendar" size={17} /></span><span><strong>Görüşmeniz planlandı</strong><small>24 Temmuz, 14:30 · Dün</small></span><Icon name="chevron" size={16} /></a>
-              <a href="#"><span className="update-icon"><Icon name="message" size={17} /></span><span><strong>Uzmanınız mesaj gönderdi</strong><small>Yüksek lisans tezi analizi · Dün</small></span><Icon name="chevron" size={16} /></a>
+              <a href="#updates"><span className="update-icon"><Icon name="file" size={17} /></span><span><strong>Raporunuza yeni dosya eklendi</strong><small>Regresyon analizi · 18 dakika önce</small></span><Icon name="chevron" size={16} /></a>
+              <a href="#updates"><span className="update-icon"><Icon name="calendar" size={17} /></span><span><strong>Görüşmeniz planlandı</strong><small>24 Temmuz, 14:30 · Dün</small></span><Icon name="chevron" size={16} /></a>
+              <a href="#updates"><span className="update-icon"><Icon name="message" size={17} /></span><span><strong>Uzmanınız mesaj gönderdi</strong><small>Yüksek lisans tezi analizi · Dün</small></span><Icon name="chevron" size={16} /></a>
             </div>
           </section>
         </section>
       </main>
     </div>
+    </CustomerSessionGate>
   );
 }

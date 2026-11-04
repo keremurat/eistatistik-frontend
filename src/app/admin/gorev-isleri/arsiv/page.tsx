@@ -83,8 +83,8 @@ export default function ArsivPage() {
             <p className="eyebrow">YÖNETİM</p>
             <h1>Arşiv</h1>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: ".5rem" }}>
-            <span style={{ fontSize: ".68rem", fontWeight: 800, color: "var(--muted)" }}>
+          <div className="task-archive-summary">
+            <span>
               {gorevler.length} arşivlenmiş görev
             </span>
           </div>
@@ -97,7 +97,7 @@ export default function ArsivPage() {
             <p>Arşivde görev bulunmuyor</p>
           </div>
         ) : (
-          <div className="detail-panel" style={{ padding: 0, overflow: "hidden" }}>
+          <div className="detail-panel task-archive-panel">
             <table className="admin-table arsiv-table">
               <thead>
                 <tr>
@@ -107,32 +107,32 @@ export default function ArsivPage() {
                   <th>Orijinal Pano</th>
                   <th>Görev Tarihi</th>
                   <th>Arşiv Tarihi</th>
-                  <th style={{ textAlign: "right" }}>İşlem</th>
+                  <th className="task-archive-actions-heading">İşlem</th>
                 </tr>
               </thead>
               <tbody>
                 {gorevler.map(g => (
                   <tr key={g.id}>
                     {/* Görev */}
-                    <td style={{ maxWidth: 340 }}>
-                      <p style={{ margin: 0, fontWeight: 850, color: "var(--navy)", fontSize: ".7rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <td className="task-archive-task-cell">
+                      <p className="task-archive-title">
                         {g.baslik}
                       </p>
                       {(g.musteriAdi || g.siparisKodu) && (
-                        <p style={{ margin: ".18rem 0 0", fontSize: ".61rem", color: "var(--muted)", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {g.siparisKodu && <span style={{ marginRight: ".4rem" }}>{g.siparisKodu}</span>}
+                        <p className="task-archive-meta">
+                          {g.siparisKodu && <span className="task-archive-code">{g.siparisKodu}</span>}
                           {g.musteriAdi && <span>{g.musteriAdi}{g.musteriTel ? ` — ${g.musteriTel}` : ""}</span>}
                         </p>
                       )}
                       {g.aciklama && (
-                        <p style={{ margin: ".14rem 0 0", fontSize: ".6rem", color: "#8493a0", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 320 }}>
+                        <p className="task-archive-description">
                           {g.aciklama}
                         </p>
                       )}
                     </td>
 
                     {/* Atanan */}
-                    <td style={{ whiteSpace: "nowrap", fontSize: ".63rem", fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: ".04em" }}>
+                    <td className="task-archive-assignee">
                       {g.atanan}
                     </td>
 
@@ -141,23 +141,23 @@ export default function ArsivPage() {
 
                     {/* Orijinal pano */}
                     <td>
-                      <span style={{ fontSize: ".62rem", fontWeight: 800, padding: ".2rem .55rem", borderRadius: 99, background: "var(--canvas)", color: "var(--muted)", border: "1px solid var(--line)", whiteSpace: "nowrap" }}>
+                      <span className="task-archive-board">
                         {PANO_LABEL[g.pano]}
                       </span>
                     </td>
 
                     {/* Görev tarihi */}
-                    <td style={{ whiteSpace: "nowrap", color: "#54687a", fontSize: ".63rem", fontWeight: 700 }}>{g.tarih}</td>
+                    <td className="task-archive-date">{g.tarih}</td>
 
                     {/* Arşiv tarihi */}
-                    <td style={{ whiteSpace: "nowrap", color: "var(--muted)", fontSize: ".63rem", fontWeight: 700 }}>{g.arsivTarihi}</td>
+                    <td className="task-archive-date archived">{g.arsivTarihi}</td>
 
                     {/* İşlemler */}
                     <td>
-                      <div style={{ display: "flex", alignItems: "center", gap: ".4rem", justifyContent: "flex-end" }}>
+                      <div className="task-archive-actions">
                         {silOnay === g.id ? (
                           <>
-                            <span style={{ fontSize: ".63rem", fontWeight: 700, color: "#54687a" }}>Silinsin mi?</span>
+                            <span className="task-archive-confirm-copy">Silinsin mi?</span>
                             <button onClick={() => sil(g.id)} className="arsiv-btn arsiv-btn-danger">Evet</button>
                             <button onClick={() => setSilOnay(null)} className="arsiv-btn">İptal</button>
                           </>

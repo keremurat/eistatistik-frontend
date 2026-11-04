@@ -1,20 +1,30 @@
 "use client";
 
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { DuyuruForm } from "../../../../admin/duyurular/DuyuruForm";
-import { DUYURULAR } from "../../../../admin/duyurular/data";
+import { Suspense, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AssistantHeader } from "../../../AssistantHeader";
 
-function EditContent() {
+function RedirectToAnnouncement() {
+  const router = useRouter();
   const params = useSearchParams();
-  const announcement = DUYURULAR.find(item => item.id === Number(params.get("id") ?? 0));
-  return <DuyuruForm mode="duzenle" initial={announcement} embedded basePath="/asistan/yonetim/duyurular" />;
+  const id = params.get("id");
+
+  useEffect(() => {
+    router.replace(id ? `/asistan/yonetim/duyurular/${encodeURIComponent(id)}` : "/asistan/yonetim/duyurular");
+  }, [id, router]);
+
+  return null;
 }
 
 export default function AssistantAnnouncementEditPage() {
-  return <div className="app-shell assistant-shell">
-    <AssistantHeader />
-    <main className="admin-dash"><Suspense fallback={null}><EditContent /></Suspense></main>
-  </div>;
+  return (
+    <div className="app-shell customer-shell">
+      <AssistantHeader />
+      <main className="admin-dash">
+        <Suspense fallback={null}>
+          <RedirectToAnnouncement />
+        </Suspense>
+      </main>
+    </div>
+  );
 }

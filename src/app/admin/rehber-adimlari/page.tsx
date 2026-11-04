@@ -1,45 +1,84 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AdminShell } from "../AdminShell";
 import { GuideStep, readGuideSteps } from "./guideData";
 
-function GuideIcon({ name, size = 18 }: { name: "plus" | "map" | "image"; size?: number }) {
-  const paths = {
-    plus: <path d="M12 5v14M5 12h14" />,
-    map: <><path d="m3 6 5-3 8 3 5-3v15l-5 3-8-3-5 3V6Z"/><path d="M8 3v15M16 6v15"/></>,
-    image: <><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 15-5-5L5 20"/></>,
-  };
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+function PlusIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z" />
+    </svg>
+  );
+}
+
+function Caret() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z" />
+    </svg>
+  );
 }
 
 export default function GuideStepsPage() {
   const [steps, setSteps] = useState<GuideStep[]>([]);
-  useEffect(() => setSteps(readGuideSteps().sort((a, b) => a.position - b.position)), []);
+  const [query, setQuery] = useState("");
 
-  return <AdminShell><div className="st-page guide-steps-page">
-    <header className="orders-hero">
-      <div><h1>Rehber Adımları</h1></div>
-      <Link className="orders-create" href="/admin/rehber-adimlari/ekle"><GuideIcon name="plus" size={17}/>Yeni adım</Link>
-    </header>
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setSteps(readGuideSteps().sort((a, b) => a.position - b.position)));
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
-    <section className="detail-panel guide-list-panel" aria-label="Rehber adımları listesi">
-      <div className="ur-table-wrap">
-        <table className="ur-table guide-table">
-          <thead><tr><th>Sıra</th><th>Başlık</th><th>İş türü kodu</th><th>Hedef</th><th>Tür</th><th>Görseller</th><th>Durum</th></tr></thead>
-          <tbody>{steps.length === 0 ? <tr><td colSpan={7} className="guide-empty-cell"><div className="guide-empty"><span><GuideIcon name="map" size={23}/></span><strong>Henüz rehber adımı eklenmedi</strong><p>Sipariş formundaki ilk yönlendirme adımını oluşturun.</p><Link href="/admin/rehber-adimlari/ekle">Yeni adım ekle</Link></div></td></tr> : steps.map(step => <tr key={step.id}>
-            <td><span className="guide-order">{step.position}</span></td>
-            <td><strong>{step.title}</strong></td>
-            <td>{step.serviceCodes || <span className="guide-all-services">Tüm hizmetler</span>}</td>
-            <td><code>{step.target || "Ekrana bağlı"}</code></td>
-            <td>{step.type === "tour" ? "Tur adımı" : "Modal"}</td>
-            <td><span className="guide-image-count"><GuideIcon name="image" size={15}/>{step.imageNames.length}</span></td>
-            <td><span className={`status-badge ${step.active ? "success" : "neutral"}`}>{step.active ? "Aktif" : "Pasif"}</span></td>
-          </tr>)}</tbody>
-        </table>
+  const visible = useMemo(() => {
+    const needle = query.trim().toLocaleLowerCase("tr-TR");
+    if (!needle) return steps;
+    return steps.filter((step) => `${step.title} ${step.serviceCodes} ${step.target} ${step.type === "tour" ? "tur adımı" : "modal"}`.toLocaleLowerCase("tr-TR").includes(needle));
+  }, [steps, query]);
+
+  return (
+    <AdminShell>
+      <div className="fav-page">
+        <header className="fav-head">
+          <div>
+            <h1>Rehber Adımları <span>{steps.length}</span></h1>
+            <p>Sipariş formundaki yönlendirme adımları. Satıra girince adım açılır.</p>
+          </div>
+          <Link className="orders-create" href="/admin/rehber-adimlari/ekle"><PlusIcon />Yeni adım</Link>
+        </header>
+
+        <section className="fav-card" aria-label="Rehber adımları listesi">
+          <label className="fav-search">
+            <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z" /></svg>
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Başlık, iş türü veya hedef ara" aria-label="Rehber adımlarında ara" />
+          </label>
+
+          {visible.length === 0 ? (
+            <div className="fav-empty">
+              <strong>{steps.length === 0 ? "Henüz rehber adımı eklenmedi" : "Eşleşen adım yok"}</strong>
+              <p>{steps.length === 0 ? "Sipariş formundaki ilk yönlendirme adımını oluşturun." : "Aramayı değiştirin."}</p>
+              {steps.length === 0 && <Link className="orders-create" href="/admin/rehber-adimlari/ekle">Yeni adım ekle</Link>}
+            </div>
+          ) : (
+            <ul className="fav-list elist-rows">
+              {visible.map((step) => (
+                <li key={step.id}>
+                  <Link href={`/admin/rehber-adimlari/${step.id}`}>
+                    <span className="appt-day"><strong>{step.position}</strong></span>
+                    <span className="fav-copy">
+                      <strong>{step.title}</strong>
+                      <small className="mtpl-snippet">{step.target || "Ekrana bağlı"} · {step.serviceCodes || "Tüm hizmetler"} · {step.imageNames.length} görsel</small>
+                    </span>
+                    <span className="fav-count">{step.type === "tour" ? "Tur adımı" : "Modal"}</span>
+                    <span className={`stype-status ${step.active ? "aktif" : "pasif"}`}>{step.active ? "Aktif" : "Pasif"}</span>
+                    <Caret />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
-      <footer className="guide-list-footer">{steps.length} adım</footer>
-    </section>
-  </div></AdminShell>;
+    </AdminShell>
+  );
 }

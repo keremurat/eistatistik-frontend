@@ -1,66 +1,93 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { AdminShell } from "../AdminShell";
-import { SABLONLAR } from "../analiz-sablonlari/data";
+import { Sablon, readSablonlar } from "../analiz-sablonlari/data";
 
-type IconName = "layout" | "play" | "file" | "download";
-function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
-  const paths: Record<IconName, React.ReactNode> = {
-    layout: <><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 21V9" /></>,
-    play: <><circle cx="12" cy="12" r="9" /><path d="m10 9 5 3-5 3z" fill="currentColor" stroke="none" /></>,
-    file: <><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z" /></>,
-    download: <><path d="M12 3v12m0 0 4-4m-4 4-4-4" /><path d="M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2" /></>,
-  };
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+const ICONS = {
+  play: "M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm40.44,110.66-48,32A8,8,0,0,1,108,160V96a8,8,0,0,1,12.44-6.66l48,32a8,8,0,0,1,0,13.32Z",
+  file: "M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM152,44l44,44H152ZM200,216H56V40h80V88a8,8,0,0,0,8,8h56Z",
+  layout: "M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40ZM40,56H216V88H40ZM216,200H104V104H216Z",
+} as const;
+
+function Icon({ name, size = 16 }: { name: keyof typeof ICONS; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d={ICONS[name]} />
+    </svg>
+  );
 }
 
-function youtubeId(url: string): string {
-  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
-  return m ? m[1] : "";
+function youtubeId(url: string) {
+  return url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)?.[1] ?? "";
+}
+
+function kind(item: Sablon) {
+  if (item.videoUrl) return "Video";
+  if (item.dosya) return "Belge";
+  return "Şablon";
 }
 
 export default function SablonGorunumuPage() {
-  const sablonlar = [...SABLONLAR].filter((s) => s.yayinda).sort((a, b) => a.sira - b.sira);
+  const [rows, setRows] = useState<Sablon[]>([]);
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setRows(readSablonlar().filter((item) => item.yayinda)));
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  const visible = useMemo(() => {
+    const needle = query.trim().toLocaleLowerCase("tr-TR");
+    if (!needle) return rows;
+    return rows.filter((item) => `${item.baslik} ${item.aciklama}`.toLocaleLowerCase("tr-TR").includes(needle));
+  }, [rows, query]);
 
   return (
     <AdminShell>
-      <div className="st-page">
-        <header className="orders-hero">
+      <div className="fav-page">
+        <header className="fav-head">
           <div>
-            <p className="eyebrow">YÖNETİM</p>
-            <h1>Şablonlar</h1>
+            <h1>Şablon görünümü <span>{rows.length}</span></h1>
+            <p>Bilgi amaçlı analiz şablonları. Yalnızca yayındakiler görünür.</p>
           </div>
         </header>
 
-        <span className="result-count" style={{ margin: "0 0 .8rem" }}>Bilgi amaçlı analiz şablonları · {sablonlar.length} şablon</span>
+        <section className="fav-card" aria-label="Şablon araması">
+          <label className="fav-search">
+            <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z" /></svg>
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Başlık veya açıklamada ara" aria-label="Şablon görünümünde ara" />
+          </label>
+        </section>
 
-        {sablonlar.length === 0 ? (
-          <section className="detail-panel"><div className="bulten-empty" style={{ padding: "3rem 2rem" }}>
-            <span style={{ width: 58, height: 58, display: "grid", placeItems: "center", borderRadius: 14, color: "#8197a7", background: "#eef3f5" }}><Icon name="layout" size={28} /></span>
-            <strong style={{ color: "var(--navy)", marginTop: ".6rem" }}>Henüz şablon eklenmemiş</strong>
-            <span>Yönetim ekibi şablon eklediğinde burada görünecek.</span>
-          </div></section>
+        {visible.length === 0 ? (
+          <section className="fav-card">
+            <div className="fav-empty">
+              <strong>{rows.length === 0 ? "Henüz şablon eklenmemiş" : "Eşleşen şablon yok"}</strong>
+              <p>{rows.length === 0 ? "Yönetim ekibi şablon eklediğinde burada görünecek." : "Aramayı değiştirin."}</p>
+            </div>
+          </section>
         ) : (
-          <div className="bp-content-grid">
-            {sablonlar.map((s) => {
-              const ytId = youtubeId(s.videoUrl);
+          <div className="preview-grid">
+            {visible.map((item) => {
+              const video = youtubeId(item.videoUrl);
               return (
-                <article className="bp-card" key={s.id}>
-                  {ytId ? (
-                    <div className="bp-card-media"><iframe src={`https://www.youtube.com/embed/${ytId}`} title={s.baslik} allowFullScreen /></div>
+                <article className="fav-card preview-card" key={item.id}>
+                  {video ? (
+                    <div className="preview-media"><iframe src={`https://www.youtube.com/embed/${video}`} title={item.baslik} allowFullScreen /></div>
                   ) : (
-                    <div className="bp-card-media empty"><Icon name={s.dosya ? "file" : "layout"} size={30} /></div>
+                    <div className="preview-media empty"><Icon name={item.dosya ? "file" : "layout"} size={28} /></div>
                   )}
-                  <div className="bp-card-body">
-                    <span className="bp-card-type"><Icon name={s.videoUrl ? "play" : "file"} size={11} />{s.videoUrl ? "VIDEO" : s.dosya ? "BELGE" : "ŞABLON"}</span>
-                    <h3>{s.baslik}</h3>
-                    {s.aciklama && <p>{s.aciklama}</p>}
+                  <div className="preview-body">
+                    <span className="user-chip">{kind(item)}</span>
+                    <h2>{item.baslik}</h2>
+                    {item.aciklama.trim() && <p>{item.aciklama}</p>}
                   </div>
-                  <div className="bp-card-foot">
-                    <span className="date"><Icon name="layout" size={12} />Sıra {s.sira}</span>
-                    <span style={{ display: "flex", gap: ".8rem" }}>
-                      {s.videoUrl && <a className="action" href={s.videoUrl} target="_blank" rel="noopener noreferrer"><Icon name="play" size={13} />İzle</a>}
-                      {s.dosya && <span className="action"><Icon name="download" size={13} />İndir</span>}
+                  <div className="preview-foot">
+                    <span>Sıra {item.sira}</span>
+                    <span className="preview-actions">
+                      {item.videoUrl && <a href={item.videoUrl} target="_blank" rel="noopener noreferrer"><Icon name="play" size={14} />İzle</a>}
+                      {item.dosya && <span className="preview-action"><Icon name="file" size={14} />İndir</span>}
                     </span>
                   </div>
                 </article>

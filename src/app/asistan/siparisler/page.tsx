@@ -7,7 +7,7 @@ import { AssistantHeader } from "../AssistantHeader";
 export default function AssistantOrdersPage() {
   return (
     <FavoritesProvider>
-      <div className="app-shell assistant-shell">
+      <div className="app-shell customer-shell">
         <AssistantHeader />
         <main className="admin-dash">
           <SharedOrdersList basePath="/asistan/siparisler" />

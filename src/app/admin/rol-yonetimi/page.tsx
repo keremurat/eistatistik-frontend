@@ -1,100 +1,96 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { AdminShell } from "../AdminShell";
-import { ROLLER } from "./data";
+import { listRoles, type RoleRecord } from "@/lib/api/roles";
 
-type IconName = "check" | "x" | "edit" | "plus";
-function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
-  const paths: Record<IconName, React.ReactNode> = {
-    check: <path d="m5 12 4 4L19 6" />,
-    x:     <><path d="M18 6 6 18" /><path d="m6 6 12 12" /></>,
-    edit:  <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" /></>,
-    plus:  <><path d="M12 5v14" /><path d="M5 12h14" /></>,
-  };
+function PlusIcon() {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {paths[name]}
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z" />
+    </svg>
+  );
+}
+
+function Caret() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z" />
+    </svg>
+  );
+}
+
+function Shield() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M208,40H48A16,16,0,0,0,32,56v56c0,52.72,25.52,84.67,46.93,102.19,23.06,18.86,46,25.26,47,25.53a8,8,0,0,0,4.2,0c1-.27,23.91-6.67,47-25.53C198.48,196.67,224,164.38,224,112V56A16,16,0,0,0,208,40Zm0,72c0,37.3-13.66,67.32-40.34,89.06A128.4,128.4,0,0,1,128,223.62a128.27,128.27,0,0,1-39.67-22.56C61.65,179.32,48,149.3,48,112V56H208Z" />
     </svg>
   );
 }
 
 export default function RolYonetimiPage() {
+  const pathname = usePathname();
+  const basePath = pathname.startsWith("/editor") ? "/editor/rol-yonetimi" : "/admin/rol-yonetimi";
+  const [roles, setRoles] = useState<RoleRecord[] | null>(null);
+  const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    listRoles().then(setRoles).catch(() => setError("Roller yüklenemedi."));
+  }, []);
+
+  const visible = useMemo(() => {
+    const needle = query.trim().toLocaleLowerCase("tr-TR");
+    if (!roles || !needle) return roles ?? [];
+    return roles.filter((role) => `${role.name} ${role.description} ${role.key}`.toLocaleLowerCase("tr-TR").includes(needle));
+  }, [roles, query]);
+
   return (
     <AdminShell>
-      <div className="st-page">
-        <header className="orders-hero">
+      <div className="fav-page">
+        <header className="fav-head">
           <div>
-            <p className="eyebrow">YÖNETİM</p>
-            <h1>Rol Listesi</h1>
+            <h1>Rol Yönetimi <span>{roles?.length ?? 0}</span></h1>
+            <p>Her rolün menüsü ve yetkisi ayrı açılır. Satıra girince anahtarlar görünür.</p>
           </div>
-          <Link
-            href="/admin/rol-yonetimi/ekle"
-            style={{
-              display: "inline-flex", alignItems: "center", gap: ".4rem",
-              minHeight: 38, padding: "0 1.1rem", border: 0, borderRadius: 8,
-              background: "var(--navy)", color: "#fff",
-              fontSize: ".7rem", fontWeight: 800, textDecoration: "none",
-            }}>
-            <Icon name="plus" size={14} />Yeni Rol
-          </Link>
+          <Link className="orders-create" href={`${basePath}/ekle`}><PlusIcon />Yeni rol</Link>
         </header>
 
-        <section className="detail-panel st-list-panel" style={{ padding: 0 }}>
-          <div className="ur-table-wrap">
-            <table className="ur-table">
-              <thead>
-                <tr>
-                  <th>Rol Adı</th>
-                  <th>Açıklama</th>
-                  <th style={{ textAlign: "center" }}>Görev Ataması</th>
-                  <th style={{ textAlign: "center" }}>Yetki Sayısı</th>
-                  <th style={{ textAlign: "right" }}>İşlemler</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ROLLER.map((rol) => (
-                  <tr key={rol.key}>
-                    <td>
-                      <code style={{
-                        padding: ".2rem .55rem", borderRadius: 6,
-                        background: "#f0f4f7", color: "var(--navy)",
-                        fontFamily: "ui-monospace,SFMono-Regular,Menlo,monospace",
-                        fontSize: ".75rem", fontWeight: 700,
-                      }}>
-                        {rol.adi}
-                      </code>
-                    </td>
-                    <td style={{ color: "#54687a", fontSize: ".72rem", maxWidth: "34ch" }}>
-                      {rol.aciklama}
-                    </td>
-                    <td style={{ textAlign: "center" }}>
-                      {rol.gorevAtamasi
-                        ? <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: "50%", background: "#edf7f1", color: "#287a55" }}><Icon name="check" size={13} /></span>
-                        : <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: "50%", background: "#fff3f2", color: "#c85a51" }}><Icon name="x" size={13} /></span>
-                      }
-                    </td>
-                    <td style={{ textAlign: "center", color: "#526a7d", fontSize: ".72rem", fontWeight: 700 }}>
-                      {rol.perms.size}
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      <Link
-                        href={`/admin/rol-yonetimi/duzenle?rol=${rol.key}`}
-                        style={{
-                          display: "inline-flex", alignItems: "center", gap: ".35rem",
-                          padding: ".3rem .75rem", border: 0, borderRadius: 7,
-                          background: "var(--navy)", color: "#fff",
-                          fontSize: ".67rem", fontWeight: 800, textDecoration: "none",
-                        }}>
-                        <Icon name="edit" size={13} />Düzenle
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <section className="fav-card" aria-label="Rol listesi">
+          <label className="fav-search">
+            <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z" /></svg>
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Rol adı veya açıklama ara" aria-label="Rollerde ara" />
+          </label>
+
+          {error ? (
+            <div className="fav-empty"><strong>Roller yüklenemedi</strong><p>{error}</p></div>
+          ) : roles === null ? (
+            <div className="fav-empty"><strong>Roller yükleniyor</strong><p>Liste hazırlanıyor.</p></div>
+          ) : visible.length === 0 ? (
+            <div className="fav-empty">
+              <strong>{roles.length === 0 ? "Henüz rol yok" : "Eşleşen rol yok"}</strong>
+              <p>{roles.length === 0 ? "İlk rolü oluşturun." : "Aramayı değiştirin ya da yeni bir rol ekleyin."}</p>
+            </div>
+          ) : (
+            <ul className="fav-list elist-rows">
+              {visible.map((role) => (
+                <li key={role.key}>
+                  <Link href={`${basePath}/${role.key}`}>
+                    <span className="fav-mark"><Shield /></span>
+                    <span className="fav-copy">
+                      <strong>{role.name}</strong>
+                      <small className="mtpl-snippet">{role.description || "Açıklama yok"}</small>
+                    </span>
+                    <span className="fav-count">{role.permissions.length} yetki</span>
+                    <span className={`stype-status ${role.assignable ? "aktif" : "pasif"}`}>{role.assignable ? "Atanır" : "Atanmaz"}</span>
+                    <Caret />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </div>
     </AdminShell>

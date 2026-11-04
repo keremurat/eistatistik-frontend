@@ -35,7 +35,10 @@ const uid = (prefix:string) => `${prefix}-${Date.now()}-${Math.random().toString
 export default function HomeSettingsPage() {
   const [settings,setSettings] = useState<HomeSettings>(defaultHomeSettings);
   const toast = useToast();
-  useEffect(() => setSettings(readHomeSettings()),[]);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setSettings(readHomeSettings()));
+    return () => cancelAnimationFrame(frame);
+  },[]);
   function commit(event:FormEvent) { event.preventDefault(); writeHomeSettings(settings); toast.success("Anasayfa ayarları kaydedildi."); }
   const setHero = (key:keyof HomeSettings["hero"],value:string) => setSettings(current => ({...current,hero:{...current.hero,[key]:value}}));
   const setContact = (key:keyof HomeSettings["contact"],value:string) => setSettings(current => ({...current,contact:{...current.contact,[key]:value}}));

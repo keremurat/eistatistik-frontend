@@ -95,8 +95,8 @@ function OrdersTab() {
           {orders.map((o) => (
             <tr key={o.id}>
               <td>{o.id}</td>
-              <td><Link href="/admin/siparisler/DS260723008" style={{ color: "var(--blue)", fontWeight: 800 }}>{o.title}</Link></td>
-              <td style={{ color: "var(--blue)" }}>{o.code}</td>
+              <td><Link href="/admin/siparisler/DS260723008" className="user-record-link user-record-link-strong">{o.title}</Link></td>
+              <td className="user-record-link">{o.code}</td>
               <td>{o.status}</td>
               <td>{o.fee}</td>
               <td>{o.createdAt}</td>
@@ -119,7 +119,7 @@ function EducationTab() {
           {educationRequests.map((e) => (
             <tr key={e.id}>
               <td>{e.id}</td>
-              <td style={{ color: "var(--blue)" }}>{e.code}</td>
+              <td className="user-record-link">{e.code}</td>
               <td>{e.status}</td>
               <td>{e.createdAt}</td>
             </tr>
@@ -152,14 +152,14 @@ function ActivityTab() {
         <tbody>
           {activityLog.map((a) => (
             <tr key={a.v}>
-              <td style={{ textAlign: "center" }}>{a.v}</td>
+              <td className="user-record-centered">{a.v}</td>
               <td>{a.time}</td>
               <td>{a.actor}</td>
-              <td style={{ color: a.name !== "—" ? "var(--blue)" : undefined }}>{a.name}</td>
+              <td className={a.name !== "—" ? "user-record-link" : undefined}>{a.name}</td>
               <td>{a.email}</td>
               <td>{a.phone}</td>
               <td>{a.status}</td>
-              <td style={{ textAlign: "center" }}>{a.count}</td>
+              <td className="user-record-centered">{a.count}</td>
               <td>{a.loginAt}</td>
               <td className="ur-ip">{a.ip}</td>
               <td>{a.lastLogin}</td>

@@ -55,7 +55,7 @@ export function MessageTemplatePicker({ scope = "order", onSelect }: { scope?: T
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5M9 12h7M9 16h5"/></svg>
       Mesaj şablonları
     </button>
-    {open && typeof document !== "undefined" && createPortal(<div ref={menuRef} className="message-template-menu" role="menu" aria-label="Mesaj şablonları" style={{ position: "fixed", top: position.top, left: position.left, width: position.width, zIndex: 10000 }}>
+    {open && typeof document !== "undefined" && createPortal(<div ref={menuRef} className="message-template-menu message-template-menu-positioned" role="menu" aria-label="Mesaj şablonları" style={{ top: position.top, left: position.left, width: position.width }}>
       <header><div><span>HAZIR YANITLAR</span><strong>Mesaj şablonları</strong></div><small>{templates[scope].length} şablon</small></header>
       <div>{templates[scope].map(template => <button key={template.title} type="button" role="menuitem" onClick={() => { onSelect(template.content); setOpen(false); }}><span>{template.category}</span><strong>{template.title}</strong><p>{template.content}</p></button>)}</div>
       <footer>Şablonu seçtikten sonra metni düzenleyebilirsiniz.</footer>

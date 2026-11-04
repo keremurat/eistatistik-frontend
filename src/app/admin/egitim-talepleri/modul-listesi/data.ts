@@ -4,7 +4,26 @@ export type Modul = {
   url: string;
   aciklama: string;
   driveUrl: string;
+  dersler?: string[];
 };
+
+const STORAGE_KEY = "eistatistik.modules.v1";
+
+export function readModules() {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return modules;
+    const parsed = JSON.parse(raw) as Modul[];
+    return Array.isArray(parsed) ? parsed : modules;
+  } catch {
+    return modules;
+  }
+}
+
+export function writeModules(items: Modul[]) {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+}
 
 export const modules: Modul[] = [
   { id: 14, adi: "MODÜL 15- Bibliyometrik Veri Analizi Eğitimi",     url: "https://eistatistik.com/bibliyometrik-veri-analizi-egitimi/",                                                        aciklama: "",                                                               driveUrl: "https://drive.google.com/drive/folders/1IFS2m14YQfjA_6waC34Kmb8Nc1LoUhk5?usp=sharing" },

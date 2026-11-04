@@ -304,10 +304,10 @@ function OverviewSection({ onSection }: { onSection: (s: AdminSection) => void }
 
       <section className="detail-panel">
         <dl className="detail-facts">
-          <div><dt>Müşteri Adı Soyadı</dt><dd style={{ color: "var(--blue)" }}>ECE GÜNER</dd></div>
+          <div><dt>Müşteri Adı Soyadı</dt><dd className="order-detail-customer">ECE GÜNER</dd></div>
           <div><dt>Sipariş Tarihi</dt><dd>31.07.2026</dd></div>
           <div><dt>Teslimat Tarihi</dt><dd>06.08.2026</dd></div>
-          <div><dt>Ücretlendirme</dt><dd style={{ color: "#287a55" }}><MaskedNum>7.700,00 TL (Ödendi)</MaskedNum></dd></div>
+          <div><dt>Ücretlendirme</dt><dd className="order-detail-paid"><MaskedNum>7.700,00 TL (Ödendi)</MaskedNum></dd></div>
           <div><dt>Teslimat Şekli</dt><dd>Power analizi için tek bir teslimat şekli bulunmaktadır</dd></div>
           <div><dt>Teslimat Süresi</dt><dd><MaskedNum>4 iş günü analiz süresi ve 5. iş günü sonu teslimat</MaskedNum></dd></div>
         </dl>
@@ -331,14 +331,14 @@ function OverviewSection({ onSection }: { onSection: (s: AdminSection) => void }
 
       <section className="detail-panel">
         <PanelHeading eyebrow="BAĞLANTI" title="İlgili Sipariş" />
-        <div style={{ overflowX: "auto" }}>
+        <div className="order-detail-table-scroll">
           <table className="admin-table">
             <thead><tr><th>ID</th><th>Sipariş Kodu</th><th>Başlık</th><th>Ücret</th><th>Oluşturulma</th><th>Durum</th></tr></thead>
             <tbody><tr>
               <td>26737</td>
-              <td><strong style={{ color: "var(--blue)" }}>PA260731006</strong></td>
+              <td><strong className="order-detail-code">PA260731006</strong></td>
               <td>Yetişkinlerde Oral Hijyen Davranışları, Algılanan Engeller ve Motivasyon</td>
-              <td style={{ fontVariantNumeric: "tabular-nums" }}><MaskedNum>7.700,00 TL</MaskedNum></td>
+              <td className="order-detail-numeric"><MaskedNum>7.700,00 TL</MaskedNum></td>
               <td>31.07.2026</td>
               <td><span className="t-status active">Yapılıyor</span></td>
             </tr></tbody>
@@ -348,7 +348,7 @@ function OverviewSection({ onSection }: { onSection: (s: AdminSection) => void }
 
       <section className="detail-panel">
         <PanelHeading eyebrow="HIZLI ERİŞİM" title="Bölümlere Git" />
-        <div style={{ display: "flex", gap: ".6rem", flexWrap: "wrap", padding: "1.2rem 1.4rem" }}>
+        <div className="order-detail-quick-links">
           {(["items","pricing","payment","messages","results","analyst"] as AdminSection[]).map((key) => {
             const item = sidebarItems.find((s) => s.key === key)!;
             return <button key={key} className="context-action" onClick={() => onSection(key)}><Icon name={item.icon} size={15} />{item.label}<Icon name="arrow" size={14} /></button>;
@@ -554,7 +554,7 @@ function PaymentSection({ method, onMethod, price }: { method: "transfer" | "car
                 <div><dt>IBAN</dt><dd><code>TR64 0004 6013 8988 8000 0143 16</code><button type="button" className={copiedField === "iban" ? "copied" : ""} onClick={() => void copyBankValue("iban", "TR64 0004 6013 8988 8000 0143 16")}><Icon name={copiedField === "iban" ? "check" : "copy"} size={15} />{copiedField === "iban" ? "Kopyalandı" : "Kopyala"}</button></dd></div>
                 <div><dt>Açıklama</dt><dd><code>PA260731006</code><button type="button" className={copiedField === "code" ? "copied" : ""} onClick={() => void copyBankValue("code", "PA260731006")}><Icon name={copiedField === "code" ? "check" : "copy"} size={15} />{copiedField === "code" ? "Kopyalandı" : "Kopyala"}</button></dd></div>
               </dl>
-              <div className="receipt-upload" style={{ opacity: .6, pointerEvents: "none" }}>
+              <div className="receipt-upload receipt-upload-disabled">
                 <Icon name="upload" size={22} />
                 <div><strong>Dekont bekleniyor</strong><span>Müşteri henüz dekont yüklemedi</span></div>
               </div>
@@ -595,11 +595,11 @@ function AdminPaymentApprovalModal({ price, onClose, onAccept }: { price: string
   useEffect(() => { function h(e: KeyboardEvent) { if (e.key==="Escape") onClose(); } window.addEventListener("keydown", h); return () => window.removeEventListener("keydown", h); }, [onClose]);
   return (
     <div className="legal-modal-backdrop" role="presentation">
-      <section className="legal-modal" role="dialog" aria-modal="true" aria-labelledby="admin-pay-title" style={{ maxWidth: 480 }}>
+      <section className="legal-modal order-payment-modal" role="dialog" aria-modal="true" aria-labelledby="admin-pay-title">
         <header><div><p>ÖDEME ONAY</p><h2 id="admin-pay-title">Ödemeyi Manuel Onayla</h2></div><button onClick={onClose} aria-label="Kapat">×</button></header>
-        <div style={{ padding: "1.5rem 1.4rem", color: "var(--ink)", fontSize: ".7rem", lineHeight: 1.7 }}>
+        <div className="order-payment-modal-body">
           <p>Müşterinin banka havalesi ile ödeme yaptığını teyit ediyorsunuz.</p>
-          <dl className="detail-facts" style={{ marginTop: "1rem", borderTop: "1px solid var(--line)" }}>
+          <dl className="detail-facts order-payment-facts">
             <div><dt>Müşteri</dt><dd>ECE GÜNER</dd></div>
             <div><dt>Tutar</dt><dd><MaskedNum>{price} TL</MaskedNum></dd></div>
             <div><dt>Sipariş Kodu</dt><dd>PA260731006</dd></div>
@@ -746,7 +746,7 @@ function AnalysisResultsSection() {
         <div className="result-subsection-head">
           <strong>Teslimat Dosyası</strong>
           <input ref={deliveryRef} className="visually-hidden-file-input" type="file" multiple onChange={makeHandler(setDeliveryFiles)} />
-          <button className="upload-button" style={{ minHeight: 30, fontSize: ".58rem" }} onClick={() => deliveryRef.current?.click()}><Icon name="upload" size={14} />Dosya Yükle</button>
+          <button className="upload-button order-compact-upload" onClick={() => deliveryRef.current?.click()}><Icon name="upload" size={14} />Dosya Yükle</button>
         </div>
         {deliveryFiles.length === 0 ? (
           <p className="result-empty-box amber clickable-upload" role="button" tabIndex={0} onClick={() => deliveryRef.current?.click()} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); deliveryRef.current?.click(); } }}>Teslimat dosyası eklenmemiştir. Dosya seçmek için bu alana tıklayın.</p>
@@ -763,7 +763,7 @@ function AnalysisResultsSection() {
         <div className="result-subsection-head">
           <strong>Analizör Raporu</strong>
           <input ref={reportRef} className="visually-hidden-file-input" type="file" multiple onChange={makeHandler(setReportFiles)} />
-          <button className="upload-button" style={{ minHeight: 30, fontSize: ".58rem" }} onClick={() => reportRef.current?.click()}><Icon name="upload" size={14} />Dosya Yükle</button>
+          <button className="upload-button order-compact-upload" onClick={() => reportRef.current?.click()}><Icon name="upload" size={14} />Dosya Yükle</button>
         </div>
         {reportFiles.length === 0 ? (
           <p className="result-empty-box teal clickable-upload" role="button" tabIndex={0} onClick={() => reportRef.current?.click()} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); reportRef.current?.click(); } }}>Analizör dosyası eklenmemiştir. Dosya seçmek için bu alana tıklayın.</p>
@@ -823,7 +823,7 @@ function NotesSection() {
 
   return (
     <div className="detail-panel">
-      <div style={{ padding: "1.2rem 1.4rem 0" }}>
+      <div className="order-tab-heading-wrap">
         <div className="notes-tab-bar">
           <button className={tab === "task"    ? "active" : ""} onClick={() => setTab("task")}>Görev</button>
           <button className={tab === "meeting" ? "active" : ""} onClick={() => setTab("meeting")}>Görüşme Notları</button>
@@ -832,7 +832,7 @@ function NotesSection() {
 
       {/* ── Görev sekmesi ── */}
       {tab === "task" && (
-        <div style={{ padding: "0 1.4rem 1.4rem" }}>
+        <div className="order-tab-content-wrap">
           <div className="notes-tab-body">
             <div className="notes-toolbar">
               <button className="notes-add-btn" type="button" onClick={() => setAdding((v) => !v)}>
@@ -870,7 +870,7 @@ function NotesSection() {
               </div>
             )}
 
-            <div style={{ overflowX: "auto" }}>
+            <div className="order-detail-table-scroll">
               <table className="notes-table">
                 <thead>
                   <tr>
@@ -879,7 +879,7 @@ function NotesSection() {
                     <th>Açıklama</th>
                     <th>Cevap</th>
                     <th>Bitirme Zamanı</th>
-                    <th style={{ width: 32 }} />
+                    <th className="order-task-actions-column" />
                   </tr>
                 </thead>
                 <tbody>
@@ -888,7 +888,7 @@ function NotesSection() {
                   )}
                   {tasks.map((task, i) => (
                     <tr key={i}>
-                      <td style={{ color: "var(--blue)", fontWeight: 800 }}>{task.assignee}</td>
+                      <td className="order-task-assignee">{task.assignee}</td>
                       <td>{task.board || "—"}</td>
                       <td>{task.description}</td>
                       <td>{task.response || "—"}</td>
@@ -905,7 +905,7 @@ function NotesSection() {
 
       {/* ── Görüşme Notları sekmesi ── */}
       {tab === "meeting" && (
-        <div style={{ padding: "0 1.4rem 1.4rem" }}>
+        <div className="order-tab-content-wrap">
           <div className="notes-tab-body">
             <div className="meeting-form">
               <textarea
@@ -969,7 +969,7 @@ function CustomDropdown({ value, onChange, options, placeholder = "Seçin…" }:
         <span className="cs-arrow" aria-hidden="true">▾</span>
       </button>
       {open && typeof document !== "undefined" && createPortal(
-        <div ref={menuRef} className="cs-panel special-settings-dropdown-panel" role="listbox" style={{ position: "fixed", top: menuPos.top, left: menuPos.left, width: menuPos.width, zIndex: 9999 }}>
+        <div ref={menuRef} className="cs-panel special-settings-dropdown-panel order-floating-panel" role="listbox" style={{ top: menuPos.top, left: menuPos.left, width: menuPos.width }}>
           {options.map((opt) => (
             <button key={opt} type="button" role="option" aria-selected={opt === value} className={`cs-option${opt === value ? " active" : ""}`} onClick={() => { onChange(opt); setOpen(false); }}>{opt}</button>
           ))}
@@ -1016,7 +1016,7 @@ function AnalystDropdown({ value, onChange }: { value: string; onChange: (v: str
         {value || "Analizör Seçin"}<span className="caret">⌄</span>
       </button>
       {open && typeof document !== "undefined" && createPortal(
-        <div ref={menuRef} className="analyst-dropdown-menu" role="listbox" style={{ position: "fixed", top: menuPos.top, left: menuPos.left, width: menuPos.width, zIndex: 9999 }}>
+        <div ref={menuRef} className="analyst-dropdown-menu order-floating-panel" role="listbox" style={{ top: menuPos.top, left: menuPos.left, width: menuPos.width }}>
           {ANALYSTS.map((a) => (
             <button key={a} type="button" role="option" aria-selected={a === value} className={a === value ? "active-opt" : ""} onClick={() => { onChange(a); setOpen(false); }}>{a}</button>
           ))}
@@ -1104,7 +1104,7 @@ function DateRangePicker({ value, onChange }: { value: { start: Date; end: Date 
   function nextMonth() { if (viewMonth===11) { setViewMonth(0); setViewYear(y=>y+1); } else setViewMonth(m=>m+1); }
 
   const popup = (
-    <div ref={popupRef} className="date-picker-popup" style={{ position: "fixed", top: popupPos.top, left: popupPos.left, width: popupPos.width, zIndex: 9999 }}>
+    <div ref={popupRef} className="date-picker-popup order-floating-panel" style={{ top: popupPos.top, left: popupPos.left, width: popupPos.width }}>
       <div className="cal-header">
         <button type="button" onClick={prevMonth}>‹</button>
         <strong>{MONTHS[viewMonth]} {viewYear}</strong>
@@ -1203,7 +1203,7 @@ function DeliverySection() {
 
   return (
     <div className="detail-panel">
-      <div style={{ padding: "1.2rem 1.4rem 0" }}>
+      <div className="order-tab-heading-wrap">
         <button className="delivery-cancel-btn" type="button" onClick={() => { setFiles([]); setVideos([]); setMessage(DEFAULT_MESSAGE); setDone(false); }}>
           İptal Et
         </button>
@@ -1215,7 +1215,7 @@ function DeliverySection() {
       </div>
 
       {tab === "customer" && (
-        <div style={{ padding: "0 1.4rem 1.4rem" }}>
+        <div className="order-tab-content-wrap">
           <div className="delivery-tab-body">
 
             {/* Upload zone */}
@@ -1301,7 +1301,7 @@ function DeliverySection() {
       )}
 
       {tab === "analyst" && (
-        <div style={{ padding: "0 1.4rem 1.4rem" }}>
+        <div className="order-tab-content-wrap">
           <div className="delivery-tab-body">
             <div>
               <p className="delivery-field-label">Analiz Dosyalarını Ekle</p>
@@ -1432,7 +1432,7 @@ function AnalystSection() {
       )}
 
       {tab === "review" && (
-        <div style={{ minHeight: 220, display: "grid", placeContent: "center", color: "var(--muted)", fontSize: ".7rem" }}>
+        <div className="order-review-placeholder">
           Analizör değerlendirme bölümü yakında kullanıma açılacak.
         </div>
       )}

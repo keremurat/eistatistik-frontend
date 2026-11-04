@@ -1,210 +1,94 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { AdminShell } from "../AdminShell";
-import { readOrderDiscounts } from "../orderActionData";
+import { formatTutar, IndirimKodu, readVisibleDiscounts } from "./data";
 
-type KodTip = "percentage" | "amount";
-type IndirimKodu = {
-  id: number | string;
-  kod: string;
-  aciklama: string;
-  aciklamaLink: boolean;
-  tip: KodTip;
-  tutar: number;
-  limit: number;
-  kullanilan: number;
-  baslama: string;
-  bitis: string;
-};
-
-const DATA: IndirimKodu[] = [
-  { id: 1,  kod: "deneme61",   aciklama: "Deneme",                                     aciklamaLink: false, tip: "percentage", tutar: 100,         limit: 1,          kullanilan: 1, baslama: "07/20/2026", bitis: "07/31/2026" },
-  { id: 2,  kod: "5454200764", aciklama: "PR260727007 nolu sipariş üzerinden oluşturuldu", aciklamaLink: true, tip: "percentage", tutar: 100,     limit: 1,          kullanilan: 1, baslama: "7/27/2026",  bitis: "7/27/2027"  },
-  { id: 3,  kod: "5073921340", aciklama: "SA260715002 nolu sipariş üzerinden oluşturuldu", aciklamaLink: true, tip: "amount",     tutar: 4000,    limit: 1,          kullanilan: 1, baslama: "7/17/2026",  bitis: "7/17/2027"  },
-  { id: 4,  kod: "5324015626", aciklama: "PA260709007 nolu sipariş üzerinden oluşturuldu", aciklamaLink: true, tip: "percentage", tutar: 100,     limit: 1,          kullanilan: 1, baslama: "7/9/2026",   bitis: "7/9/2027"   },
-  { id: 5,  kod: "5324015626", aciklama: "SA260706018 nolu sipariş üzerinden oluşturuldu", aciklamaLink: true, tip: "percentage", tutar: 100,     limit: 1,          kullanilan: 1, baslama: "7/9/2026",   bitis: "7/9/2027"   },
-  { id: 6,  kod: "5373506973", aciklama: "SA260707014 nolu sipariş üzerinden oluşturuldu", aciklamaLink: true, tip: "amount",     tutar: 1000,    limit: 1,          kullanilan: 1, baslama: "7/8/2026",   bitis: "7/8/2027"   },
-  { id: 7,  kod: "5077364511", aciklama: "TR260703006 nolu sipariş üzerinden oluşturuldu", aciklamaLink: true, tip: "percentage", tutar: 100,     limit: 1,          kullanilan: 1, baslama: "7/3/2026",   bitis: "7/3/2027"   },
-  { id: 8,  kod: "5428850748", aciklama: "SA260626003 nolu sipariş üzerinden oluşturuldu", aciklamaLink: true, tip: "amount",     tutar: 1000,    limit: 1,          kullanilan: 1, baslama: "7/1/2026",   bitis: "7/1/2027"   },
-  { id: 9,  kod: "faseka",     aciklama: "",                                            aciklamaLink: false, tip: "percentage", tutar: 100,         limit: 2,          kullanilan: 2, baslama: "06/29/2026", bitis: "07/01/2026" },
-  { id: 10, kod: "5397483968", aciklama: "TR260630020 nolu sipariş üzerinden oluşturuldu", aciklamaLink: true, tip: "percentage", tutar: 5397483968, limit: 1,       kullanilan: 0, baslama: "6/30/2026",  bitis: "6/30/2027"  },
-  { id: 11, kod: "5419039758", aciklama: "SA260628001 nolu sipariş üzerinden oluşturuldu", aciklamaLink: true, tip: "amount",     tutar: 2000,    limit: 1,          kullanilan: 1, baslama: "6/28/2026",  bitis: "6/28/2027"  },
-  { id: 12, kod: "5361234567", aciklama: "PA260625004 nolu sipariş üzerinden oluşturuldu", aciklamaLink: true, tip: "percentage", tutar: 50,      limit: 1,          kullanilan: 1, baslama: "6/25/2026",  bitis: "6/25/2027"  },
-  { id: 13, kod: "EIST2026",   aciklama: "Kampanya kodu",                               aciklamaLink: false, tip: "percentage", tutar: 10,          limit: 100,        kullanilan: 43, baslama: "6/1/2026",  bitis: "12/31/2026" },
-  { id: 14, kod: "5287364511", aciklama: "TR260620008 nolu sipariş üzerinden oluşturuldu", aciklamaLink: true, tip: "percentage", tutar: 100,     limit: 1,          kullanilan: 1, baslama: "6/20/2026",  bitis: "6/20/2027"  },
-  { id: 15, kod: "5098765432", aciklama: "SA260618005 nolu sipariş üzerinden oluşturuldu", aciklamaLink: true, tip: "amount",     tutar: 500,     limit: 1,          kullanilan: 1, baslama: "6/18/2026",  bitis: "6/18/2027"  },
-  { id: 16, kod: "5312345678", aciklama: "PA260615002 nolu sipariş üzerinden oluşturuldu", aciklamaLink: true, tip: "percentage", tutar: 100,     limit: 1,          kullanilan: 1, baslama: "6/15/2026",  bitis: "6/15/2027"  },
-  { id: 17, kod: "YAZ2026",    aciklama: "Yaz kampanyası",                              aciklamaLink: false, tip: "percentage", tutar: 15,          limit: 50,         kullanilan: 22, baslama: "6/1/2026",  bitis: "8/31/2026"  },
-  { id: 18, kod: "5478901234", aciklama: "TR260612003 nolu sipariş üzerinden oluşturuldu", aciklamaLink: true, tip: "percentage", tutar: 100,     limit: 1,          kullanilan: 1, baslama: "6/12/2026",  bitis: "6/12/2027"  },
-  { id: 19, kod: "5198765432", aciklama: "SA260610007 nolu sipariş üzerinden oluşturuldu", aciklamaLink: true, tip: "amount",     tutar: 750,     limit: 1,          kullanilan: 0, baslama: "6/10/2026",  bitis: "6/10/2027"  },
-  { id: 20, kod: "5534567890", aciklama: "PA260608001 nolu sipariş üzerinden oluşturuldu", aciklamaLink: true, tip: "percentage", tutar: 100,     limit: 1,          kullanilan: 1, baslama: "6/8/2026",   bitis: "6/8/2027"   },
-];
-
-type IconName = "plus";
-function Icon({ name, size = 17 }: { name: IconName; size?: number }) {
-  const paths: Record<IconName, React.ReactNode> = {
-    plus: <path d="M12 5v14M5 12h14" />,
-  };
+function PlusIcon() {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {paths[name]}
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z" />
     </svg>
   );
 }
 
-const FALLBACK_PER_PAGE = 10;   // masaüstü ölçümü hazır olana / mobilde kullanılır
-const ROW_HEIGHT = 64;          // .edu-table sabit satır yüksekliği (globals.css)
+function Caret() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z" />
+    </svg>
+  );
+}
 
-function formatTutar(k: IndirimKodu) {
-  const n = k.tutar.toLocaleString("tr-TR");
-  return k.tip === "percentage" ? `%${n}` : `${n} ₺`;
+function Tag() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M243.31,136,144,36.69A15.86,15.86,0,0,0,132.69,32H40a8,8,0,0,0-8,8v92.69A15.86,15.86,0,0,0,36.69,144L136,243.31a16,16,0,0,0,22.63,0l84.68-84.68a16,16,0,0,0,0-22.63Zm-96.62,96L48,132.69V48h84.69L240,155.31ZM96,84A12,12,0,1,1,84,72,12,12,0,0,1,96,84Z" />
+    </svg>
+  );
 }
 
 export default function IndirimKoduListesiPage() {
-  const [page,  setPage]  = useState(1);
+  const pathname = usePathname();
+  const basePath = pathname.startsWith("/editor") ? "/editor/indirim-kodlari" : "/admin/indirim-kodlari";
+  const [items, setItems] = useState<IndirimKodu[]>([]);
   const [query, setQuery] = useState("");
-  const [orderCodes, setOrderCodes] = useState<IndirimKodu[]>([]);
-
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [perPage, setPerPage] = useState(FALLBACK_PER_PAGE);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- hesap bazlı tarayıcı kayıtları hydration sonrasında yüklenir
-    setOrderCodes(readOrderDiscounts().map((record) => ({
-      id: record.id,
-      kod: record.code,
-      aciklama: `${record.orderCode} nolu sipariş üzerinden oluşturuldu`,
-      aciklamaLink: true,
-      tip: record.type,
-      tutar: record.value,
-      limit: 1,
-      kullanilan: 0,
-      baslama: new Date(record.createdAt).toLocaleDateString("tr-TR"),
-      bitis: record.expiresAt,
-    })));
+    const frame = requestAnimationFrame(() => setItems(readVisibleDiscounts()));
+    return () => cancelAnimationFrame(frame);
   }, []);
 
-  useEffect(() => {
-    const wrap = wrapRef.current;
-    if (!wrap) return;
-    const desktop = window.matchMedia("(min-width:761px)");
-
-    function recompute() {
-      if (!wrap || !desktop.matches) { setPerPage(FALLBACK_PER_PAGE); return; }
-      const thead   = wrap.querySelector("thead");
-      const headH   = thead ? thead.getBoundingClientRect().height : 34;
-      const avail   = wrap.clientHeight - headH;
-      setPerPage(Math.max(3, Math.floor(avail / ROW_HEIGHT)));
-    }
-
-    recompute();
-    const ro = new ResizeObserver(recompute);
-    ro.observe(wrap);
-    desktop.addEventListener("change", recompute);
-    return () => { ro.disconnect(); desktop.removeEventListener("change", recompute); };
-  }, []);
-
-  const filtered = [...orderCodes, ...DATA].filter((k) => {
-    if (query && !`${k.kod} ${k.aciklama}`.toLowerCase().includes(query.toLowerCase())) return false;
-    return true;
-  });
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const safePage   = Math.min(page, totalPages);
-  const pageItems  = filtered.slice((safePage - 1) * perPage, safePage * perPage);
-  const emptyRows  = pageItems.length > 0 ? Math.max(0, perPage - pageItems.length) : 0;
+  const visible = useMemo(() => {
+    const needle = query.trim().toLocaleLowerCase("tr-TR");
+    if (!needle) return items;
+    return items.filter((item) => `${item.kod} ${item.aciklama}`.toLocaleLowerCase("tr-TR").includes(needle));
+  }, [items, query]);
 
   return (
     <AdminShell>
-      <div className="st-page education-list-page">
-        <header className="orders-hero">
+      <div className="fav-page">
+        <header className="fav-head">
           <div>
-            <p className="eyebrow">YÖNETİM</p>
-            <h1>İndirim Kodu Listesi</h1>
+            <h1>İndirim Kodları <span>{items.length}</span></h1>
+            <p>Kod, tutar, limit ve geçerlilik aynı satırda. Satıra girince ayrıntısı açılır.</p>
           </div>
-          <Link className="orders-create" href="/admin/indirim-kodlari/ekle">
-            <Icon name="plus" size={16} />Ekle
-          </Link>
+          <Link className="orders-create" href={`${basePath}/ekle`}><PlusIcon />Yeni kod</Link>
         </header>
 
-        <section className="detail-panel st-list-panel" style={{ padding: 0 }}>
-          <div className="edu-list-toolbar" aria-label="İndirim kodlarını filtrele">
-            <label className="orders-search edu-list-search">
-              <span aria-hidden="true">⌕</span>
-              <input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="Kod veya açıklamada ara…" />
-            </label>
-            <span className="result-count">{filtered.length} kod</span>
-          </div>
+        <section className="fav-card" aria-label="İndirim kodu listesi">
+          <label className="fav-search">
+            <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z" /></svg>
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Kod veya açıklamada ara" aria-label="İndirim kodlarında ara" />
+          </label>
 
-          <div className="ur-table-wrap" ref={wrapRef}>
-            <table className="ur-table edu-table">
-              <colgroup>
-                <col style={{ width: "13%" }} />
-                <col style={{ width: "33%" }} />
-                <col style={{ width: "10%" }} />
-                <col style={{ width: "13%" }} />
-                <col style={{ width: "13%" }} />
-                <col style={{ width: "18%" }} />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th>Kod</th>
-                  <th>Açıklama</th>
-                  <th>Tipi</th>
-                  <th>Tutar</th>
-                  <th className="nowrap">Limit / Kullanılan</th>
-                  <th className="nowrap">Başlama - Bitiş Tarihi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pageItems.map((k) => (
-                  <tr key={k.id}>
-                    <td><span className="ic-code" title={k.kod}>{k.kod}</span></td>
-                    <td>
-                      {k.aciklama
-                        ? k.aciklamaLink
-                          ? <a className="ic-desc-link" href="/admin/siparisler" title={k.aciklama}>{k.aciklama}</a>
-                          : <span style={{ color: "#3f556a", fontWeight: 700 }} title={k.aciklama}>{k.aciklama}</span>
-                        : <span style={{ color: "var(--muted)" }}>—</span>
-                      }
-                    </td>
-                    <td style={{ color: "#54687a", fontWeight: 600, fontSize: ".7rem" }}>
-                      {k.tip === "percentage" ? "Yüzde" : "Tutar"}
-                    </td>
-                    <td style={{ color: "var(--navy)", fontWeight: 700, fontSize: ".7rem" }}>{formatTutar(k)}</td>
-                    <td style={{ color: "#54687a", fontWeight: 700, fontSize: ".7rem" }}>{k.limit} / {k.kullanilan}</td>
-                    <td className="ic-date-cell">{k.baslama} - {k.bitis}</td>
-                  </tr>
-                ))}
-                {pageItems.length === 0 && (
-                  <tr>
-                    <td colSpan={6} style={{ padding: "2rem", textAlign: "center", color: "var(--muted)", fontSize: ".7rem" }}>
-                      Kayıt bulunamadı.
-                    </td>
-                  </tr>
-                )}
-                {Array.from({ length: emptyRows }, (_, index) => (
-                  <tr className="edu-placeholder-row" aria-hidden="true" key={`empty-${index}`}>
-                    <td colSpan={6}></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {totalPages > 1 && (
-            <div className="ms-pagination" role="navigation" aria-label="Sayfalama">
-              <button disabled={safePage === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>‹ Önceki</button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <button key={p} className={p === safePage ? "active" : ""}
-                  aria-current={p === safePage ? "page" : undefined}
-                  onClick={() => setPage(p)}>{p}</button>
-              ))}
-              <button disabled={safePage === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Sonraki ›</button>
+          {visible.length === 0 ? (
+            <div className="fav-empty">
+              <strong>{items.length === 0 ? "Henüz indirim kodu yok" : "Eşleşen kod yok"}</strong>
+              <p>{items.length === 0 ? "İlk kodu oluşturun." : "Aramayı değiştirin ya da yeni bir kod ekleyin."}</p>
             </div>
+          ) : (
+            <ul className="fav-list elist-rows">
+              {visible.map((item) => {
+                const amount = formatTutar(item.tip, item.tutar);
+                return (
+                  <li key={item.id}>
+                    <Link href={`${basePath}/${item.id}`}>
+                      <span className="fav-mark"><Tag /></span>
+                      <span className="fav-copy">
+                        <strong>{item.kod}</strong>
+                        <small className="mtpl-snippet">{item.aciklama || "Açıklama yok"} · {item.baslama} – {item.bitis}</small>
+                      </span>
+                      <span className="fav-count" title={amount}>{amount}</span>
+                      <span className={`stype-status ${item.kullanilan >= item.limit ? "pasif" : "aktif"}`}>{item.limit} / {item.kullanilan}</span>
+                      <Caret />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </section>
       </div>

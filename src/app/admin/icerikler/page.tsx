@@ -1,91 +1,92 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useMemo, useState } from "react";
 import { AdminShell } from "../AdminShell";
-import { ICERIKLER, Icerik } from "../bultenler/data";
+import { Icerik, readBultenler, readIcerikler } from "../bultenler/data";
 
-type IconName = "plus" | "doc" | "grip" | "edit" | "trash";
-function Icon({ name, size = 16 }: { name: IconName; size?: number }) {
-  const paths: Record<IconName, React.ReactNode> = {
-    plus: <><path d="M12 5v14" /><path d="M5 12h14" /></>,
-    doc: <><path d="M4 4h13a1 1 0 0 1 1 1v13a2 2 0 0 0 2 2H5a2 2 0 0 1-1-1.7V4Z" /><path d="M8 8h6M8 12h6M8 16h4" /></>,
-    grip: <><circle cx="9" cy="6" r="1.4" fill="currentColor" stroke="none" /><circle cx="15" cy="6" r="1.4" fill="currentColor" stroke="none" /><circle cx="9" cy="12" r="1.4" fill="currentColor" stroke="none" /><circle cx="15" cy="12" r="1.4" fill="currentColor" stroke="none" /><circle cx="9" cy="18" r="1.4" fill="currentColor" stroke="none" /><circle cx="15" cy="18" r="1.4" fill="currentColor" stroke="none" /></>,
-    edit: <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" /></>,
-    trash: <><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /></>,
-  };
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
+function PlusIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z" />
+    </svg>
+  );
 }
 
-const turLabel = (t: string) => t === "video" ? "Video" : t === "dosya" ? "Dosya" : "Metin";
+function Caret() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+      <path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z" />
+    </svg>
+  );
+}
+
+const MONTHS = ["", "Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+const KIND: Record<Icerik["tur"], string> = { video: "Video", dosya: "Dosya", metin: "Metin" };
 
 export default function OzelIceriklerPage() {
-  const [rows, setRows] = useState<Icerik[]>(ICERIKLER);
-  const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const [rows, setRows] = useState<Icerik[]>([]);
+  const [names, setNames] = useState<Record<string, string>>({});
+  const [query, setQuery] = useState("");
 
-  function confirmDelete() {
-    setRows((prev) => prev.filter((i) => i.id !== confirmDel));
-    setConfirmDel(null);
-  }
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      setRows(readIcerikler());
+      setNames(Object.fromEntries(readBultenler().map((item) => [item.id, item.baslik])));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  const visible = useMemo(() => {
+    const needle = query.trim().toLocaleLowerCase("tr-TR");
+    if (!needle) return rows;
+    return rows.filter((item) => `${item.baslik} ${item.aciklama} ${KIND[item.tur]} ${names[item.bultenId] ?? ""}`.toLocaleLowerCase("tr-TR").includes(needle));
+  }, [rows, names, query]);
 
   return (
     <AdminShell>
-      <div className="st-page">
-        <header className="orders-hero">
+      <div className="fav-page">
+        <header className="fav-head">
           <div>
-            <p className="eyebrow">YÖNETİM</p>
-            <h1>Özel İçerikler</h1>
+            <h1>İçerikler <span>{rows.length}</span></h1>
+            <p>Tür, bülten ve yayın tarihi aynı satırda. Satıra girince içerik açılır.</p>
           </div>
-          <Link className="orders-create" href="/admin/bultenler/icerik/ekle">
-            <Icon name="plus" size={16} />Yeni İçerik
-          </Link>
+          <Link className="orders-create" href="/admin/icerikler/ekle"><PlusIcon />Yeni içerik</Link>
         </header>
 
-        <span className="result-count" style={{ margin: "0 0 .8rem" }}>{rows.length} içerik</span>
+        <section className="fav-card" aria-label="İçerik listesi">
+          <label className="fav-search">
+            <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z" /></svg>
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Başlık, tür veya bültende ara" aria-label="İçeriklerde ara" />
+          </label>
 
-        {rows.length === 0 ? (
-          <section className="detail-panel"><div className="bulten-empty"><Icon name="doc" size={30} /><strong style={{ color: "var(--navy)" }}>Henüz içerik yok</strong><span>Yeni bir içerik oluşturarak başlayın.</span></div></section>
-        ) : (
-          <div className="icerik-list">
-            {rows.map((ic) => (
-              <div className="icerik-list-row" key={ic.id}>
-                <span className="icerik-drag" aria-hidden="true"><Icon name="grip" size={16} /></span>
-                <span className={`icerik-type-badge ${ic.tur}`}>{turLabel(ic.tur)}</span>
-                <div className="icerik-info">
-                  <strong title={ic.baslik}>{ic.baslik}</strong>
-                  <small>{ic.yayinTarihi.split(" ")[0]}</small>
-                </div>
-                <span className={`icerik-status ${ic.yayinda ? "yayinda" : "taslak"}`}>{ic.yayinda ? "Yayında" : "Taslak"}</span>
-                <div className="bulten-card-actions">
-                  <Link className="bulten-icon-btn" href={`/admin/bultenler/icerik/duzenle?id=${ic.id}`} aria-label="Düzenle"><Icon name="edit" size={15} /></Link>
-                  <button className="bulten-icon-btn danger" type="button" onClick={() => setConfirmDel(ic.id)} aria-label="Sil"><Icon name="trash" size={15} /></button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+          {visible.length === 0 ? (
+            <div className="fav-empty">
+              <strong>{rows.length === 0 ? "Henüz içerik yok" : "Eşleşen içerik yok"}</strong>
+              <p>{rows.length === 0 ? "Yeni bir içerik oluşturarak başlayın." : "Aramayı değiştirin."}</p>
+            </div>
+          ) : (
+            <ul className="fav-list">
+              {visible.map((item) => {
+                const [day, month] = item.yayinTarihi.split(".");
+                return (
+                  <li key={item.id}>
+                    <Link href={`/admin/icerikler/${item.id}`}>
+                      <span className="appt-day"><strong>{day}</strong><small>{MONTHS[Number(month)] ?? month}</small></span>
+                      <span className="fav-copy">
+                        <strong>{item.baslik}</strong>
+                        <small className="mtpl-snippet">{KIND[item.tur]} · {names[item.bultenId] || "Bülten seçilmedi"}</small>
+                      </span>
+                      <span className={`stype-status ${item.yayinda ? "aktif" : "pasif"}`}>{item.yayinda ? "Yayında" : "Taslak"}</span>
+                      <Caret />
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
       </div>
-
-      {confirmDel && typeof document !== "undefined" && createPortal(
-        <div className="legal-modal-backdrop" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) setConfirmDel(null); }}>
-          <section className="legal-modal ms-edit-modal" style={{ maxWidth: 400, minHeight: 0 }} role="dialog" aria-modal="true" aria-labelledby="del-oi-title">
-            <header>
-              <div><p className="eyebrow">DİKKAT</p><h2 id="del-oi-title" style={{ fontSize: ".9rem" }}>İçeriği sil</h2></div>
-              <button aria-label="Kapat" onClick={() => setConfirmDel(null)}>×</button>
-            </header>
-            <div className="ms-edit-body"><p style={{ color: "#3f556a", fontSize: ".72rem", lineHeight: 1.6 }}>Bu içeriği silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</p></div>
-            <footer>
-              <div />
-              <div>
-                <button className="legal-cancel" onClick={() => setConfirmDel(null)}>Vazgeç</button>
-                <button className="legal-accept" style={{ background: "#c85a51" }} onClick={confirmDelete}>Evet, Sil</button>
-              </div>
-            </footer>
-          </section>
-        </div>,
-        document.body
-      )}
     </AdminShell>
   );
 }

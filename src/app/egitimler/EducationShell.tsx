@@ -1,12 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import { useSyncExternalStore } from "react";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { NotificationMenu } from "../components/NotificationMenu";
 import { BrandLogo } from "../components/BrandLogo";
-import { CustomerEducationMenu } from "../components/CustomerEducationMenu";
+import { WorkspaceNav } from "../components/WorkspaceNav";
 
 export type EducationIconName =
   | "arrow" | "bell" | "book" | "calendar" | "card" | "check" | "clock" | "file"
@@ -44,24 +43,11 @@ export function EducationShell({ children }: { children: React.ReactNode }) {
     () => false,
   );
 
-  return <div className="app-shell">
+  return <div className="app-shell customer-shell">
     <a className="skip-link" href="#main-content">İçeriğe geç</a>
     <header className="topbar">
       <BrandLogo />
-      <nav className="main-nav" aria-label="Ana navigasyon">
-        {isAnalyst ? <>
-          <Link href="/analizor"><EducationIcon name="home" size={17} />Genel bakış</Link>
-          <Link href="/analizor/islerim"><EducationIcon name="tasks" size={17} />İşlerim</Link>
-          <CustomerEducationMenu />
-          <Link href="/analizor/gorusmeler"><EducationIcon name="video" size={17} />Görüşmeler</Link>
-          <Link href="/analizor/takvim"><EducationIcon name="calendar" size={17} />Takvim</Link>
-        </> : <>
-          <Link href="/dashboard"><EducationIcon name="home" size={17} />Genel bakış</Link>
-          <Link href="/siparislerim"><EducationIcon name="file" size={17} />Siparişlerim</Link>
-          <CustomerEducationMenu />
-          <Link href="/hizmetler"><EducationIcon name="spark" size={17} />Hizmetler</Link>
-        </>}
-      </nav>
+      <WorkspaceNav kind={isAnalyst ? "analyst" : "customer"} />
       <div className="top-actions">
         <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç">
           <Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} />

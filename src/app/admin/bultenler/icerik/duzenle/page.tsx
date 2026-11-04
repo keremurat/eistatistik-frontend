@@ -1,17 +1,24 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { AdminShell } from "../../../AdminShell";
 import { IcerikForm } from "../../IcerikForm";
-import { getIcerik } from "../../data";
+import { Icerik, readIcerikler } from "../../data";
 
 function EditIcerik() {
   const params = useSearchParams();
-  const base = getIcerik(params.get("id") ?? "") ?? null;
-  return <IcerikForm mode="duzenle" base={base} />;
+  const id = params.get("id") ?? "";
+  const [item, setItem] = useState<Icerik | null | undefined>(undefined);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setItem(readIcerikler().find((record) => record.id === id) ?? null));
+    return () => cancelAnimationFrame(frame);
+  }, [id]);
+
+  if (item === undefined) return null;
+  return <IcerikForm key={item?.id ?? "missing"} mode="duzenle" base={item} />;
 }
 
 export default function IcerikDuzenlePage() {
-  return <AdminShell><Suspense fallback={null}><EditIcerik /></Suspense></AdminShell>;
+  return <Suspense fallback={null}><EditIcerik /></Suspense>;
 }

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./demo.module.css";
 
 type IconName = "arrow" | "bars" | "calendar" | "card" | "clock" | "close" | "check" | "chart" | "download" | "file" | "home" | "invoice" | "message" | "play" | "shield" | "lock" | "key";
@@ -143,7 +143,7 @@ function ServiceVisual({ kind }: { kind: (typeof services)[number]["visual"] }) 
           </section>
           <section>
             <i>B</i>
-            <span><b style={{ height: "42%" }} /><b style={{ height: "78%" }} /><b style={{ height: "58%" }} /></span>
+            <span><b /><b /><b /></span>
           </section>
         </div>
         <table>
@@ -167,7 +167,7 @@ function ServiceVisual({ kind }: { kind: (typeof services)[number]["visual"] }) 
       </header>
       <div className={`${styles.artifactFrame} ${styles.scaleBars}`}>
         {filled.map((count, index) => (
-          <span key={count}>Madde {index + 1}<i className={count === 5 ? styles.scaleOn : undefined} style={{ width: `${count * 20}%` }} /></span>
+          <span key={count}>Madde {index + 1}<i className={`${count === 5 ? `${styles.scaleOn} ` : ""}${styles[`scaleBar${index}`]}`} /></span>
         ))}
       </div>
       <table>
@@ -291,7 +291,7 @@ function InsightCover({ kind }: { kind: "method" | "table" | "power" | "report" 
         </div>
       )}
       {kind === "power" && (
-        <span>{[38, 52, 66, 84].map((height) => <i key={height} style={{ height: `${height}%` }} />)}</span>
+        <span><i /><i /><i /><i /></span>
       )}
       {kind === "report" && (
         <div>
@@ -330,14 +330,14 @@ const headlinePhrases = [
 ];
 
 const logos = [
-  { src: "/davet-transparent/gazi.png", alt: "Gazi Üniversitesi", height: 48 },
-  { src: "/davet-transparent/omusem.png", alt: "Ondokuz Mayıs Üniversitesi Sürekli Eğitim Merkezi", height: 42 },
-  { src: "/davet-transparent/tei.png", alt: "TEI", height: 38 },
-  { src: "/davet-transparent/sanovel.png", alt: "Sanovel", height: 36 },
-  { src: "/davet-transparent/selcuk.png", alt: "Selçuk Üniversitesi", height: 48 },
-  { src: "/davet-transparent/atılım.png", alt: "Atılım Üniversitesi", height: 40 },
-  { src: "/davet-transparent/inonu.png", alt: "İnönü Üniversitesi", height: 43 },
-  { src: "/davet-transparent/ktü.png", alt: "Karadeniz Teknik Üniversitesi", height: 42 },
+  { src: "/davet-transparent/gazi.png", alt: "Gazi Üniversitesi" },
+  { src: "/davet-transparent/omusem.png", alt: "Ondokuz Mayıs Üniversitesi Sürekli Eğitim Merkezi" },
+  { src: "/davet-transparent/tei.png", alt: "TEI" },
+  { src: "/davet-transparent/sanovel.png", alt: "Sanovel" },
+  { src: "/davet-transparent/selcuk.png", alt: "Selçuk Üniversitesi" },
+  { src: "/davet-transparent/atılım.png", alt: "Atılım Üniversitesi" },
+  { src: "/davet-transparent/inonu.png", alt: "İnönü Üniversitesi" },
+  { src: "/davet-transparent/ktü.png", alt: "Karadeniz Teknik Üniversitesi" },
 ];
 
 const orderBeats = [
@@ -695,7 +695,7 @@ export function DemoLanding() {
                 <div className={styles.heroTrustMarquee}>
                   <div className={styles.heroTrustTrack}>
                     {[false, true].map((duplicate) => <div className={styles.heroTrustGroup} aria-hidden={duplicate || undefined} key={duplicate ? "duplicate" : "primary"}>
-                      {logos.map((logo) => <Image key={`${duplicate ? "duplicate" : "primary"}-${logo.src}`} src={logo.src} alt={duplicate ? "" : logo.alt} width={180} height={88} sizes="140px" style={{ "--logo-height": `${logo.height}px` } as CSSProperties} />)}
+                      {logos.map((logo, index) => <Image className={styles[`trustLogo${index}`]} key={`${duplicate ? "duplicate" : "primary"}-${logo.src}`} src={logo.src} alt={duplicate ? "" : logo.alt} width={180} height={88} sizes="140px" />)}
                     </div>)}
                   </div>
                 </div>
@@ -808,7 +808,7 @@ export function DemoLanding() {
                     <strong>6.2 <span>p = .033</span></strong>
                     <div className={styles.resultBars}>
                       {[42, 58, 50, 66, 88].map((height, index) => (
-                        <span key={height} className={index === 4 ? `${styles.resultBar} ${styles.resultAccent}` : styles.resultBar} style={{ "--h": `${height}%`, "--d": `${index * 90}ms` } as CSSProperties} />
+                        <span key={height} className={`${styles.resultBar} ${styles[`resultBar${index}`]}${index === 4 ? ` ${styles.resultAccent}` : ""}`} />
                       ))}
                     </div>
                   </div>

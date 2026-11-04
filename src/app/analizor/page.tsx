@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { NotificationMenu } from "../components/NotificationMenu";
 import { ProfileMenu } from "../components/ProfileMenu";
-import { CustomerEducationMenu } from "../components/CustomerEducationMenu";
+import { WorkspaceNav } from "../components/WorkspaceNav";
 import { TimeGreeting } from "../components/TimeGreeting";
 
 type IconName = "arrow" | "calendar" | "check" | "clock" | "file" | "home" | "message" | "tasks" | "video";
@@ -49,19 +49,13 @@ export default function AnalystDashboardPage() {
   const selectedDetail = dayDetails[selectedDay];
 
   return (
-    <div className="app-shell analyst-shell">
+    <div className="app-shell customer-shell">
       <a className="skip-link" href="#analyst-main">İçeriğe geç</a>
       <header className="topbar">
         <Link className="brand" href="/analizor" aria-label="eistatistik analizör ana sayfası">
           <Image className="brand-logo" src="/Siyah e-istatistik.png" alt="eistatistik" width={300} height={69} priority />
         </Link>
-        <nav className="main-nav" aria-label="Analizör navigasyonu">
-          <Link className="active" href="/analizor"><Icon name="home" />Genel bakış</Link>
-          <Link href="/analizor/islerim"><Icon name="tasks" />İşlerim</Link>
-          <CustomerEducationMenu />
-          <Link href="/analizor/gorusmeler"><Icon name="video" />Görüşmeler</Link>
-          <Link href="/analizor/takvim"><Icon name="calendar" />Takvim</Link>
-        </nav>
+        <WorkspaceNav kind="analyst" />
         <div className="top-actions">
           <a className="istabot-link" href="https://www.istabot.com/" target="_blank" rel="noopener noreferrer" aria-label="İstabot web sitesini yeni sekmede aç">
             <Image src="/istabot-header.png" alt="İstabot" width={1226} height={404} />

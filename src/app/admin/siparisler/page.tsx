@@ -210,7 +210,7 @@ function ActivityModal({ orderCode, onClose }: { orderCode: string; onClose: () 
       <section className="dm-modal dm-wide" role="dialog" aria-modal="true" aria-labelledby="dm-act-title">
         <header className="dm-header">
           <div>
-            <p className="eyebrow" style={{ marginBottom: ".1rem", color: "#8a99a6" }}>SİPARİŞ AKTİVİTESİ</p>
+            <p className="eyebrow admin-orders-modal-eyebrow">SİPARİŞ AKTİVİTESİ</p>
             <h2 id="dm-act-title">Sipariş Aktivite Günlüğü — {orderCode}</h2>
           </div>
           <button className="dm-close" onClick={onClose} aria-label="Kapat">✕</button>
@@ -230,20 +230,20 @@ function ActivityModal({ orderCode, onClose }: { orderCode: string; onClose: () 
               <tbody>
                 {ACTIVITY_ROWS.map((row) => (
                   <tr key={row.v}>
-                    <td style={{ textAlign: "center" }}>{row.v}</td>
+                    <td className="dm-cell-center">{row.v}</td>
                     <td>{row.time}</td>
                     <td>{row.actor}</td>
-                    <td style={{ color: row.code !== "—" ? "var(--blue)" : undefined }}>{row.code}</td>
+                    <td className={row.code !== "—" ? "dm-order-code" : undefined}>{row.code}</td>
                     <td>{row.title}</td>
-                    <td><code style={{ fontSize: ".55rem", color: "#54687a", fontFamily: "monospace" }}>{row.status}</code></td>
-                    <td style={{ textAlign: "center" }}>{row.ilkUcret}</td>
-                    <td style={{ textAlign: "center" }}>{row.sonUcret}</td>
+                    <td><code className="dm-status-code">{row.status}</code></td>
+                    <td className="dm-cell-center">{row.ilkUcret}</td>
+                    <td className="dm-cell-center">{row.sonUcret}</td>
                     <td>{row.odemeDurumu}</td>
                     <td>{row.odemeZamani}</td>
                     <td>{row.teslimatZamani}</td>
-                    <td style={{ textAlign: "center" }}>{row.teslimatTipi}</td>
-                    <td style={{ textAlign: "center" }}>{row.musteriId}</td>
-                    <td style={{ textAlign: "center" }}>{row.analizorId}</td>
+                    <td className="dm-cell-center">{row.teslimatTipi}</td>
+                    <td className="dm-cell-center">{row.musteriId}</td>
+                    <td className="dm-cell-center">{row.analizorId}</td>
                     <td>{row.parentId}</td>
                     <td>{row.kuponId}</td>
                     <td>{row.kuponZamani}</td>
@@ -275,14 +275,14 @@ function RelatedOrdersModal({ orderCode, relatedOrders, detailHref, onClose }: {
       <section className="dm-modal dm-medium" role="dialog" aria-modal="true" aria-labelledby="dm-rel-title">
         <header className="dm-header">
           <div>
-            <p className="eyebrow" style={{ marginBottom: ".1rem", color: "#8a99a6" }}>SİPARİŞ</p>
+            <p className="eyebrow admin-orders-modal-eyebrow">SİPARİŞ</p>
             <h2 id="dm-rel-title">İlişkili Siparişler — {orderCode}</h2>
           </div>
           <button className="dm-close" onClick={onClose} aria-label="Kapat">✕</button>
         </header>
         <div className="dm-body">
           {relatedOrders.length === 0 ? (
-            <p style={{ color: "var(--muted)", fontSize: ".67rem", padding: "1.5rem 0", textAlign: "center" }}>
+            <p className="related-orders-empty">
               Bu siparişle ilişkili başka sipariş bulunamadı.
             </p>
           ) : (
@@ -295,14 +295,14 @@ function RelatedOrdersModal({ orderCode, relatedOrders, detailHref, onClose }: {
                   {relatedOrders.map((o) => (
                     <tr key={o.code}>
                       <td>
-                        <Link href={detailHref} style={{ color: "var(--blue)", fontWeight: 800 }} onClick={onClose}>
+                        <Link className="related-order-link" href={detailHref} onClick={onClose}>
                           {o.code}
                         </Link>
                       </td>
                       <td>{PREFIX_LABELS[o.code.slice(0, 2)] ?? "Analiz Talebi"}</td>
                       <td>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: ".4rem" }}>
-                          <span className={DOT[statusMap[o.statusKey].group]} style={{ width: 7, height: 7, flexShrink: 0 }} />
+                        <span className="related-order-status">
+                          <span className={DOT[statusMap[o.statusKey].group]} />
                           {statusMap[o.statusKey].label}
                         </span>
                       </td>
@@ -425,7 +425,7 @@ function OrderContextMenu({ detailHref, isFavorite, isMessageClosed, onFavoriteT
       </button>
       {open && typeof document !== "undefined" && createPortal(
         <div ref={menuRef} className="order-ctx-menu" role="menu"
-          style={{ position: "fixed", top: pos.top, right: pos.right, zIndex: 9999 }}>
+          style={{ top: pos.top, right: pos.right }}>
 
           {/* Görüntüle grubu */}
           <Link className="ctx-item" role="menuitem" href={detailHref} onClick={close}>
@@ -434,8 +434,7 @@ function OrderContextMenu({ detailHref, isFavorite, isMessageClosed, onFavoriteT
           <Link className="ctx-item" role="menuitem" href={detailHref} onClick={close}>
             <CtxIcon name="eye" />Görüntüle
           </Link>
-          <button className="ctx-item" role="menuitem" onClick={() => act(onFavoriteToggle)}
-            style={isFavorite ? { color: "#b66d2e" } : undefined}>
+          <button className={`ctx-item${isFavorite ? " favorite-active" : ""}`} role="menuitem" onClick={() => act(onFavoriteToggle)}>
             <CtxIcon name={isFavorite ? "starFill" : "star"} />
             {isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
           </button>
@@ -471,11 +470,10 @@ function OrderContextMenu({ detailHref, isFavorite, isMessageClosed, onFavoriteT
           </button>
           <button className="ctx-item" role="menuitem"
             onClick={() => { if (!isMessageClosed) act(onCloseMessage); }}
-            disabled={isMessageClosed}
-            style={isMessageClosed ? { opacity: .45, cursor: "default" } : undefined}>
+            disabled={isMessageClosed}>
             <CtxIcon name="messageOff" />{isMessageClosed ? "Mesaj Kapatıldı" : "Mesajı Kapat"}
           </button>
-          <button className="ctx-item" role="menuitem" onClick={close} style={{ opacity: .5, cursor: "default" }}>
+          <button className="ctx-item ctx-placeholder" role="menuitem" onClick={close}>
             <CtxIcon name="plus" />Ürün Ata
           </button>
           <Link className="ctx-item" role="menuitem" href={`${detailHref}?section=analyst`} onClick={close}>
@@ -622,7 +620,7 @@ export function SharedOrdersList({ basePath = "/admin/siparisler" }: { basePath?
           </nav>
         </div>
 
-        <section className="detail-panel st-list-panel" style={{ padding: 0 }}>
+        <section className="detail-panel st-list-panel">
           <div className="edu-list-toolbar" aria-label="Sipariş arama">
             <label className="orders-search edu-list-search">
               <Icon name="search" size={17} />
@@ -636,14 +634,14 @@ export function SharedOrdersList({ basePath = "/admin/siparisler" }: { basePath?
           <div className="ur-table-wrap" ref={wrapRef}>
             <table className="ur-table edu-table admin-orders-edu-table">
               <colgroup>
-                <col style={{ width: "19%" }} />
-                <col style={{ width: "12%" }} />
-                <col style={{ width: "15%" }} />
-                <col style={{ width: "10%" }} />
-                <col style={{ width: "8%" }} />
-                <col style={{ width: "15%" }} />
-                <col style={{ width: "12%" }} />
-                <col style={{ width: "9%" }} />
+                <col className="admin-orders-col-order" />
+                <col className="admin-orders-col-updated" />
+                <col className="admin-orders-col-status" />
+                <col className="admin-orders-col-delivery" />
+                <col className="admin-orders-col-remaining" />
+                <col className="admin-orders-col-customer" />
+                <col className="admin-orders-col-analyst" />
+                <col className="admin-orders-col-actions" />
               </colgroup>
               <thead>
                 <tr>
@@ -696,7 +694,7 @@ export function SharedOrdersList({ basePath = "/admin/siparisler" }: { basePath?
                 })}
                 {pageItems.length === 0 && (
                   <tr>
-                    <td colSpan={8} style={{ padding: "2rem", textAlign: "center", color: "var(--muted)", fontSize: ".7rem" }}>
+                    <td className="admin-orders-empty" colSpan={8}>
                       Sipariş bulunamadı. <button className="aoc-clear" onClick={() => { setQuery(""); setActiveTab("all"); setAnalystFilter("all"); setPage(1); }}>Filtreleri temizle</button>
                     </td>
                   </tr>

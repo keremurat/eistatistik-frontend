@@ -53,6 +53,24 @@ export const trainings: Egitim[] = [
   { id: 1, adi: "Modül 1. Temel Düzey Veri Analizi Eğitimi Aralık 2024", aciklama: "Temel Düzey Veri Analizi Eğitimi", tur: "Online", kota: 30, katilan: 30, esnekKota: "Esnek Değil", durum: "Aktif", baslama: "14.12.2024", baslamaFull: "2024-12-14 00:00:00 +0300", bitis: "15.12.2024", bitisFull: "2024-12-15 00:00:00 +0300", ucret: 6500, eiUrl: "https://eistatistik.com/temel-duzey-veri-analizi-egitimi/", canliUrl: "", imgUrl: "", moduller: ["MODÜL 1"], erisimZamani: 12, sertifika: "Sertifikasız" },
 ];
 
+const STORAGE_KEY = "eistatistik.educations.v1";
+
+export function readEducations() {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return trainings;
+    const parsed = JSON.parse(raw) as Egitim[];
+    return Array.isArray(parsed) ? parsed : trainings;
+  } catch {
+    return trainings;
+  }
+}
+
+export function writeEducations(items: Egitim[]) {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+}
+
 export const mockCustomers = [
   { no: 1, kullanici: "KAAN KARAKAYA",  siparisKodu: "TR260630019", tarih: "30/06/2026 17:20", gsm: "5419039758", email: "kaan.karakayaaaa@gmail.com",    durum: "Ödeme yapıldı." },
   { no: 2, kullanici: "ESRA ÖZTÜRK",    siparisKodu: "TR260630020", tarih: "30/06/2026 17:21", gsm: "5397483968", email: "esraozturk12355555@gmail.com",  durum: "Ödeme yapıldı." },

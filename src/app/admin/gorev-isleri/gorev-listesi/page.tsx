@@ -126,15 +126,14 @@ function SimpleSelect({ id, value, onChange, options, placeholder = "Seçin" }: 
   const selected = options.find(o => o.value === value);
 
   const panel = (
-    <div ref={panRef} className="cs-panel" role="listbox"
-      style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width, zIndex: 9999 }}>
+    <div ref={panRef} className="cs-panel task-select-panel" role="listbox"
+      style={{ top: pos.top, left: pos.left, width: pos.width }}>
       {options.map(o => (
         <button key={o.value} role="option" aria-selected={o.value === value}
-          className={`cs-option${o.value === value ? " active" : ""}`}
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
+          className={`cs-option task-select-option${o.value === value ? " active" : ""}`}
           onClick={() => { onChange(o.value); setOpen(false); }}>
           <span>{o.label}</span>
-          {o.meta && <span style={{ fontSize: ".54rem", fontWeight: 800, padding: ".15rem .45rem", borderRadius: 99, background: o.metaBg ?? "var(--canvas)", color: o.metaColor ?? "var(--muted)" }}>{o.meta}</span>}
+          {o.meta && <span className="task-select-meta" style={{ background: o.metaBg ?? "var(--canvas)", color: o.metaColor ?? "var(--muted)" }}>{o.meta}</span>}
         </button>
       ))}
     </div>
@@ -143,11 +142,10 @@ function SimpleSelect({ id, value, onChange, options, placeholder = "Seçin" }: 
   return (
     <>
       <button id={id} ref={trigRef} type="button" aria-haspopup="listbox" aria-expanded={open}
-        className={`cs-trigger${open ? " open" : ""}`} onClick={toggle}
-        style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ display: "flex", alignItems: "center", gap: ".5rem" }}>
+        className={`cs-trigger task-select-trigger${open ? " open" : ""}`} onClick={toggle}>
+        <span className="task-select-value">
           {selected
-            ? <><span>{selected.label}</span>{selected.meta && <span style={{ fontSize: ".52rem", fontWeight: 800, padding: ".12rem .4rem", borderRadius: 99, background: selected.metaBg ?? "var(--canvas)", color: selected.metaColor ?? "var(--muted)" }}>{selected.meta}</span>}</>
+            ? <><span>{selected.label}</span>{selected.meta && <span className="task-select-meta compact" style={{ background: selected.metaBg ?? "var(--canvas)", color: selected.metaColor ?? "var(--muted)" }}>{selected.meta}</span>}</>
             : <span className="cs-placeholder">{placeholder}</span>}
         </span>
         <span className="cs-arrow">▾</span>
@@ -210,14 +208,14 @@ function GorevModal({ panolar, initial, onClose, onSave }: {
             <div className="form-field"><label htmlFor="gm-a">Atananlar</label><SimpleSelect id="gm-a" value={atanan} onChange={setAtanan} options={atananOptions} placeholder="Kişi seçin" /></div>
             <div className="form-field">
               <label>Bitirme Zamanı</label>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".4rem" }}>
+              <div className="task-datetime-grid">
                 <DatePicker value={tarih} onChange={setTarih} placeholder="GG.AA.YYYY" />
                 <TimePicker value={saat}  onChange={setSaat} />
               </div>
             </div>
             <div className="form-field"><label htmlFor="gm-e">Etiket</label><SimpleSelect id="gm-e" value={etiket} onChange={v => setEtiket(v as EtiketKey)} options={etiketOptions} /></div>
           </div>
-          <div className="form-field"><label htmlFor="gm-ac">Açıklama</label><textarea id="gm-ac" rows={4} placeholder="Görev açıklaması…" value={aciklama} onChange={e => setAciklama(e.target.value)} style={{ resize: "vertical" }} /></div>
+          <div className="form-field"><label htmlFor="gm-ac">Açıklama</label><textarea className="task-resizable-textarea" id="gm-ac" rows={4} placeholder="Görev açıklaması…" value={aciklama} onChange={e => setAciklama(e.target.value)} /></div>
           <div className="form-field">
             <label>Yapılacaklar Listesi</label>
             <div className="yapilanlar-list">
@@ -260,18 +258,18 @@ function PanoEkleModal({ onClose, onSave, mevcutSira }: {
 
   return (
     <div className="admin-modal-backdrop" role="presentation" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <section className="admin-modal" style={{ maxWidth: 500 }} role="dialog" aria-modal="true" aria-labelledby="pm-title">
+      <section className="admin-modal task-board-modal" role="dialog" aria-modal="true" aria-labelledby="pm-title">
         <header className="admin-modal-head">
           <h2 id="pm-title">Pano Bilgileri</h2>
           <button className="admin-modal-close" onClick={onClose} aria-label="Kapat">×</button>
         </header>
         <div className="admin-modal-body">
-          <div style={{ border: "1px solid var(--line)", borderRadius: 10, padding: "1rem", display: "flex", flexDirection: "column", gap: ".75rem" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".75rem" }}>
+          <div className="task-board-form-box">
+            <div className="task-board-form-grid">
               <div className="form-field"><label htmlFor="pm-b">Pano Başlığı</label><input id="pm-b" type="text" placeholder="Pano başlığı" value={baslik} onChange={e => setBaslik(e.target.value)} /></div>
               <div className="form-field"><label htmlFor="pm-s">Pano Sırası</label><input id="pm-s" type="number" min={1} value={sira} onChange={e => setSira(e.target.value)} /></div>
             </div>
-            <div className="form-field"><label htmlFor="pm-a">Açıklama</label><textarea id="pm-a" rows={3} placeholder="Açıklama" value={aciklama} onChange={e => setAciklama(e.target.value)} style={{ resize: "vertical" }} /></div>
+            <div className="form-field"><label htmlFor="pm-a">Açıklama</label><textarea className="task-resizable-textarea" id="pm-a" rows={3} placeholder="Açıklama" value={aciklama} onChange={e => setAciklama(e.target.value)} /></div>
           </div>
         </div>
         <footer className="admin-modal-foot">
@@ -312,18 +310,12 @@ function RowMenu({ onEdit, onArchive, onDelete }: { onEdit: () => void; onArchiv
     setOpen(o => !o);
   }
 
-  const base: React.CSSProperties = {
-    width: "100%", padding: ".42rem .65rem", border: 0, borderRadius: 6,
-    background: "transparent", font: "inherit", fontSize: ".7rem", fontWeight: 700,
-    textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: ".45rem",
-  };
-
   const menu = (
-    <div ref={panRef} role="menu" style={{ position: "fixed", top: pos.top, left: pos.left, width: 156, zIndex: 9999, background: "#fff", border: "1px solid var(--line)", borderRadius: 9, boxShadow: "0 12px 30px rgba(19,43,70,.13)", padding: ".3rem", animation: "profile-menu-in .12s ease-out" }}>
-      <button role="menuitem" style={{ ...base, color: "#3f556a" }} onMouseEnter={e => (e.currentTarget.style.background = "var(--canvas)")} onMouseLeave={e => (e.currentTarget.style.background = "transparent")} onClick={() => { setOpen(false); onEdit(); }}><Icon name="edit" size={14} />Düzenle</button>
-      <button role="menuitem" style={{ ...base, color: "#3f556a" }} onMouseEnter={e => (e.currentTarget.style.background = "var(--canvas)")} onMouseLeave={e => (e.currentTarget.style.background = "transparent")} onClick={() => { setOpen(false); onArchive(); }}><Icon name="archive" size={14} />Arşivle</button>
-      <div style={{ height: 1, background: "var(--line)", margin: ".25rem 0" }} />
-      <button role="menuitem" style={{ ...base, color: "#c85a51" }} onMouseEnter={e => (e.currentTarget.style.background = "#fff3f2")} onMouseLeave={e => (e.currentTarget.style.background = "transparent")} onClick={() => { setOpen(false); onDelete(); }}><Icon name="trash" size={14} />Sil</button>
+    <div ref={panRef} className="task-context-menu" role="menu" style={{ top: pos.top, left: pos.left }}>
+      <button role="menuitem" onClick={() => { setOpen(false); onEdit(); }}><Icon name="edit" size={14} />Düzenle</button>
+      <button role="menuitem" onClick={() => { setOpen(false); onArchive(); }}><Icon name="archive" size={14} />Arşivle</button>
+      <div className="task-context-separator" />
+      <button className="danger" role="menuitem" onClick={() => { setOpen(false); onDelete(); }}><Icon name="trash" size={14} />Sil</button>
     </div>
   );
 
@@ -353,7 +345,7 @@ function GorevRow({ gorev, checked, onCheck, onEdit, onArchive, onDelete }: {
       <input type="checkbox" className="gorev-liste-cb" checked={checked}
         onChange={e => onCheck(e.target.checked)} aria-label={`${gorev.baslik} seç`} />
       <span className="gorev-liste-text" title={gorev.baslik + (subText ? ": " + subText : "")}>
-        <b>{gorev.baslik}</b>{subText ? <span style={{ color: "#8493a0", fontWeight: 700 }}>{" · "}{subText}</span> : null}
+        <b>{gorev.baslik}</b>{subText ? <span className="task-row-subtext">{" · "}{subText}</span> : null}
       </span>
       <span className="gorev-liste-atanan">{gorev.atanan}</span>
       <span className="gorev-liste-tarih">{gorev.tarih}</span>
@@ -424,13 +416,10 @@ function TasiDropdown({ panolar, onPick, onClose, anchorRef }: {
   }, [anchorRef, onClose]);
 
   const dropdown = (
-    <div ref={panRef} role="menu" style={{ position: "fixed", top: pos.top, left: pos.left, minWidth: 180, zIndex: 9999, background: "#fff", border: "1px solid var(--line)", borderRadius: 9, boxShadow: "0 12px 30px rgba(19,43,70,.13)", padding: ".3rem", animation: "profile-menu-in .12s ease-out" }}>
-      <p style={{ fontSize: ".58rem", fontWeight: 850, color: "var(--muted)", letterSpacing: ".08em", textTransform: "uppercase", padding: ".35rem .65rem .2rem", margin: 0 }}>Pano seçin</p>
+    <div ref={panRef} className="task-context-menu task-move-menu" role="menu" style={{ top: pos.top, left: pos.left }}>
+      <p>Pano seçin</p>
       {panolar.map(p => (
-        <button key={p.key} role="menuitem" onClick={() => { onPick(p.key); onClose(); }}
-          style={{ width: "100%", padding: ".44rem .65rem", border: 0, borderRadius: 6, background: "transparent", color: "#3f556a", font: "inherit", fontSize: ".7rem", fontWeight: 700, textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: ".4rem" }}
-          onMouseEnter={e => (e.currentTarget.style.background = "var(--canvas)")}
-          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+        <button key={p.key} role="menuitem" onClick={() => { onPick(p.key); onClose(); }}>
           {p.baslik}
         </button>
       ))}
@@ -516,11 +505,11 @@ export function TaskBoardContent() {
             <p className="eyebrow">YÖNETİM</p>
             <h1>Görev Listesi</h1>
           </div>
-          <div style={{ display: "flex", gap: ".55rem", alignItems: "center", flexWrap: "wrap" }}>
+          <div className="task-page-actions">
             <button type="button" className="orders-create" onClick={() => setGorevModal(true)}>
               <Icon name="plus" size={15} /> Yeni Görev Ekle
             </button>
-            <button type="button" className="orders-create" style={{ background: "var(--blue)", boxShadow: "0 8px 18px rgba(23,117,169,.2)" }} onClick={() => setPanoModal(true)}>
+            <button type="button" className="orders-create task-board-create" onClick={() => setPanoModal(true)}>
               <Icon name="plus" size={15} /> Yeni Pano Ekle
             </button>
 

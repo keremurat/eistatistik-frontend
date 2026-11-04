@@ -8,7 +8,17 @@ belgenin dışına çıkıp yeni görsel dil, yeni class sistemi veya paralel bi
 > - Profil dropdown → [src/app/components/ProfileMenu.tsx](src/app/components/ProfileMenu.tsx)
 > - Sipariş detay + Ödeme + Ödeme sözleşme modalı → [src/app/siparislerim/DS260723008/page.tsx](src/app/siparislerim/DS260723008/page.tsx)
 > - Kayıt Ol sözleşme modalı → [src/app/page.tsx](src/app/page.tsx) (`LegalModal`)
-> - Tüm stiller → [src/app/globals.css](src/app/globals.css)
+> - Stil giriş noktası → [src/app/globals.css](src/app/globals.css)
+> - Token'lar → [src/app/styles/tokens.css](src/app/styles/tokens.css)
+> - Global temel ve breadcrumb → [src/app/styles/foundation.css](src/app/styles/foundation.css)
+> - Ortak üst bar, profil ve bildirim kabuğu → [src/app/styles/app-shell.css](src/app/styles/app-shell.css)
+> - Rol ayarları merkezi → [src/app/styles/role-settings.css](src/app/styles/role-settings.css)
+> - Müşteri dashboard, sipariş ve analiz talebi akışları → [src/app/styles/workspace.css](src/app/styles/workspace.css)
+> - Eğitim kütüphanesi, katalog ve satın alma akışları → [src/app/styles/education.css](src/app/styles/education.css)
+> - Giriş, kayıt, sözleşme ve şifre sıfırlama → [src/app/styles/auth.css](src/app/styles/auth.css)
+> - Analizör dashboard, işler, görüşmeler ve takvim → [src/app/styles/analyst.css](src/app/styles/analyst.css)
+> - Yönetim, editör, asistan yönetimi ve ortak yönetim bileşenleri → [src/app/styles/admin.css](src/app/styles/admin.css)
+> - Landing, blog ve hizmet pazarlama sayfaları → [src/app/styles/public-pages.css](src/app/styles/public-pages.css)
 
 ---
 
@@ -1058,6 +1068,77 @@ indirilmemelidir. Mobil açılır menü kendi mevcut `.74rem` değerini korur.
 Dynamic Island yüzeyi tüm ekran boyutlarında opak beyazdır; arkasındaki hero görselini gösteren
 saydamlık, blur veya backdrop-filter kullanılmaz. İnce sınır ve mevcut hafif gölge yüzey ayrımını
 sağlar.
+
+### 7.8 E-posta doğrulama durumu — `/hesap-dogrulama`
+
+E-posta doğrulama sayfası yeni bir görsel dil oluşturmaz. Giriş ve şifre sıfırlama
+ekranlarındaki `auth-page`, `auth-card`, `auth-brand-panel`, `auth-form-area`,
+`auth-form-inner`, `auth-reset-success` ve `auth-primary-button` kalıplarını yeniden kullanır.
+
+- Sayfa açılışında token otomatik tüketilmez. Kullanıcı `E-posta adresimi doğrula` düğmesine
+  açıkça basınca confirmation isteği gönderilir; böylece e-posta güvenlik tarayıcıları hesabı
+  kullanıcıdan önce doğrulamaz.
+- Bekleme, başarı ve hata aynı `.auth-confirmation-panel` alanında gösterilir. Başarı mevcut
+  `.auth-reset-success` yeşil durumunu; hata `.auth-reset-success.error` kırmızı varyantını kullanır.
+- Kalıcı doğrulama sonucu toast değildir. `role="status"` / `role="alert"` ile sayfa içinde kalır.
+- Başarı durumunda giriş ekranına bağlantı, hata durumunda geçersiz/süresi geçmiş link açıklaması
+  gösterilir. Ham confirmation tokenı görünür metne, log mesajına veya localStorage'a yazılmaz.
+- API isteği aynı-origin `/api/v1` yolu üzerinden gider ve önce CSRF tokenı alır.
+
+### 7.9 Gerçek session girişi — `/giris`
+
+Giriş paneli mevcut görsel yapısını korur; demo hesap ve localStorage ile kimlik
+doğrulama yapmaz. Form aynı-origin Rails session API'sine bağlanır.
+
+- E-posta biçimi ve boş parola istemci tarafında kontrol edilir. Login ekranı parolanın kayıt
+  politikasını yeniden uygulamaz; parolanın doğruluğuna yalnızca backend karar verir.
+- Gönderim sırasında birden fazla istek engellenir ve mevcut `login-loader` gösterilir.
+- `Beni hatırla` seçimi kontrollü form alanıdır ve backend `remember_me` parametresine aktarılır.
+- Başarısız kimlik doğrulamada hesap varlığı, doğrulama veya kilit durumu açıklanmaz; backend'in
+  generic cevabı Türkçe genel mesaj olarak `role="alert"` alanında gösterilir.
+- Başarılı girişte parola, kullanıcı veya rol bilgisi localStorage'a yazılmaz. Rails'in HttpOnly
+  session/remember cookie'leri kimlik doğrulamanın kaynağıdır; kullanıcı `/dashboard` hedefine gider.
+- İstekten önce CSRF tokenı alınır. Login cevabındaki yenilenmiş CSRF tokenı ilerideki state-changing
+  isteklerde kullanılmak üzere API katmanının sorumluluğundadır; gizli kimlik bilgisi değildir.
+
+### 7.10 Gerçek registration ve doğrulama bekleme durumu — `/giris`
+
+Kayıt sekmesi aynı-origin Rails registration API'sini kullanır; demo localStorage
+hesabı veya kayıt sonrası otomatik session oluşturmaz.
+
+- Ad, soyad, e-posta, parola ve parola tekrarı istemci tarafında kontrol edilir. Yeni parola en az
+  12 karakterdir ve backend politikasıyla aynıdır.
+- Üyelik sözleşmesi ile KVKK metninin ikisi de mevcut belge modal akışı içinde okunup açıkça kabul
+  edilmeden istek gönderilmez. Frontend yalnızca kabul boolean'larını gönderir; belge sürümü, kabul
+  zamanı, IP ve user-agent audit kaydını backend üretir.
+- Backend `validation_failed` cevabındaki alan hataları ilgili inputların altında gösterilir. Alanla
+  eşleşmeyen, hukuki kabul veya bağlantı hataları formun genel `role="alert"` alanında kalır.
+- Başarılı response yalnızca `confirmation_required` ise başarı kabul edilir. Kullanıcı dashboard'a
+  gönderilmez ve giriş yapılmış sayılmaz.
+- Başarı halinde formun yerini mevcut `.auth-reset-success` kalıbını kullanan kalıcı durum alır;
+  doğrulama e-postasının gönderildiği adres görünür ve kullanıcı giriş sekmesine dönebilir.
+- Parola, profil veya hukuki kabul verileri localStorage/sessionStorage içine yazılmaz.
+
+### 7.11 Müşteri session bootstrap ve logout — `/dashboard`
+
+Müşteri dashboard'u yalnızca tarayıcıdaki localStorage işaretine güvenmez. İlk render sonrasında
+aynı-origin `GET /api/v1/auth/me` çağrısıyla Rails sessionı doğrulanır.
+
+- Session kontrolü sürerken dashboard verisi gösterilmez; mevcut auth görsel dilini kullanan nötr
+  bir yükleme durumu gösterilir.
+- `401 authentication_required` beklenen anonim durumdur ve kullanıcı `/giris` sayfasına `replace`
+  ile yönlendirilir. Ağ veya servis hatası login yokmuş gibi yorumlanmaz; yeniden deneme sunan hata
+  durumu gösterilir.
+- Session kullanıcısı React context ile alt bileşenlere aktarılır. Müşteri profil menüsü backend'den
+  gelen e-postayı gösterir; sabit demo e-posta authentication kaynağı değildir.
+- Çıkış bir link değil, state değiştiren butondur. Önce güncel CSRF tokenı alınır, sonra Rails
+  `DELETE /api/v1/auth/logout` çağrılır. Başarıdan sonra `/giris` sayfasına geçilir.
+- Logout sürerken kontrol devre dışı kalır. Hata olursa session var kabul edilerek menüde hata
+  gösterilir; yalnızca localStorage temizleyip sahte çıkış yapılmaz.
+- Bu koruma şimdilik yalnızca müşteri dashboard kapsamındadır. Admin/analizör/asistan/editor
+  authorization, backend rol ve policy modeli kurulmadan session varlığına dayanarak açılmaz.
+
+---
 
 ## 8. Yeni bir şey eklerken
 

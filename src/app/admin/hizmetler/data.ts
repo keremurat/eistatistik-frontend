@@ -60,6 +60,27 @@ export const HIZMETLER: Hizmet[] = [
 
 export function getHizmet(id: string) { return HIZMETLER.find((h) => h.id === id); }
 
+const STORAGE_KEY = "eistatistik.services.v1";
+
+export function readHizmetler(): Hizmet[] {
+  const source = (() => {
+    if (typeof window === "undefined") return HIZMETLER;
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) return HIZMETLER;
+      const parsed = JSON.parse(raw) as Hizmet[];
+      return Array.isArray(parsed) ? parsed : HIZMETLER;
+    } catch {
+      return HIZMETLER;
+    }
+  })();
+  return [...source].sort((a, b) => a.sira - b.sira);
+}
+
+export function writeHizmetler(items: Hizmet[]) {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+}
+
 export function slugify(text: string) {
   const map: Record<string, string> = { ç: "c", ğ: "g", ı: "i", İ: "i", ö: "o", ş: "s", ü: "u" };
   return text.toLocaleLowerCase("tr").replace(/[çğıİöşü]/g, (c) => map[c] ?? c).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");

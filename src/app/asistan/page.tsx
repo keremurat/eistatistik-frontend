@@ -29,7 +29,7 @@ const priorities = [
 
 export default function AssistantHomePage() {
   return (
-    <div className="app-shell assistant-shell">
+    <div className="app-shell customer-shell">
       <a className="skip-link" href="#assistant-main">İçeriğe geç</a>
       <AssistantHeader />
 
