@@ -1,7 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
+
+// useLayoutEffect sunucuda uyarı vermesin diye izomorfik sarmalayıcı
+const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 import { AdminShell } from "../../AdminShell";
 import { DatePicker } from "../../../components/DatePicker";
 import { TimePicker } from "../../../components/TimePicker";
@@ -233,18 +236,20 @@ function CardMenu({ onEdit, onArchive, onDelete }: {
 }
 
 // ── Görev kartı ───────────────────────────────────────────────────────────────
-function GorevCard({ gorev, dragging, onDragStart, onDragEnd, onEdit, onArchive, onDelete }: {
+function GorevCard({ gorev, dragging, onRef, onDragStart, onDragEnd, onDragOverCard, onEdit, onArchive, onDelete }: {
   gorev: Gorev;
   dragging: boolean;
+  onRef: (el: HTMLElement | null) => void;
   onDragStart: (e: React.DragEvent) => void;
   onDragEnd: () => void;
+  onDragOverCard: (e: React.DragEvent) => void;
   onEdit: () => void;
   onArchive: () => void;
   onDelete: () => void;
 }) {
   return (
-    <article className={`gorev-card${dragging ? " dragging" : ""}`}
-      draggable onDragStart={onDragStart} onDragEnd={onDragEnd}>
+    <article ref={onRef} className={`gorev-card${dragging ? " dragging" : ""}`}
+      draggable onDragStart={onDragStart} onDragEnd={onDragEnd} onDragOver={onDragOverCard}>
       <div className="gorev-card-top">
         <span className={ETIKET_CLS[gorev.etiket]}>{gorev.etiket}</span>
         <span className="gorev-card-tarih">{gorev.tarih}</span>
@@ -490,6 +495,30 @@ export function TaskKanbanContent() {
   const [filtreAtanan, setFiltreAtanan] = useState("hepsi");
   const [draggingId,   setDraggingId]   = useState<number | null>(null);
   const [dragOverPano, setDragOverPano] = useState<string | null>(null);
+  const cardRefs = useRef<Map<number, HTMLElement>>(new Map());
+  const prevRects = useRef<Map<number, DOMRect>>(new Map());
+
+  // FLIP: kartların sırası değiştiğinde yeni konumlarına yumuşak kaysın
+  useIsoLayoutEffect(() => {
+    const refs = cardRefs.current;
+    const newRects = new Map<number, DOMRect>();
+    refs.forEach((el, id) => newRects.set(id, el.getBoundingClientRect()));
+    refs.forEach((el, id) => {
+      const prev = prevRects.current.get(id);
+      const next = newRects.get(id);
+      if (!prev || !next) return;
+      const dx = prev.left - next.left;
+      const dy = prev.top - next.top;
+      if (!dx && !dy) return;
+      el.style.transition = "none";
+      el.style.transform = `translate(${dx}px, ${dy}px)`;
+      requestAnimationFrame(() => {
+        el.style.transition = "transform .18s ease";
+        el.style.transform = "";
+      });
+    });
+    prevRects.current = newRects;
+  });
 
   useEffect(() => {
     const saved = readOrderTasks().map((task, index): Gorev => ({ id: -(index + 1), baslik: task.title, pano: "yapilacaklar", etiket: "Önemli", tarih: task.dueDate, siparisKodu: task.orderCode, aciklama: task.description, atanan: task.assignee, yapilanlar: [] }));
@@ -522,13 +551,31 @@ export function TaskKanbanContent() {
     setPanolar(prev => [...prev, { key, ...p }]);
   }
 
-  function moveGorev(id: number, hedefPano: string) {
+  function moveGorevTo(id: number, target: { pano: string; anchorId: number | null; below: boolean }) {
     setGorevler(prev => {
-      const item = prev.find(g => g.id === id);
-      if (!item || item.pano === hedefPano) return prev;
+      const dragged = prev.find(g => g.id === id);
+      if (!dragged) return prev;
       const rest = prev.filter(g => g.id !== id);
-      return [...rest, { ...item, pano: hedefPano }];
+      const moved: Gorev = { ...dragged, pano: target.pano };
+      let insertAt: number;
+      if (target.anchorId == null || target.anchorId === id) {
+        insertAt = rest.length;
+      } else {
+        const idx = rest.findIndex(g => g.id === target.anchorId);
+        insertAt = idx === -1 ? rest.length : (target.below ? idx + 1 : idx);
+      }
+      rest.splice(insertAt, 0, moved);
+      // Sıra ve pano aynıysa gereksiz yeniden render etme (titremeyi önler)
+      if (rest.length === prev.length && rest.every((g, i) => g.id === prev[i].id && g.pano === prev[i].pano)) {
+        return prev;
+      }
+      return rest;
     });
+  }
+
+  function endDrag() {
+    setDraggingId(null);
+    setDragOverPano(null);
   }
 
   const q = arama.trim().toLocaleLowerCase("tr");
@@ -586,9 +633,17 @@ export function TaskKanbanContent() {
             return (
               <div key={pano.key}
                 className={`kanban-col${dragOverPano === pano.key ? " drag-over" : ""}`}
-                onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; if (dragOverPano !== pano.key) setDragOverPano(pano.key); }}
+                onDragOver={e => {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = "move";
+                  if (dragOverPano !== pano.key) setDragOverPano(pano.key);
+                  // Kart dışı boş alana gelince: bu panonun sonuna taşı (canlı)
+                  if (draggingId != null && !(e.target as HTMLElement).closest(".gorev-card")) {
+                    moveGorevTo(draggingId, { pano: pano.key, anchorId: null, below: false });
+                  }
+                }}
                 onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverPano(null); }}
-                onDrop={e => { e.preventDefault(); if (draggingId != null) moveGorev(draggingId, pano.key); setDraggingId(null); setDragOverPano(null); }}
+                onDrop={e => { e.preventDefault(); endDrag(); }}
               >
                 <div className="kanban-col-head">
                   <span className="kanban-col-title">{pano.baslik}</span>
@@ -599,8 +654,17 @@ export function TaskKanbanContent() {
                     key={gorev.id}
                     gorev={gorev}
                     dragging={draggingId === gorev.id}
+                    onRef={el => { if (el) cardRefs.current.set(gorev.id, el); else cardRefs.current.delete(gorev.id); }}
                     onDragStart={e => { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", String(gorev.id)); setDraggingId(gorev.id); }}
-                    onDragEnd={() => { setDraggingId(null); setDragOverPano(null); }}
+                    onDragEnd={endDrag}
+                    onDragOverCard={e => {
+                      e.preventDefault();
+                      if (draggingId == null || gorev.id === draggingId) return;
+                      // İmleç kartın orta çizgisinin üstünde mi altında mı? -> canlı yerleştir
+                      const r = e.currentTarget.getBoundingClientRect();
+                      const below = e.clientY > r.top + r.height / 2;
+                      moveGorevTo(draggingId, { pano: pano.key, anchorId: gorev.id, below });
+                    }}
                     onEdit={() => setEditingGorev(gorev)}
                     onArchive={() => archiveGorev(gorev.id)}
                     onDelete={() => deleteGorev(gorev.id)}

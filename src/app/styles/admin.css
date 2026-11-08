@@ -2036,9 +2036,11 @@
 .gorev-card-atanan { font-size:.57rem; font-weight:850; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
 .gorev-card { cursor:grab; }
 .gorev-card:active { cursor:grabbing; }
-.gorev-card.dragging { opacity:.45; }
+/* İmleçte kartın tam hali taşınır (native drag image); listedeki kopya soluk bir gölge olarak
+   yeni konumu gösterir. Diğer kartlar FLIP ile kayar. */
+.gorev-card.dragging { opacity:.4; }
 .gorev-card .task-card-menu-trigger { cursor:pointer; }
-.kanban-col.drag-over { background:var(--blue-soft); border-radius:12px; outline:2px dashed #79abc4; outline-offset:2px; }
+.kanban-col.drag-over { background:rgba(23,117,169,.05); border-radius:12px; }
 .kanban-toolbar { margin-top:0; flex-wrap:wrap; }
 
 /* ── Admin form modalı (görev / pano ekleme, yasal değil) ──────────────────── */

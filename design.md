@@ -1057,6 +1057,58 @@ Liste, aşağıdaki ortak ekran-duyarlı sayfalama sözleşmesini kullanır.
   çekilir. Birden fazla sayfa varsa ortak `ListPagination` Önceki, numaralı sayfalar ve Sonraki
   kontrollerini gösterir; tek sayfalık listede gereksiz kontrol çizilmez.
 
+### 7.6.3 Görev listesi kanban panosu — `/admin/gorev-isleri/gorev-listesi-kart`
+
+Kaynak: [src/app/admin/gorev-isleri/gorev-listesi-kart/page.tsx](src/app/admin/gorev-isleri/gorev-listesi-kart/page.tsx)
+(`TaskKanbanContent`). Görev işleri bu ekranda yatay kaydırmalı bir kanban panosu olarak
+gösterilir. Bu kalıp İstabot'tan gelmez; eistatistik'e özeldir ve mevcut token/sınıfları kullanır.
+
+```
+.kanban-page
+├─ header.orders-hero  (eyebrow "YÖNETİM" + h1 "Görev Listesi" + .task-page-actions: Yeni Görev / Yeni Pano)
+├─ div.orders-toolbar.kanban-toolbar  (arama + etiket filtresi + atanan filtresi + .result-count)
+└─ div.kanban-board  (overflow-x:auto)
+    └─ div.kanban-col[.drag-over] ×N   (min-width 296px, pano başına)
+        ├─ .kanban-col-head  (.kanban-col-title + .kanban-col-count)
+        └─ article.gorev-card[.dragging] ×N   (draggable)
+```
+
+**Görev kartı (`.gorev-card`):** üstte `.gorev-etiket-*` renk rozeti + `.gorev-card-tarih`,
+ardından `.gorev-card-title`, opsiyonel `.gorev-card-meta` (sipariş kodu / müşteri · telefon),
+`.gorev-card-desc` (3 satır clamp) ve `.gorev-card-foot` (atanan + 3-nokta `CardMenu`:
+Düzenle / Arşivle / Sil). Etiket renkleri sabittir: Acil `#fff3f2/#c85a51`, Arama Talebi
+`--blue-soft/--blue`, Önemli `#fdf4ec/#b66d2e`, Düşük Öncelikli `--canvas/--muted`,
+Hatırlatma `#f0faf6/#287a55`.
+
+**Sürükle-bırak (canlı sıralama — "yer açan" kartlar):** Kartlar `draggable`'dır. Native HTML5
+drag event'leri kullanılır; harici drag-drop kütüphanesi eklenmez. Davranış İstabot projeler
+listesindeki CDK sortable mantığını taklit eder: sürüklerken kenarda ekleme çizgisi gösterilmez,
+bunun yerine liste **canlı olarak yeniden sıralanır** — başka kartların üstüne/altına geldikçe o
+kartlar kayıp yer açar. Hedef konum, üzerine gelinen kartın dikey orta noktasına göre
+üstte/altta olmakla belirlenir ve o anda `moveGorevTo` ile dizide gerçekten taşınır. İmleçte kartın
+tam hali taşınır (tarayıcının native drag image'i); listedeki kopya `.gorev-card.dragging` ile
+**soluk bir gölge** (`opacity:.4`) olarak kartın yeni konumunu gösterir — içeriği gizlenmez.
+Diğer kartların yeni konumlarına yumuşak geçişi FLIP ile yapılır: her render'da `useLayoutEffect` eski/yeni
+`getBoundingClientRect` farkını `transform: translate` olarak uygulayıp `.18s` içinde sıfırlar.
+Kartın boş alanına bırakma görevi kolonun sonuna taşır; üzerine gelinen kolon `.drag-over` ile hafif
+tonlanır. Yeniden sıralama idempotenttir (sıra değişmiyorsa state güncellenmez, titreme olmaz) ve
+komşu kart kimliğine (`anchorId`) dayandığından filtre/arama aktifken de tutarlıdır. İmleç kart
+üzerinde `grab`, sürükleme sırasında `grabbing`; 3-nokta menü tetikleyicisi `pointer` kalır. Native
+DnD klavyeyle erişilebilir olmadığından, klavye kullanıcıları için pano değiştirme yolu görevi
+Düzenle → `Pano Adı` açılır seçimiyle taşımaktır (bu yol korunur).
+
+**Arama ve filtre:** Ortak `.orders-toolbar` içinde `.orders-search` (başlık, açıklama, atanan,
+sipariş kodu, müşteri adı/telefonu üzerinde Türkçe locale ile arar), ardından iki
+`.orders-analyst-filter` kabı içinde `SimpleSelect` (Etiket ve Atanan; ilk seçenek "Tüm …").
+`.result-count` eşleşen görev sayısını gösterir. Filtre/arama tüm panolara birlikte uygulanır;
+kolon sayaçları (`.kanban-col-count`) filtrelenmiş kümeyi yansıtır. `.kanban-toolbar` yalnızca
+`orders-toolbar`'ın üst boşluğunu sıfırlar ve dar ekranda filtrelerin alta sarmasına izin verir.
+
+**Pano ekleme / görev ekleme-düzenleme:** `.admin-modal` kalıbını kullanır; açılır seçimler
+`SimpleSelect` (portal + §Portal viewport kuralı), tarih/saat `DatePicker` + `TimePicker`.
+Başarı/işlem bildirimleri ortak `ToastProvider` ile verilir. Veriler prototipte statiktir;
+`readOrderTasks()` ile hesap bazlı tarayıcı kayıtları hydration sonrası listeye eklenir.
+
 ---
 
 ### 7.7 Landing Dynamic Island navigasyonu
